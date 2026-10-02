@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İrfaniye Takip Sistemi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>İrfaniye Takip Sistemi</h1>
+      <p>Talebe kayıt ve takip sistemi</p>
+    </header>
+
+    <section class="card">
+      <h2>Talebe Ekle</h2>
+      <form id="studentForm">
+        <div class="grid">
+          <label>Ad Soyad<input id="name" required></label>
+          <label>Öğrenci No<input id="studentNo" required></label>
+          <label>Veli Adı<input id="parentName"></label>
+          <label>Veli Tel<input id="parentPhone" type="tel"></label>
+          <label>Sınıf<input id="className"></label>
+          <label>Yatakhane No<input id="dormNo"></label>
+          <label class="full">Notlar<textarea id="notes" rows="3"></textarea></label>
+        </div>
+        <button type="submit">Talebeyi Kaydet</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="list-header">
+        <h2>Talebeler</h2>
+        <input id="search" placeholder="Ad, öğrenci no veya sınıf ara...">
+      </div>
+      <div id="studentList"></div>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
