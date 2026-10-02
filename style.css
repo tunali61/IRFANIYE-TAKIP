@@ -1,1 +1,33 @@
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f5f7;color:#1f2937}.container{max-width:1000px;margin:28px auto;padding:0 16px}header{background:#1f2937;color:#fff;padding:22px;border-radius:14px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}header h1{margin:0 0 5px}header p{margin:0;opacity:.8}.card{background:#fff;padding:22px;border-radius:14px;margin-bottom:18px;box-shadow:0 2px 10px #00000010}.login{max-width:430px;margin:40px auto}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}label{font-weight:600;font-size:14px}input,textarea{display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #d1d5db;border-radius:8px;font:inherit}.full{grid-column:1/-1}button{margin-top:16px;padding:10px 16px;border:0;border-radius:8px;background:#2563eb;color:white;font-weight:700;cursor:pointer}.danger{background:#dc2626}.secondary{background:#6b7280}.hidden{display:none!important}.listHeader{display:flex;gap:15px;justify-content:space-between;align-items:center}.listHeader input{max-width:330px;margin:0}.student{border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-top:12px}.meta{color:#555;font-size:14px;line-height:1.7;margin-top:5px}.student button{padding:7px 10px;margin:9px 6px 0 0;font-size:13px}.empty{color:#777;text-align:center;padding:18px}.error{color:#b91c1c}@media(max-width:700px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.listHeader{display:block}.listHeader input{max-width:none;margin-top:10px}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f5f7;color:#1f2937}.container{max-width:1000px;margin:28px auto;padding:0 16px}header{background:#1f2937;color:#fff;padding:22px;border-radius:14px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}header h1{margin:0 0 5px}header p{margin:0;opacity:.8}.card{background:#fff;padding:22px;border-radius:14px;margin-bottom:18px;box-shadow:0 2px 10px #00000010}.login{max-width:430px;margin:40px auto}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}label{font-weight:600;font-size:14px}input,textarea{display:block;width:100%;margin-top:6px;padding:11px;border:1px solid #d1d5db;border-radius:8px;font:inherit}.full{grid-column:1/-1}button{margin-top:16px;padding:10px 16px;border:0;border-radius:8px;background:#2563eb;color:white;font-weight:700;cursor:pointer}.danger{background:#dc2626}.secondary{background:#6b7280}.hidden{display:none!important}.listHeader{display:flex;gap:15px;justify-content:space-between;align-items:center}.listHeader input{max-width:330px;margin:0}.student{border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-top:12px}.meta{color:#555;font-size:14px;line-height:1.7;margin-top:5px}.student button{padding:7px 10px;margin:9px 6px 0 0;font-size:13px}.empty{color:#777;text-align:center;padding:18px}.error{color:#b91c1c}@media(max-width:700px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.listHeader{display:block}.listHeader input{max-width:none;margin-top:10px}}.
+/* GENEL DURUM DASHBOARD */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.dashboardBox {
+  background: #f5f7fa;
+  border: 1px solid #dce2e8;
+  border-radius: 12px;
+  padding: 18px 10px;
+  text-align: center;
+}
+
+.dashboardBox strong {
+  display: block;
+  font-size: 30px;
+  margin-bottom: 6px;
+}
+
+.dashboardBox span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .dashboard {
+    grid-template-columns: 1fr 1fr;
+  }
+}
