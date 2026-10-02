@@ -860,10 +860,10 @@ $("boxPresent")?.addEventListener("click", async () => {
  openStudentModal("BUGÜN GELEN TALEBELER", presentStudents);
 });
 // Açılır talebe listesi
-const studentModal = $("#studentModal");
-const studentModalTitle = $("#studentModalTitle");
-const studentModalBody = $("#studentModalBody");
-const studentModalClose = $("#studentModalClose");
+const studentModal = $("studentModal");
+const studentModalTitle = $("studentModalTitle");
+const studentModalBody = $("studentModalBody");
+const studentModalClose = $("studentModalClose");
 
 function openStudentModal(title, studentList) {
   studentModalTitle.textContent = title;
