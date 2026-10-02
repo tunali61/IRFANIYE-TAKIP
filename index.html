@@ -213,7 +213,27 @@
 </section>
   </main>
 </div>
+<!-- Talebe listesi açılır pencere -->
+<div id="studentModal" class="studentModal hidden">
+  <div class="studentModalContent">
+    <button type="button" id="studentModalClose">&times;</button>
 
+    <h2 id="studentModalTitle">Talebe Listesi</h2>
+
+    <div class="studentModalTableWrap">
+      <table class="studentModalTable">
+        <thead>
+          <tr>
+            <th>Ad Soyad</th>
+            <th>Sınıf</th>
+            <th>Öğrenci No</th>
+          </tr>
+        </thead>
+        <tbody id="studentModalBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>
