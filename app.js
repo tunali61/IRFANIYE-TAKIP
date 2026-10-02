@@ -96,28 +96,46 @@ $("importExcelBtn").addEventListener("click", async () => {
     const changes = {};
     let added = 0, skipped = 0;
 
-    for (const row of rows) {
-      const studentNo = String(row["Öğrenci No"] ?? row["Ogrenci No"] ?? "").trim();
-      const name = String(row["Ad-Soyad"] ?? row["Ad Soyad"] ?? "").trim();
+   const normalizeHeader = value => String(value ?? "")
+  .replace(/\s+/g, " ")
+  .trim()
+  .toLocaleUpperCase("tr-TR");
 
-      if (!name || !studentNo || existingNos.has(studentNo)) {
-        skipped++;
-        continue;
-      }
+for (const originalRow of rows) {
+  const row = {};
 
-      const newRef = push(ref(db, "students"));
-      changes["students/" + newRef.key] = {
-        name,
-        studentNo,
-        parentName: String(row["Veli Adı"] ?? row["Veli Adi"] ?? "").trim(),
-        parentPhone: String(row["Veli Tel"] ?? "").trim(),
-        className: String(row["Sınıf"] ?? row["Sinif"] ?? "").trim(),
-        dormNo: String(row["Yatak No"] ?? row["Yatakhane No"] ?? "").trim(),
-        notes: ""
-      };
-      existingNos.add(studentNo);
-      added++;
-    }
+  for (const [key, value] of Object.entries(originalRow)) {
+    row[normalizeHeader(key)] = value;
+  }
+
+  const studentNo = String(
+    row["ÖĞRENCİ NO"] ?? row["OGRENCI NO"] ?? ""
+  ).trim();
+
+  const name = String(
+    row["AD-SOYAD"] ?? row["AD SOYAD"] ?? ""
+  ).trim();
+
+  if (!name || !studentNo || existingNos.has(studentNo)) {
+    skipped++;
+    continue;
+  }
+
+  const newRef = push(ref(db, "students"));
+
+  changes["students/" + newRef.key] = {
+    name,
+    studentNo,
+    parentName: String(row["VELİ ADI"] ?? row["VELI ADI"] ?? "").trim(),
+    parentPhone: String(row["VELİ TEL"] ?? row["VELI TEL"] ?? "").trim(),
+    className: String(row["SINIF"] ?? "").trim(),
+    dormNo: String(row["YATAK NO"] ?? row["YATAKHANE NO"] ?? "").trim(),
+    notes: ""
+  };
+
+  existingNos.add(studentNo);
+  added++;
+}
 
     if (!added) {
       msg.textContent = `Yeni kayıt bulunamadı. ${skipped} satır atlandı.`;
