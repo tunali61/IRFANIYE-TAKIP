@@ -139,6 +139,47 @@
 
   <div id="studyReportList"></div>
 </section>
+    <section class="card">
+  <h2>İzin / Çıkış Takibi</h2>
+
+  <label>
+    Talebe
+    <select id="leaveStudent">
+      <option value="">Talebe seçin</option>
+    </select>
+  </label>
+
+  <div class="grid">
+    <label>
+      Çıkış Tarihi ve Saati
+      <input type="datetime-local" id="leaveStart">
+    </label>
+
+    <label>
+      Dönüş Tarihi ve Saati
+      <input type="datetime-local" id="leaveEnd">
+    </label>
+
+    <label>
+      İzin Nedeni
+      <input type="text" id="leaveReason" placeholder="İzin nedeni">
+    </label>
+
+    <label>
+      Teslim Alan / Veli
+      <input type="text" id="leaveReceiver" placeholder="Ad Soyad">
+    </label>
+  </div>
+
+  <button type="button" id="saveLeaveBtn">
+    İzni Kaydet
+  </button>
+
+  <p id="leaveMsg"></p>
+
+  <h3>İzin Kayıtları</h3>
+  <div id="leaveList"></div>
+</section>
   </main>
 </div>
 
