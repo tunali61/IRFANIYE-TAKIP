@@ -30,4 +30,15 @@
   .dashboard {
     grid-template-columns: 1fr 1fr;
   }
+  .dashboard {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+@media (max-width: 700px) {
+  .dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
 }
