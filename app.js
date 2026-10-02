@@ -783,7 +783,7 @@ $("boxAbsent")?.addEventListener("click", async () => {
     )
     .join("\n");
 
-  alert("BUGÜN GELMEYEN TALEBELER\n\n" + liste);
+  openStudentModal("BUGÜN GELMEYEN TALEBELER", absentStudents);
 });
 $("boxExcused")?.addEventListener("click", async () => {
   const today = new Date().toISOString().slice(0, 10);
@@ -809,7 +809,7 @@ $("boxExcused")?.addEventListener("click", async () => {
     )
     .join("\n");
 
-  alert("BUGÜN İZİNLİ TALEBELER\n\n" + liste);
+  openStudentModal("BUGÜN İZİNLİ TALEBELER", excusedStudents);
 });
 $("boxOutside")?.addEventListener("click", async () => {
   const snap = await get(ref(db, "leaves"));
@@ -831,7 +831,7 @@ $("boxOutside")?.addEventListener("click", async () => {
     )
     .join("\n");
 
-  alert("ŞU AN DIŞARIDA OLAN TALEBELER\n\n" + liste);
+  openStudentModal("ŞU AN DIŞARIDA OLAN TALEBELER", outsideStudents);
 });
 $("boxPresent")?.addEventListener("click", async () => {
   const today = new Date().toISOString().slice(0, 10);
@@ -857,5 +857,44 @@ $("boxPresent")?.addEventListener("click", async () => {
     )
     .join("\n");
 
-  alert("BUGÜN GELEN TALEBELER\n\n" + liste);
+ openStudentModal("BUGÜN GELEN TALEBELER", presentStudents);
+});
+// Açılır talebe listesi
+const studentModal = $("#studentModal");
+const studentModalTitle = $("#studentModalTitle");
+const studentModalBody = $("#studentModalBody");
+const studentModalClose = $("#studentModalClose");
+
+function openStudentModal(title, studentList) {
+  studentModalTitle.textContent = title;
+  studentModalBody.innerHTML = "";
+
+  if (studentList.length === 0) {
+    studentModalBody.innerHTML =
+      `<tr><td colspan="3">Bu durumda talebe yok.</td></tr>`;
+  } else {
+    studentList.forEach(student => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${student.name || "İsimsiz"}</td>
+        <td>${student.className || "-"}</td>
+        <td>${student.studentNo || "-"}</td>
+      `;
+
+      studentModalBody.appendChild(row);
+    });
+  }
+
+  studentModal.classList.remove("hidden");
+}
+
+studentModalClose?.addEventListener("click", () => {
+  studentModal.classList.add("hidden");
+});
+
+studentModal?.addEventListener("click", (e) => {
+  if (e.target === studentModal) {
+    studentModal.classList.add("hidden");
+  }
 });
