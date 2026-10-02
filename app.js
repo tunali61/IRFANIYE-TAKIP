@@ -379,3 +379,139 @@ async function loadMonthlyReport() {
       </div>
     `).join("");
 }
+// ===== ETÜT TAKİBİ =====
+
+const studyDate = $("studyDate");
+const studySession = $("studySession");
+const studyList = $("studyList");
+const studySummary = $("studySummary");
+const studyMsg = $("studyMsg");
+
+studyDate.value = new Date().toISOString().slice(0, 10);
+
+$("loadStudyBtn").addEventListener("click", loadStudy);
+$("saveStudyBtn").addEventListener("click", saveStudy);
+
+async function loadStudy() {
+  const date = studyDate.value;
+  const session = studySession.value;
+
+  if (!date) {
+    studyMsg.textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  const snapshot = await get(
+    ref(db, `study/${date}/${session}`)
+  );
+
+  const saved = snapshot.val() || {};
+  const list = Object.entries(students);
+
+  if (!list.length) {
+    studyList.innerHTML = "<p>Talebe bulunamadı.</p>";
+    return;
+  }
+
+  studyList.innerHTML = list.map(([id, student]) => {
+    const record = saved[id] || {};
+    const status = record.status || "katildi";
+    const note = record.note || "";
+
+    return `
+      <div class="student">
+        <strong>${esc(student.name)}</strong>
+        — ${esc(student.className || "")}
+
+        <select class="studyStatus" data-id="${id}">
+          <option value="katildi"
+            ${status === "katildi" ? "selected" : ""}>
+            Katıldı
+          </option>
+
+          <option value="katilmadi"
+            ${status === "katilmadi" ? "selected" : ""}>
+            Katılmadı
+          </option>
+
+          <option value="izinli"
+            ${status === "izinli" ? "selected" : ""}>
+            İzinli
+          </option>
+        </select>
+
+        <input
+          type="text"
+          class="studyNote"
+          data-id="${id}"
+          placeholder="Not..."
+          value="${esc(note)}"
+        >
+      </div>
+    `;
+  }).join("");
+
+  updateStudySummary();
+  studyMsg.textContent = "Etüt açıldı.";
+}
+
+function updateStudySummary() {
+  const selects = document.querySelectorAll(".studyStatus");
+
+  let katildi = 0;
+  let katilmadi = 0;
+  let izinli = 0;
+
+  selects.forEach(select => {
+    if (select.value === "katildi") katildi++;
+    if (select.value === "katilmadi") katilmadi++;
+    if (select.value === "izinli") izinli++;
+  });
+
+  studySummary.textContent =
+    `Toplam: ${selects.length} | Katıldı: ${katildi} | Katılmadı: ${katilmadi} | İzinli: ${izinli}`;
+}
+
+document.addEventListener("change", e => {
+  if (e.target.classList.contains("studyStatus")) {
+    updateStudySummary();
+  }
+});
+
+async function saveStudy() {
+  const date = studyDate.value;
+  const session = studySession.value;
+
+  if (!date) {
+    studyMsg.textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  const records = {};
+
+  document.querySelectorAll(".studyStatus").forEach(select => {
+    const id = select.dataset.id;
+
+    const noteInput =
+      document.querySelector(`.studyNote[data-id="${id}"]`);
+
+    records[id] = {
+      status: select.value,
+      note: noteInput ? noteInput.value.trim() : "",
+      studentName: students[id]?.name || "",
+      studentNo: students[id]?.studentNo || ""
+    };
+  });
+
+  if (!Object.keys(records).length) {
+    studyMsg.textContent = "Önce Etüdü Aç butonuna basın.";
+    return;
+  }
+
+  await set(
+    ref(db, `study/${date}/${session}`),
+    records
+  );
+
+  studyMsg.textContent = "Etüt başarıyla kaydedildi.";
+}
