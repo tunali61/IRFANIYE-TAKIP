@@ -309,3 +309,73 @@ async function saveAttendance() {
 
   attendanceMsg.textContent = "Yoklama başarıyla kaydedildi.";
 }
+// ===== AYLIK YOKLAMA RAPORU =====
+
+const reportMonth = $("reportMonth");
+const reportSummary = $("reportSummary");
+const reportList = $("reportList");
+
+reportMonth.value = new Date().toISOString().slice(0, 7);
+
+$("loadReportBtn").addEventListener("click", loadMonthlyReport);
+
+async function loadMonthlyReport() {
+  const month = reportMonth.value;
+
+  if (!month) {
+    reportSummary.textContent = "Lütfen bir ay seçin.";
+    return;
+  }
+
+  reportSummary.textContent = "Rapor hazırlanıyor...";
+  reportList.innerHTML = "";
+
+  const snapshot = await get(ref(db, "attendance"));
+  const allAttendance = snapshot.val() || {};
+
+  const monthRecords = Object.entries(allAttendance)
+    .filter(([date]) => date.startsWith(month));
+
+  if (!monthRecords.length) {
+    reportSummary.textContent = "Bu aya ait kayıtlı yoklama bulunamadı.";
+    return;
+  }
+
+  const totals = {};
+
+  Object.entries(students).forEach(([id, student]) => {
+    totals[id] = {
+      name: student.name || "",
+      studentNo: student.studentNo || "",
+      className: student.className || "",
+      geldi: 0,
+      gelmedi: 0,
+      izinli: 0
+    };
+  });
+
+  monthRecords.forEach(([date, records]) => {
+    Object.entries(records || {}).forEach(([id, record]) => {
+      if (!totals[id]) return;
+
+      if (record.status === "geldi") totals[id].geldi++;
+      if (record.status === "gelmedi") totals[id].gelmedi++;
+      if (record.status === "izinli") totals[id].izinli++;
+    });
+  });
+
+  reportSummary.textContent =
+    `Bu ay ${monthRecords.length} günlük yoklama kaydı bulundu.`;
+
+  reportList.innerHTML = Object.values(totals)
+    .map(student => `
+      <div class="student">
+        <strong>${esc(student.name)}</strong>
+        — ${esc(student.className)}
+        <br>
+        Geldi: ${student.geldi} |
+        Gelmedi: ${student.gelmedi} |
+        İzinli: ${student.izinli}
+      </div>
+    `).join("");
+}
