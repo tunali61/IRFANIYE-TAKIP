@@ -833,3 +833,29 @@ $("boxOutside")?.addEventListener("click", async () => {
 
   alert("ŞU AN DIŞARIDA OLAN TALEBELER\n\n" + liste);
 });
+$("boxPresent")?.addEventListener("click", async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const snap = await get(ref(db, "attendance/" + today));
+  const attendance = snap.val() || {};
+
+  const presentIds = Object.entries(attendance)
+    .filter(([id, record]) => record.status === "geldi")
+    .map(([id]) => id);
+
+  const presentStudents = presentIds
+    .map(id => students[id])
+    .filter(Boolean);
+
+  if (presentStudents.length === 0) {
+    alert("Bugün gelen talebe yok.");
+    return;
+  }
+
+  const liste = presentStudents
+    .map((student, i) =>
+      `${i + 1}. ${student.name || "İsimsiz"} - ${student.className || "Sınıf belirtilmemiş"}`
+    )
+    .join("\n");
+
+  alert("BUGÜN GELEN TALEBELER\n\n" + liste);
+});
