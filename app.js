@@ -32,7 +32,28 @@ $("loginForm").addEventListener("submit", async e => {
 });
 
 $("logoutBtn").onclick = () => signOut(auth);
+function updateAttendanceSummary() {
+  const selects = document.querySelectorAll(".attendanceStatus");
 
+  let geldi = 0;
+  let gelmedi = 0;
+  let izinli = 0;
+
+  selects.forEach(select => {
+    if (select.value === "geldi") geldi++;
+    if (select.value === "gelmedi") gelmedi++;
+    if (select.value === "izinli") izinli++;
+  });
+
+  $("attendanceSummary").textContent =
+    `Toplam: ${selects.length} | Geldi: ${geldi} | Gelmedi: ${gelmedi} | İzinli: ${izinli}`;
+}
+
+document.addEventListener("change", e => {
+  if (e.target.classList.contains("attendanceStatus")) {
+    updateAttendanceSummary();
+  }
+});
 onAuthStateChanged(auth, user => {
   $("loginCard").classList.toggle("hidden", !!user);
   $("appArea").classList.toggle("hidden", !user);
@@ -255,7 +276,7 @@ async function loadAttendance() {
       </div>
     `;
   }).join("");
-
+updateAttendanceSummary();
   attendanceMsg.textContent = "Yoklama açıldı.";
 }
 
