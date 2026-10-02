@@ -515,3 +515,95 @@ async function saveStudy() {
 
   studyMsg.textContent = "Etüt başarıyla kaydedildi.";
 }
+// ===== AYLIK ETÜT RAPORU =====
+
+const studyReportMonth = $("studyReportMonth");
+const studyReportSummary = $("studyReportSummary");
+const studyReportList = $("studyReportList");
+
+studyReportMonth.value = new Date().toISOString().slice(0, 7);
+
+$("loadStudyReportBtn").addEventListener("click", loadStudyReport);
+
+async function loadStudyReport() {
+  const month = studyReportMonth.value;
+
+  if (!month) {
+    studyReportSummary.textContent = "Lütfen bir ay seçin.";
+    return;
+  }
+
+  studyReportSummary.textContent = "Rapor hazırlanıyor...";
+  studyReportList.innerHTML = "";
+
+  const snapshot = await get(ref(db, "study"));
+  const allStudy = snapshot.val() || {};
+
+  const monthRecords = Object.entries(allStudy)
+    .filter(([date]) => date.startsWith(month));
+
+  if (!monthRecords.length) {
+    studyReportSummary.textContent =
+      "Bu aya ait kayıtlı etüt bulunamadı.";
+    return;
+  }
+
+  const totals = {};
+
+  Object.entries(students).forEach(([id, student]) => {
+    totals[id] = {
+      name: student.name || "",
+      studentNo: student.studentNo || "",
+      className: student.className || "",
+      katildi: 0,
+      katilmadi: 0,
+      izinli: 0,
+      notes: []
+    };
+  });
+
+  let totalSessions = 0;
+
+  monthRecords.forEach(([date, sessions]) => {
+    Object.entries(sessions || {}).forEach(([session, records]) => {
+      totalSessions++;
+
+      Object.entries(records || {}).forEach(([id, record]) => {
+        if (!totals[id]) return;
+
+        if (record.status === "katildi") totals[id].katildi++;
+        if (record.status === "katilmadi") totals[id].katilmadi++;
+        if (record.status === "izinli") totals[id].izinli++;
+
+        if (record.note && record.note.trim()) {
+          totals[id].notes.push(
+            `${date} - ${session}. Etüt: ${record.note}`
+          );
+        }
+      });
+    });
+  });
+
+  studyReportSummary.textContent =
+    `Bu ay ${totalSessions} etüt kaydı bulundu.`;
+
+  studyReportList.innerHTML = Object.values(totals)
+    .map(student => `
+      <div class="student">
+        <strong>${esc(student.name)}</strong>
+        — ${esc(student.className)}
+        <br>
+        Katıldı: ${student.katildi} |
+        Katılmadı: ${student.katilmadi} |
+        İzinli: ${student.izinli}
+
+        ${
+          student.notes.length
+            ? `<br><strong>Notlar:</strong><br>${student.notes
+                .map(note => esc(note))
+                .join("<br>")}`
+            : ""
+        }
+      </div>
+    `).join("");
+}
