@@ -7,14 +7,25 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>İrfaniye Takip Sistemi</h1>
-      <p>Talebe kayıt ve takip sistemi</p>
-    </header>
+<div class="container">
+  <header>
+    <div><h1>İrfaniye Takip Sistemi</h1><p>Talebe kayıt ve takip sistemi</p></div>
+    <button id="logoutBtn" class="danger hidden">Çıkış Yap</button>
+  </header>
 
+  <section id="loginCard" class="card login">
+    <h2>Yönetici Girişi</h2>
+    <form id="loginForm">
+      <label>E-posta<input id="email" type="email" required></label>
+      <label>Şifre<input id="password" type="password" required></label>
+      <button type="submit">Giriş Yap</button>
+      <p id="loginMsg"></p>
+    </form>
+  </section>
+
+  <main id="appArea" class="hidden">
     <section class="card">
-      <h2>Talebe Ekle</h2>
+      <h2>Talebe Ekle / Düzenle</h2>
       <form id="studentForm">
         <div class="grid">
           <label>Ad Soyad<input id="name" required></label>
@@ -25,18 +36,16 @@
           <label>Yatakhane No<input id="dormNo"></label>
           <label class="full">Notlar<textarea id="notes" rows="3"></textarea></label>
         </div>
-        <button type="submit">Talebeyi Kaydet</button>
+        <button type="submit" id="saveBtn">Talebeyi Kaydet</button>
+        <button type="button" id="cancelBtn" class="secondary hidden">İptal</button>
       </form>
     </section>
-
     <section class="card">
-      <div class="list-header">
-        <h2>Talebeler</h2>
-        <input id="search" placeholder="Ad, öğrenci no veya sınıf ara...">
-      </div>
+      <div class="listHeader"><h2>Talebeler</h2><input id="search" placeholder="Ad, öğrenci no veya sınıf ara..."></div>
       <div id="studentList"></div>
     </section>
-  </div>
-  <script src="app.js"></script>
+  </main>
+</div>
+<script type="module" src="app.js"></script>
 </body>
 </html>
