@@ -785,3 +785,51 @@ $("boxAbsent")?.addEventListener("click", async () => {
 
   alert("BUGÜN GELMEYEN TALEBELER\n\n" + liste);
 });
+$("boxExcused")?.addEventListener("click", async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const snap = await get(ref(db, "attendance/" + today));
+  const attendance = snap.val() || {};
+
+  const excusedIds = Object.entries(attendance)
+    .filter(([id, record]) => record.status === "izinli")
+    .map(([id]) => id);
+
+  const excusedStudents = excusedIds
+    .map(id => students[id])
+    .filter(Boolean);
+
+  if (excusedStudents.length === 0) {
+    alert("Bugün izinli talebe yok.");
+    return;
+  }
+
+  const liste = excusedStudents
+    .map((student, i) =>
+      `${i + 1}. ${student.name || "İsimsiz"} - ${student.className || "Sınıf belirtilmemiş"}`
+    )
+    .join("\n");
+
+  alert("BUGÜN İZİNLİ TALEBELER\n\n" + liste);
+});
+$("boxOutside")?.addEventListener("click", async () => {
+  const snap = await get(ref(db, "leaves"));
+  const leaves = snap.val() || {};
+
+  const outsideStudents = Object.values(leaves)
+    .filter(record => !record.returned)
+    .map(record => students[record.studentId])
+    .filter(Boolean);
+
+  if (outsideStudents.length === 0) {
+    alert("Şu an dışarıda talebe yok.");
+    return;
+  }
+
+  const liste = outsideStudents
+    .map((student, i) =>
+      `${i + 1}. ${student.name || "İsimsiz"} - ${student.className || "Sınıf belirtilmemiş"}`
+    )
+    .join("\n");
+
+  alert("ŞU AN DIŞARIDA OLAN TALEBELER\n\n" + liste);
+});
