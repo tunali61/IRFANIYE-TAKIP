@@ -25,6 +25,14 @@
 
   <main id="appArea" class="hidden">
     <section class="card">
+      <h2>Excel'den Talebe Aktar</h2>
+      <p>Excel dosyanızı seçin. Aynı Öğrenci No sistemde varsa tekrar eklenmez.</p>
+      <input id="excelFile" type="file" accept=".xlsx,.xls">
+      <button type="button" id="importExcelBtn">Excel'den Aktar</button>
+      <p id="importMsg"></p>
+    </section>
+
+    <section class="card">
       <h2>Talebe Ekle / Düzenle</h2>
       <form id="studentForm">
         <div class="grid">
@@ -40,12 +48,15 @@
         <button type="button" id="cancelBtn" class="secondary hidden">İptal</button>
       </form>
     </section>
+
     <section class="card">
       <div class="listHeader"><h2>Talebeler</h2><input id="search" placeholder="Ad, öğrenci no veya sınıf ara..."></div>
       <div id="studentList"></div>
     </section>
   </main>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>
 </html>

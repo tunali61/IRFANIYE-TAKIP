@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getDatabase, ref, push, set, remove, onValue } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+import { getDatabase, ref, push, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAvmXorDhKlBr3fzNz-NWLPUVQtNHTY8Ig",
@@ -24,7 +24,8 @@ $("loginForm").addEventListener("submit", async e => {
   try {
     await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
     $("loginMsg").textContent = "";
-  } catch {
+  } catch (err) {
+    console.error(err);
     $("loginMsg").textContent = "Giriş başarısız. E-posta veya şifreyi kontrol edin.";
     $("loginMsg").className = "error";
   }
@@ -66,6 +67,72 @@ $("studentForm").addEventListener("submit", async e => {
 $("cancelBtn").onclick = resetForm;
 $("search").addEventListener("input", render);
 
+$("importExcelBtn").addEventListener("click", async () => {
+  const file = $("excelFile").files[0];
+  const msg = $("importMsg");
+  if (!file) {
+    msg.textContent = "Önce Excel dosyasını seçin.";
+    return;
+  }
+
+  try {
+    msg.textContent = "Excel okunuyor...";
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
+
+    if (!rows.length) {
+      msg.textContent = "Excel dosyasında aktarılacak kayıt bulunamadı.";
+      return;
+    }
+
+    const existingNos = new Set(
+      Object.values(students)
+        .map(s => String(s.studentNo || "").trim())
+        .filter(Boolean)
+    );
+
+    const changes = {};
+    let added = 0, skipped = 0;
+
+    for (const row of rows) {
+      const studentNo = String(row["Öğrenci No"] ?? row["Ogrenci No"] ?? "").trim();
+      const name = String(row["Ad-Soyad"] ?? row["Ad Soyad"] ?? "").trim();
+
+      if (!name || !studentNo || existingNos.has(studentNo)) {
+        skipped++;
+        continue;
+      }
+
+      const newRef = push(ref(db, "students"));
+      changes["students/" + newRef.key] = {
+        name,
+        studentNo,
+        parentName: String(row["Veli Adı"] ?? row["Veli Adi"] ?? "").trim(),
+        parentPhone: String(row["Veli Tel"] ?? "").trim(),
+        className: String(row["Sınıf"] ?? row["Sinif"] ?? "").trim(),
+        dormNo: String(row["Yatak No"] ?? row["Yatakhane No"] ?? "").trim(),
+        notes: ""
+      };
+      existingNos.add(studentNo);
+      added++;
+    }
+
+    if (!added) {
+      msg.textContent = `Yeni kayıt bulunamadı. ${skipped} satır atlandı.`;
+      return;
+    }
+
+    await update(ref(db), changes);
+    msg.textContent = `${added} talebe başarıyla aktarıldı. ${skipped} satır atlandı.`;
+    $("excelFile").value = "";
+  } catch (err) {
+    console.error("Excel aktarım hatası:", err);
+    msg.textContent = "Excel aktarımı sırasında hata oluştu. Dosya başlıklarını kontrol edin.";
+  }
+});
+
 function resetForm() {
   editingId = null;
   $("studentForm").reset();
@@ -78,9 +145,9 @@ function esc(v="") {
 }
 
 function render() {
-  const q = $("search").value.trim().toLowerCase();
+  const q = $("search").value.trim().toLocaleLowerCase("tr-TR");
   const rows = Object.entries(students).filter(([id,s]) =>
-    [s.name,s.studentNo,s.className,s.dormNo].join(" ").toLowerCase().includes(q)
+    [s.name,s.studentNo,s.className,s.dormNo].join(" ").toLocaleLowerCase("tr-TR").includes(q)
   );
   if (!rows.length) {
     $("studentList").innerHTML = '<div class="empty">Henüz kayıt bulunmuyor.</div>';
