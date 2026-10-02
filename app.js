@@ -62,6 +62,7 @@ onAuthStateChanged(auth, user => {
   if (user) {
     unsubscribe = onValue(ref(db, "students"), snap => {
       students = snap.val() || {};
+      fillLeaveStudents();
       render();
     });
   } else {
@@ -607,3 +608,116 @@ async function loadStudyReport() {
       </div>
     `).join("");
 }
+// ===== İZİN / ÇIKIŞ TAKİBİ =====
+
+const leaveStudent = $("leaveStudent");
+const leaveStart = $("leaveStart");
+const leaveEnd = $("leaveEnd");
+const leaveReason = $("leaveReason");
+const leaveReceiver = $("leaveReceiver");
+const leaveMsg = $("leaveMsg");
+const leaveList = $("leaveList");
+
+function fillLeaveStudents() {
+  leaveStudent.innerHTML = '<option value="">Talebe seçin</option>';
+
+  Object.entries(students)
+    .sort((a, b) =>
+      (a[1].name || "").localeCompare(b[1].name || "", "tr")
+    )
+    .forEach(([id, student]) => {
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent =
+        `${student.name || ""} - ${student.className || ""}`;
+      leaveStudent.appendChild(option);
+    });
+}
+
+$("saveLeaveBtn").addEventListener("click", saveLeave);
+
+async function saveLeave() {
+  const studentId = leaveStudent.value;
+
+  if (!studentId) {
+    leaveMsg.textContent = "Lütfen talebe seçin.";
+    return;
+  }
+
+  if (!leaveStart.value) {
+    leaveMsg.textContent = "Lütfen çıkış tarihini ve saatini seçin.";
+    return;
+  }
+
+  const student = students[studentId];
+
+  const newRef = push(ref(db, "leaves"));
+
+  await set(newRef, {
+    studentId,
+    studentName: student.name || "",
+    studentNo: student.studentNo || "",
+    className: student.className || "",
+    start: leaveStart.value,
+    end: leaveEnd.value,
+    reason: leaveReason.value.trim(),
+    receiver: leaveReceiver.value.trim(),
+    returned: false
+  });
+
+  leaveMsg.textContent = "İzin kaydı başarıyla oluşturuldu.";
+
+  leaveStudent.value = "";
+  leaveStart.value = "";
+  leaveEnd.value = "";
+  leaveReason.value = "";
+  leaveReceiver.value = "";
+}
+
+onValue(ref(db, "leaves"), snapshot => {
+  const leaves = snapshot.val() || {};
+
+  const records = Object.entries(leaves).sort(
+    (a, b) => (b[1].start || "").localeCompare(a[1].start || "")
+  );
+
+  if (!records.length) {
+    leaveList.innerHTML =
+      '<div class="empty">Henüz izin kaydı bulunmuyor.</div>';
+    return;
+  }
+
+  leaveList.innerHTML = records.map(([id, item]) => `
+    <div class="student">
+      <strong>${esc(item.studentName || "")}</strong>
+      — ${esc(item.className || "")}
+      <br>
+      Çıkış: ${esc(item.start || "-")}
+      <br>
+      Planlanan Dönüş: ${esc(item.end || "-")}
+      <br>
+      Neden: ${esc(item.reason || "-")}
+      <br>
+      Teslim Alan: ${esc(item.receiver || "-")}
+      <br>
+      Durum:
+      <strong>${item.returned ? "Döndü" : "Dışarıda"}</strong>
+      <br><br>
+
+      ${
+        !item.returned
+          ? `<button type="button" data-return="${id}">Döndü</button>`
+          : ""
+      }
+    </div>
+  `).join("");
+
+  document.querySelectorAll("[data-return]").forEach(button => {
+    button.onclick = async () => {
+      await update(ref(db, "leaves/" + button.dataset.return), {
+        returned: true,
+        returnedAt: new Date().toISOString()
+      });
+    };
+  });
+});
