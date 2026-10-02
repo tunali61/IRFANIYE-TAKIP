@@ -64,6 +64,7 @@ onAuthStateChanged(auth, user => {
       students = snap.val() || {};
       fillLeaveStudents();
       render();
+      updateDashboard();
     });
   } else {
     students = {};
@@ -721,3 +722,40 @@ onValue(ref(db, "leaves"), snapshot => {
     };
   });
 });
+async function updateDashboard() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  const total = Object.keys(students || {}).length;
+
+  let geldi = 0;
+  let gelmedi = 0;
+  let izinli = 0;
+  let disarida = 0;
+
+  // Bugünkü yoklama
+  const attendanceSnap = await get(ref(db, "attendance/" + today));
+  const attendance = attendanceSnap.val() || {};
+
+  Object.values(attendance).forEach(record => {
+    if (record.status === "geldi") geldi++;
+    if (record.status === "gelmedi") gelmedi++;
+    if (record.status === "izinli") izinli++;
+  });
+
+  // Şu anda dışarıda olanlar
+  const leaveSnap = await get(ref(db, "leaves"));
+  const leaves = leaveSnap.val() || {};
+
+  Object.values(leaves).forEach(record => {
+    if (!record.returned) disarida++;
+  });
+
+  $("dashTotal").textContent = total;
+  $("dashPresent").textContent = geldi;
+  $("dashAbsent").textContent = gelmedi;
+  $("dashExcused").textContent = izinli;
+  $("dashOutside").textContent = disarida;
+
+  $("dashboardDate").textContent =
+    "Son güncelleme: " + new Date().toLocaleString("tr-TR");
+}
