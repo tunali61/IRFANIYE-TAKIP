@@ -91,6 +91,38 @@
 
   <div id="reportList"></div>
 </section>
+    <section class="card">
+  <h2>Etüt Takibi</h2>
+
+  <label>
+    Etüt Tarihi
+    <input type="date" id="studyDate">
+  </label>
+
+  <label>
+    Etüt
+    <select id="studySession">
+      <option value="1">1. Etüt</option>
+      <option value="2">2. Etüt</option>
+      <option value="3">3. Etüt</option>
+      <option value="4">4. Etüt</option>
+    </select>
+  </label>
+
+  <button type="button" id="loadStudyBtn">Etüdü Aç</button>
+
+  <p id="studySummary">
+    Toplam: 0 | Katıldı: 0 | Katılmadı: 0 | İzinli: 0
+  </p>
+
+  <div id="studyList"></div>
+
+  <button type="button" id="saveStudyBtn">
+    Etüdü Kaydet
+  </button>
+
+  <p id="studyMsg"></p>
+</section>
   </main>
 </div>
 
