@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getDatabase, ref, push, set, remove, onValue, update } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+import { getDatabase, ref, push, set, remove, onValue, update, get } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAvmXorDhKlBr3fzNz-NWLPUVQtNHTY8Ig",
@@ -201,4 +201,176 @@ function editStudent(id) {
   $("saveBtn").textContent="Değişiklikleri Kaydet";
   $("cancelBtn").classList.remove("hidden");
   window.scrollTo({top:0,behavior:"smooth"});
+}
+// ===== GÜNLÜK YOKLAMA =====
+
+const attendanceDate = $("attendanceDate");
+const attendanceList = $("attendanceList");
+const attendanceMsg = $("attendanceMsg");
+
+attendanceDate.value = new Date().toISOString().slice(0, 10);
+
+$("loadAttendanceBtn").addEventListener("click", loadAttendance);
+$("saveAttendanceBtn").addEventListener("click", saveAttendance);
+
+async function loadAttendance() {
+  const date = attendanceDate.value;
+
+  if (!date) {
+    attendanceMsg.textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  const snapshot = await get(ref(db, "attendance/" + date));
+  const saved = snapshot.val() || {};
+
+  const list = Object.entries(students);
+
+  if (!list.length) {
+    attendanceList.innerHTML = "<p>Talebe bulunamadı.</p>";
+    return;
+  }
+
+  attendanceList.innerHTML = list.map(([id, s]) => {
+    const status = saved[id]?.status || "geldi";
+
+    return `
+      <div class="student">
+        <strong>${esc(s.name)}</strong>
+        <span> — ${esc(s.className || "")}</span>
+
+        <select class="attendanceStatus" data-id="${id}">
+          <option value="geldi" ${status === "geldi" ? "selected" : ""}>
+            Geldi
+          </option>
+
+          <option value="gelmedi" ${status === "gelmedi" ? "selected" : ""}>
+            Gelmedi
+          </option>
+
+          <option value="izinli" ${status === "izinli" ? "selected" : ""}>
+            İzinli
+          </option>
+        </select>
+      </div>
+    `;
+  }).join("");
+
+  attendanceMsg.textContent = "Yoklama açıldı.";
+}
+
+async function saveAttendance() {
+  const date = attendanceDate.value;
+
+  if (!date) {
+    attendanceMsg.textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  const records = {};
+
+  document.querySelectorAll(".attendanceStatus").forEach(select => {
+    const id = select.dataset.id;
+
+    records[id] = {
+      status: select.value,
+      studentName: students[id]?.name || "",
+      studentNo: students[id]?.studentNo || ""
+    };
+  });
+
+  if (!Object.keys(records).length) {
+    attendanceMsg.textContent = "Önce Yoklamayı Aç butonuna basın.";
+    return;
+  }
+
+  await set(ref(db, "attendance/" + date), records);
+
+  attendanceMsg.textContent = "Yoklama başarıyla kaydedildi.";
+}
+// ===== GÜNLÜK YOKLAMA =====
+
+const attendanceDate = $("attendanceDate");
+const attendanceList = $("attendanceList");
+const attendanceMsg = $("attendanceMsg");
+
+attendanceDate.value = new Date().toISOString().slice(0, 10);
+
+$("loadAttendanceBtn").addEventListener("click", loadAttendance);
+$("saveAttendanceBtn").addEventListener("click", saveAttendance);
+
+async function loadAttendance() {
+  const date = attendanceDate.value;
+
+  if (!date) {
+    attendanceMsg.textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  const snapshot = await get(ref(db, "attendance/" + date));
+  const saved = snapshot.val() || {};
+
+  const list = Object.entries(students);
+
+  if (!list.length) {
+    attendanceList.innerHTML = "<p>Talebe bulunamadı.</p>";
+    return;
+  }
+
+  attendanceList.innerHTML = list.map(([id, s]) => {
+    const status = saved[id]?.status || "geldi";
+
+    return `
+      <div class="student">
+        <strong>${esc(s.name)}</strong>
+        <span> — ${esc(s.className || "")}</span>
+
+        <select class="attendanceStatus" data-id="${id}">
+          <option value="geldi" ${status === "geldi" ? "selected" : ""}>
+            Geldi
+          </option>
+
+          <option value="gelmedi" ${status === "gelmedi" ? "selected" : ""}>
+            Gelmedi
+          </option>
+
+          <option value="izinli" ${status === "izinli" ? "selected" : ""}>
+            İzinli
+          </option>
+        </select>
+      </div>
+    `;
+  }).join("");
+
+  attendanceMsg.textContent = "Yoklama açıldı.";
+}
+
+async function saveAttendance() {
+  const date = attendanceDate.value;
+
+  if (!date) {
+    attendanceMsg.textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  const records = {};
+
+  document.querySelectorAll(".attendanceStatus").forEach(select => {
+    const id = select.dataset.id;
+
+    records[id] = {
+      status: select.value,
+      studentName: students[id]?.name || "",
+      studentNo: students[id]?.studentNo || ""
+    };
+  });
+
+  if (!Object.keys(records).length) {
+    attendanceMsg.textContent = "Önce Yoklamayı Aç butonuna basın.";
+    return;
+  }
+
+  await set(ref(db, "attendance/" + date), records);
+
+  attendanceMsg.textContent = "Yoklama başarıyla kaydedildi.";
 }
