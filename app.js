@@ -855,7 +855,7 @@ $("boxPresent")?.addEventListener("click", async () => {
     .map((student, i) =>
       `${i + 1}. ${student.name || "İsimsiz"} - ${student.className || "Sınıf belirtilmemiş"}`
     )
-    .join("\n");
+    .join("\n"); 
 
  openStudentModal("BUGÜN GELEN TALEBELER", presentStudents);
 });
