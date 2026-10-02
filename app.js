@@ -820,11 +820,6 @@ $("boxOutside")?.addEventListener("click", async () => {
     .map(record => students[record.studentId])
     .filter(Boolean);
 
-  if (outsideStudents.length === 0) {
-    alert("Şu an dışarıda talebe yok.");
-    return;
-  }
-
   const liste = outsideStudents
     .map((student, i) =>
       `${i + 1}. ${student.name || "İsimsiz"} - ${student.className || "Sınıf belirtilmemiş"}`
