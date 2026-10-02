@@ -759,3 +759,29 @@ async function updateDashboard() {
   $("dashboardDate").textContent =
     "Son güncelleme: " + new Date().toLocaleString("tr-TR");
 }
+$("boxAbsent")?.addEventListener("click", async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const snap = await get(ref(db, "attendance/" + today));
+  const attendance = snap.val() || {};
+
+  const absentIds = Object.entries(attendance)
+    .filter(([id, record]) => record.status === "gelmedi")
+    .map(([id]) => id);
+
+  const absentStudents = absentIds
+    .map(id => students[id])
+    .filter(Boolean);
+
+  if (absentStudents.length === 0) {
+    alert("Bugün gelmeyen talebe yok.");
+    return;
+  }
+
+  const liste = absentStudents
+    .map((student, i) =>
+      `${i + 1}. ${student.name || "İsimsiz"} - ${student.className || "Sınıf belirtilmemiş"}`
+    )
+    .join("\n");
+
+  alert("BUGÜN GELMEYEN TALEBELER\n\n" + liste);
+});
