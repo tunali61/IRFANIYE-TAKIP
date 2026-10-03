@@ -944,7 +944,6 @@ $("prayerStudentList")?.addEventListener("click", (e) => {
 
   button.classList.add("selected");
   updatePrayerCounts();
-  loadPrayerAttendance();
 });
 $("prayerAllPresentBtn")?.addEventListener("click", () => {
   Object.keys(students || {}).forEach(id => {
