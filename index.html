@@ -163,6 +163,41 @@
 
   <p id="prayerReportMsg"></p>
 </section>
+    <section class="card" id="dailyDutiesCard">
+  <h2>👥 Günün Görevlileri</h2>
+
+  <label>
+    Tarih
+    <input type="date" id="dailyDutyDate">
+  </label>
+
+  <label>
+    Görev
+    <select id="dailyDutyType">
+      <option value="">Görev Seçin</option>
+      <option value="yemekhane">Yemekhane</option>
+      <option value="temizlik">Temizlik</option>
+      <option value="bulasik">Bulaşık</option>
+      <option value="cay">Çay</option>
+      <option value="nobet">Nöbet</option>
+    </select>
+  </label>
+
+  <label>
+    Görevli Talebe
+    <select id="dailyDutyStudent">
+      <option value="">Talebe Seçin</option>
+    </select>
+  </label>
+
+  <button type="button" id="addDailyDutyBtn">
+    ➕ Görevli Ekle
+  </button>
+
+  <div id="dailyDutyList"></div>
+
+  <p id="dailyDutyMsg"></p>
+</section>
     <section class="card">
       <h2>Excel'den Talebe Aktar</h2>
       <p>Excel dosyanızı seçin. Aynı Öğrenci No sistemde varsa tekrar eklenmez.</p>
