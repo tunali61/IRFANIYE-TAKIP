@@ -124,3 +124,9 @@ section.card .dashboard .dashboardBox {
   gap: 8px;
   align-items: center;
 }
+.bedStudentRow button.selected {
+  background: #16a34a;
+  color: white;
+  border-color: #16a34a;
+  font-weight: bold;
+}
