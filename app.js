@@ -1409,9 +1409,13 @@ async function loadSchoolReturnAttendance() {
       }
     });
     updateSchoolReturnCounts();
-  } catch (error) {
+    } catch (error) {
     console.error(error);
   }
-  $("schoolReturnDate")?.addEventListener("change", () => {
+}
+
+$("schoolReturnDate")?.addEventListener("change", () => {
   loadSchoolReturnAttendance();
 });
+
+loadSchoolReturnAttendance();
