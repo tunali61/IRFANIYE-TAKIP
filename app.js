@@ -1104,3 +1104,4 @@ async function loadPrayerAttendance() {
 $("prayerDate")?.addEventListener("change", () => {
   loadPrayerAttendance();
 });
+loadPrayerAttendance();
