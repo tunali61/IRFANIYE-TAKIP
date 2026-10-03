@@ -128,7 +128,7 @@ section.card .dashboard .dashboardBox {
   background: #16a34a;
   color: white;
   border-color: #16a34a;
-  font-weight: bold;
+  font-weight: bold; 
 }
 .schoolStudentRow {
   display: flex;
