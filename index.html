@@ -120,6 +120,33 @@
 
   <p id="bedMsg"></p>
 </section>
+    <section class="card" id="schoolReturnCard">
+  <h2>🏫 Okul Dönüşü Yoklaması</h2>
+
+  <label>
+    Tarih
+    <input type="date" id="schoolReturnDate">
+  </label>
+
+  <p>
+    <strong>Durum:</strong>
+    Geldi: <b id="schoolPresentCount">0</b>
+    Gelmedi: <b id="schoolAbsentCount">0</b>
+    İzinli: <b id="schoolExcusedCount">0</b>
+  </p>
+
+  <button type="button" id="schoolAllPresentBtn">
+    ⚡ Tümünü Geldi Yap
+  </button>
+
+  <div id="schoolStudentList"></div>
+
+  <button type="button" id="saveSchoolReturnBtn">
+    💾 Okul Dönüşü Yoklamasını Kaydet
+  </button>
+
+  <p id="schoolReturnMsg"></p>
+</section>
     <section class="card">
       <h2>Excel'den Talebe Aktar</h2>
       <p>Excel dosyanızı seçin. Aynı Öğrenci No sistemde varsa tekrar eklenmez.</p>
