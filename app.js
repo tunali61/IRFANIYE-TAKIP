@@ -1446,7 +1446,60 @@ $("showPrayerReportBtn")?.addEventListener("click", async () => {
     const reportData = snap.val() || {};
 
     console.log("Namaz raporu:", reportData);
+const reportArea = $("prayerReportArea");
+reportArea.innerHTML = "";
+    const table = document.createElement("table");
 
+table.innerHTML = `
+  <thead>
+    <tr>
+      <th>Talebe</th>
+      <th>Sabah</th>
+      <th>Öğle</th>
+      <th>İkindi</th>
+      <th>Akşam</th>
+      <th>Yatsı</th>
+    </tr>
+  </thead>
+  <tbody id="prayerReportBody"></tbody>
+`;
+
+reportArea.appendChild(table);
+    const reportBody = table.querySelector("tbody");
+
+const prayerNames = ["sabah", "ogle", "ikindi", "aksam", "yatsi"];
+
+Object.entries(students || {}).forEach(([studentId, student]) => {
+  const row = document.createElement("tr");
+
+  let cells = `<td><strong>${student.name || "İsimsiz"}</strong></td>`;
+
+  prayerNames.forEach(prayer => {
+    const saved = reportData[prayer]?.[studentId];
+
+    let text = "-";
+
+    if (saved && typeof saved === "object") {
+      const names = {
+        var: "Var",
+        yok: "Yok",
+        gec: "Geç",
+        izinli: "İzinli"
+      };
+
+      text = names[saved.durum] || "-";
+
+      if (saved.takkesiz === true) {
+        text += " / Takkesiz";
+      }
+    }
+
+    cells += `<td>${text}</td>`;
+  });
+
+  row.innerHTML = cells;
+  reportBody.appendChild(row);
+});
     $("prayerReportMsg").textContent = "✅ Rapor verileri alındı.";
   } catch (error) {
     console.error(error);
