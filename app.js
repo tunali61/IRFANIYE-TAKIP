@@ -65,7 +65,9 @@ onAuthStateChanged(auth, user => {
       fillLeaveStudents();
       renderPrayerStudents();
       renderBedStudents();
-      loadBedAttendance();
+setTimeout(() => {
+  loadBedAttendance();
+}, 300);
       render();
       updateDashboard();
     });
