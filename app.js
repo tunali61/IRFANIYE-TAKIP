@@ -1232,6 +1232,19 @@ $("saveBedBtn")?.addEventListener("click", async () => {
       if (bedStatuses[studentId] === status) {
         button.classList.add("selected");
       }
+    });
+
+    updateBedCounts();
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+$("bedDate")?.addEventListener("change", () => {
+  loadBedAttendance();
+});
+
+loadBedAttendance();
       $("bedDate")?.addEventListener("change", () => {
   loadBedAttendance();
 });
