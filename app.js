@@ -64,6 +64,8 @@ onAuthStateChanged(auth, user => {
       students = snap.val() || {};
       fillLeaveStudents();
       renderPrayerStudents();
+      renderBedStudents();
+      loadBedAttendance();
       render();
       updateDashboard();
     });
@@ -969,9 +971,9 @@ if (status === "takkesiz") {
 $("prayerAllPresentBtn")?.addEventListener("click", () => {
   Object.keys(students || {}).forEach(id => {
     prayerStatuses[id] = {
-  durum: "var",
-  takkesiz: false
-};
+      durum: "var",
+      takkesiz: false
+    };
   });
 
   document.querySelectorAll("[data-prayer-student]").forEach(button => {
@@ -1105,3 +1107,150 @@ $("prayerDate")?.addEventListener("change", () => {
   loadPrayerAttendance();
 });
 loadPrayerAttendance();
+// ==============================
+// YATAK YOKLAMASI
+// ==============================
+
+let bedStatuses = {};
+
+function renderBedStudents() {
+  const container = $("bedStudentList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  Object.entries(students || {}).forEach(([id, student]) => {
+    const row = document.createElement("div");
+    row.className = "bedStudentRow";
+
+    row.innerHTML = `
+      <div>
+        <strong>${student.name || "İsimsiz"}</strong>
+        <small>${student.className || ""}</small>
+      </div>
+
+      <div>
+        <button type="button" data-bed-student="${id}" data-status="present">
+          Yatağında
+        </button>
+
+        <button type="button" data-bed-student="${id}" data-status="absent">
+          Yatağında Değil
+        </button>
+
+        <button type="button" data-bed-student="${id}" data-status="excused">
+          İzinli
+        </button>
+      </div>
+    `;
+
+    container.appendChild(row);
+  });
+}
+$("bedStudentList")?.addEventListener("click", (e) => {
+  const button = e.target.closest("[data-bed-student]");
+  if (!button) return;
+
+  const studentId = button.dataset.bedStudent;
+  const status = button.dataset.status;
+
+  bedStatuses[studentId] = status;
+
+  button.parentElement.querySelectorAll("button").forEach(btn => {
+    btn.classList.remove("selected");
+  });
+
+  button.classList.add("selected");
+updateBedCounts();
+});
+function updateBedCounts() {
+  let present = 0;
+  let absent = 0;
+  let excused = 0;
+
+  Object.values(bedStatuses).forEach(status => {
+    if (status === "present") present++;
+    if (status === "absent") absent++;
+    if (status === "excused") excused++;
+  });
+
+  $("bedPresentCount").textContent = present;
+  $("bedAbsentCount").textContent = absent;
+  $("bedExcusedCount").textContent = excused;
+}
+$("bedAllPresentBtn")?.addEventListener("click", () => {
+  Object.keys(students || {}).forEach(id => {
+    bedStatuses[id] = "present";
+  });
+  const bedDateInput = $("bedDate");
+
+if (bedDateInput && !bedDateInput.value) {
+  bedDateInput.value = new Date().toISOString().slice(0, 10);
+}
+$("saveBedBtn")?.addEventListener("click", async () => {
+  const date = $("bedDate")?.value;
+
+  if (!date) {
+    $("bedMsg").textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  if (Object.keys(bedStatuses).length === 0) {
+    $("bedMsg").textContent = "Önce yatak yoklamasını işaretleyin.";
+    return;
+  }
+
+  try {
+    await set(
+      ref(db, `bedAttendance/${date}`),
+      bedStatuses
+    );
+
+    $("bedMsg").textContent = "✅ Yatak yoklaması kaydedildi.";
+  } catch (error) {
+    console.error(error);
+    $("bedMsg").textContent = "❌ Kayıt sırasında hata oluştu.";
+  }
+});
+  async function loadBedAttendance() {
+  const date = $("bedDate")?.value;
+  if (!date) return;
+
+  try {
+    const snap = await get(
+      ref(db, `bedAttendance/${date}`)
+    );
+
+    bedStatuses = snap.val() || {};
+
+    document.querySelectorAll("[data-bed-student]").forEach(button => {
+      button.classList.remove("selected");
+
+      const studentId = button.dataset.bedStudent;
+      const status = button.dataset.status;
+
+      if (bedStatuses[studentId] === status) {
+        button.classList.add("selected");
+      }
+      $("bedDate")?.addEventListener("change", () => {
+  loadBedAttendance();
+});
+
+loadBedAttendance();
+    });
+
+    updateBedCounts();
+  } catch (error) {
+    console.error(error);
+  }
+}
+  document.querySelectorAll("[data-bed-student]").forEach(button => {
+    button.classList.remove("selected");
+
+    if (button.dataset.status === "present") {
+      button.classList.add("selected");
+    }
+  });
+
+  updateBedCounts();
+});
