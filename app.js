@@ -1442,7 +1442,7 @@ const dailyDutyDateInput = $("dailyDutyDate");
 if (dailyDutyDateInput && !dailyDutyDateInput.value) {
   dailyDutyDateInput.value = new Date().toISOString().slice(0, 10);
 }
-$("addDailyDutyBtn")?.addEventListener("click", () => {
+$("addDailyDutyBtn")?.addEventListener("click", async () => {
   const studentId = $("dailyDutyStudent")?.value;
   const dutyType = $("dailyDutyType")?.value;
 
@@ -1451,11 +1451,30 @@ $("addDailyDutyBtn")?.addEventListener("click", () => {
       "Lütfen görev ve talebe seçin.";
     return;
   }
+const student = students[studentId];
+const date = $("dailyDutyDate")?.value;
 
-  const student = students[studentId];
+if (!date) {
+  $("dailyDutyMsg").textContent = "Lütfen tarih seçin.";
+  return;
+}
+
+try {
+  await set(
+    ref(db, `dailyDuties/${date}/${dutyType}/${studentId}`),
+    {
+      name: student.name || "İsimsiz"
+    }
+  );
 
   $("dailyDutyMsg").textContent =
-    `✅ ${student.name} göreve eklendi.`;
+    `✅ ${student.name} göreve kaydedildi.`;
+
+} catch (error) {
+  console.error(error);
+  $("dailyDutyMsg").textContent =
+    "❌ Görevli kaydedilirken hata oluştu.";
+}
 });
 // ==============================
 // NAMAZ RAPORLARI
