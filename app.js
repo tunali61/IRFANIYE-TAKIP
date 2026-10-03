@@ -964,6 +964,7 @@ if (status === "takkesiz") {
 
   button.classList.add("selected");
 }
+  updatePrayerCounts();
   });
 $("prayerAllPresentBtn")?.addEventListener("click", () => {
   Object.keys(students || {}).forEach(id => {
