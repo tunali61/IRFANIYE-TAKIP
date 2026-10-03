@@ -1476,6 +1476,51 @@ try {
     "❌ Görevli kaydedilirken hata oluştu.";
 }
 });
+async function loadDailyDuties() {
+  const date = $("dailyDutyDate")?.value;
+  const list = $("dailyDutyList");
+
+  if (!date || !list) return;
+
+  try {
+    const snap = await get(ref(db, `dailyDuties/${date}`));
+    const data = snap.val() || {};
+
+    list.innerHTML = "";
+
+    const dutyNames = {
+      yemekhane: "Yemekhane",
+      temizlik: "Temizlik",
+      bulasik: "Bulaşık",
+      cay: "Çay",
+      nobet: "Nöbet"
+    };
+
+    Object.entries(data).forEach(([dutyType, dutyStudents]) => {
+      Object.values(dutyStudents || {}).forEach(student => {
+        const item = document.createElement("p");
+
+        item.innerHTML =
+          `<strong>${dutyNames[dutyType] || dutyType}:</strong> ${student.name}`;
+
+        list.appendChild(item);
+      });
+    });
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+$("dailyDutyDate")?.addEventListener("change", () => {
+  loadDailyDuties();
+});
+
+loadDailyDuties();
+
+// ==============================
+// NAMAZ RAPORLARI
+// ==============================
 // ==============================
 // NAMAZ RAPORLARI
 // ==============================
