@@ -94,6 +94,32 @@
 
   <p id="dashboardDate"></p>
 </section>
+    <section class="card" id="bedTrackingCard">
+  <h2>🛏️ Yatak Yoklaması</h2>
+
+  <label>
+    Tarih
+    <input type="date" id="bedDate">
+  </label>
+
+  <p><strong>Durum:</strong>
+    Yatağında: <b id="bedPresentCount">0</b>
+    Yatağında Değil: <b id="bedAbsentCount">0</b>
+    İzinli: <b id="bedExcusedCount">0</b>
+  </p>
+
+  <button type="button" id="bedAllPresentBtn">
+    ⚡ Tümünü Yatağında Yap
+  </button>
+
+  <div id="bedStudentList"></div>
+
+  <button type="button" id="saveBedBtn">
+    💾 Yatak Yoklamasını Kaydet
+  </button>
+
+  <p id="bedMsg"></p>
+</section>
     <section class="card">
       <h2>Excel'den Talebe Aktar</h2>
       <p>Excel dosyanızı seçin. Aynı Öğrenci No sistemde varsa tekrar eklenmez.</p>
