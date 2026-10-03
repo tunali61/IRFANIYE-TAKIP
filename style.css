@@ -154,3 +154,24 @@ section.card .dashboard .dashboardBox {
   border-color: #16a34a;
   font-weight: bold;
 }
+#prayerReportArea table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+#prayerReportArea th,
+#prayerReportArea td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+#prayerReportArea th {
+  background: #f3f4f6;
+  font-weight: bold;
+}
+
+#prayerReportArea td:first-child {
+  text-align: left;
+}
