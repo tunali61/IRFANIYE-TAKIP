@@ -921,8 +921,8 @@ function renderPrayerStudents() {
         <button type="button" data-prayer-student="${id}" data-status="var">Var</button>
         <button type="button" data-prayer-student="${id}" data-status="yok">Yok</button>
         <button type="button" data-prayer-student="${id}" data-status="gec">Geç</button>
-        <button type="button" data-prayer-student="${id}" data-status="takkesiz">Takkesiz</button>
         <button type="button" data-prayer-student="${id}" data-status="izinli">İzinli</button>
+        <button type="button" data-prayer-student="${id}" data-status="takkesiz">Takkesiz</button>
       </div>
     `;
 
@@ -935,11 +935,35 @@ $("prayerStudentList")?.addEventListener("click", (e) => {
 
   const studentId = button.dataset.prayerStudent;
   const status = button.dataset.status;
+if (status === "takkesiz") {
+  if (!prayerStatuses[studentId] || typeof prayerStatuses[studentId] !== "object") {
+    prayerStatuses[studentId] = {
+      durum: prayerStatuses[studentId] || "",
+      takkesiz: false
+    };
+  }
 
-  prayerStatuses[studentId] = status;
+  prayerStatuses[studentId].takkesiz = !prayerStatuses[studentId].takkesiz;
+  button.classList.toggle("selected", prayerStatuses[studentId].takkesiz);
+
+} else {
+  if (!prayerStatuses[studentId] || typeof prayerStatuses[studentId] !== "object") {
+    prayerStatuses[studentId] = {
+      durum: "",
+      takkesiz: false
+    };
+  }
+
+  prayerStatuses[studentId].durum = status;
 
   button.parentElement.querySelectorAll("button").forEach(btn => {
-    btn.classList.remove("selected");
+    if (btn.dataset.status !== "takkesiz") {
+      btn.classList.remove("selected");
+    }
+  });
+
+  button.classList.add("selected");
+}
   });
 
   button.classList.add("selected");
@@ -947,7 +971,10 @@ $("prayerStudentList")?.addEventListener("click", (e) => {
 });
 $("prayerAllPresentBtn")?.addEventListener("click", () => {
   Object.keys(students || {}).forEach(id => {
-    prayerStatuses[id] = "var";
+    prayerStatuses[id] = {
+  durum: "var",
+  takkesiz: false
+};
   });
 
   document.querySelectorAll("[data-prayer-student]").forEach(button => {
@@ -965,21 +992,27 @@ function updatePrayerCounts() {
     var: 0,
     yok: 0,
     gec: 0,
-    takkesiz: 0,
-    izinli: 0
+    izinli: 0,
+    takkesiz: 0
   };
 
   Object.values(prayerStatuses).forEach(status => {
-    if (counts[status] !== undefined) {
-      counts[status]++;
+    if (typeof status === "object" && status !== null) {
+      if (status.durum && counts[status.durum] !== undefined) {
+        counts[status.durum]++;
+      }
+
+      if (status.takkesiz === true) {
+        counts.takkesiz++;
+      }
     }
   });
 
   $("prayerVarCount").textContent = counts.var;
   $("prayerYokCount").textContent = counts.yok;
   $("prayerGecCount").textContent = counts.gec;
-  $("prayerTakkesizCount").textContent = counts.takkesiz;
   $("prayerIzinliCount").textContent = counts.izinli;
+  $("prayerTakkesizCount").textContent = counts.takkesiz;
 }
 document.querySelectorAll("#prayerTimes [data-prayer]").forEach(button => {
   button.addEventListener("click", () => {
@@ -1047,15 +1080,24 @@ async function loadPrayerAttendance() {
     prayerStatuses = snap.val() || {};
 
     document.querySelectorAll("[data-prayer-student]").forEach(button => {
-      button.classList.remove("selected");
+  button.classList.remove("selected");
 
-      const studentId = button.dataset.prayerStudent;
-      const status = button.dataset.status;
+  const studentId = button.dataset.prayerStudent;
+  const status = button.dataset.status;
+  const saved = prayerStatuses[studentId];
 
-      if (prayerStatuses[studentId] === status) {
-        button.classList.add("selected");
-      }
-    });
+  if (!saved) return;
+
+  if (typeof saved === "object") {
+    if (status === "takkesiz" && saved.takkesiz === true) {
+      button.classList.add("selected");
+    }
+
+    if (status !== "takkesiz" && saved.durum === status) {
+      button.classList.add("selected");
+    }
+  }
+});
 
     updatePrayerCounts();
   } catch (error) {
