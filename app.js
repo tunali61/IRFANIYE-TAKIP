@@ -65,8 +65,10 @@ onAuthStateChanged(auth, user => {
       fillLeaveStudents();
       renderPrayerStudents();
       renderBedStudents();
+      renderSchoolReturnStudents();
 setTimeout(() => {
   loadBedAttendance();
+  loadSchoolReturnAttendance();
 }, 300);
       render();
       updateDashboard();
@@ -1265,3 +1267,151 @@ $("bedDate")?.addEventListener("change", () => {
 
 loadBedAttendance();
 // ==============================
+// OKUL DÖNÜŞÜ YOKLAMASI
+// ==============================
+
+let schoolReturnStatuses = {};
+
+function renderSchoolReturnStudents() {
+  const container = $("schoolStudentList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  Object.entries(students || {}).forEach(([id, student]) => {
+    const row = document.createElement("div");
+    row.className = "schoolStudentRow";
+
+    row.innerHTML = `
+      <div>
+        <strong>${student.name || "İsimsiz"}</strong>
+        <small>${student.className || ""}</small>
+      </div>
+
+      <div>
+        <button type="button" data-school-student="${id}" data-status="present">
+          Geldi
+        </button>
+
+        <button type="button" data-school-student="${id}" data-status="absent">
+          Gelmedi
+        </button>
+
+        <button type="button" data-school-student="${id}" data-status="excused">
+          İzinli
+        </button>
+      </div>
+    `;
+
+    container.appendChild(row);
+  });
+}
+$("schoolStudentList")?.addEventListener("click", (e) => {
+  const button = e.target.closest("[data-school-student]");
+  if (!button) return;
+
+  const studentId = button.dataset.schoolStudent;
+  const status = button.dataset.status;
+
+  schoolReturnStatuses[studentId] = status;
+
+  button.parentElement.querySelectorAll("button").forEach(btn => {
+    btn.classList.remove("selected");
+  });
+
+  button.classList.add("selected");
+  updateSchoolReturnCounts();
+});
+function updateSchoolReturnCounts() {
+  let present = 0;
+  let absent = 0;
+  let excused = 0;
+
+  Object.values(schoolReturnStatuses).forEach(status => {
+    if (status === "present") present++;
+    if (status === "absent") absent++;
+    if (status === "excused") excused++;
+  });
+
+  $("schoolPresentCount").textContent = present;
+  $("schoolAbsentCount").textContent = absent;
+  $("schoolExcusedCount").textContent = excused;
+}
+$("schoolAllPresentBtn")?.addEventListener("click", () => {
+  Object.keys(students || {}).forEach(id => {
+    schoolReturnStatuses[id] = "present";
+  });
+
+  document.querySelectorAll("[data-school-student]").forEach(button => {
+    button.classList.remove("selected");
+
+    if (button.dataset.status === "present") {
+      button.classList.add("selected");
+    }
+  });
+
+  updateSchoolReturnCounts();
+});
+
+const schoolReturnDateInput = $("schoolReturnDate");
+
+if (schoolReturnDateInput && !schoolReturnDateInput.value) {
+  schoolReturnDateInput.value = new Date().toISOString().slice(0, 10);
+}
+
+$("saveSchoolReturnBtn")?.addEventListener("click", async () => {
+  const date = $("schoolReturnDate")?.value;
+
+  if (!date) {
+    $("schoolReturnMsg").textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  if (Object.keys(schoolReturnStatuses).length === 0) {
+    $("schoolReturnMsg").textContent =
+      "Önce okul dönüşü yoklamasını işaretleyin.";
+    return;
+  }
+
+  try {
+    await set(
+      ref(db, `schoolReturnAttendance/${date}`),
+      schoolReturnStatuses
+    );
+
+    $("schoolReturnMsg").textContent =
+      "✅ Okul dönüşü yoklaması kaydedildi.";
+  } catch (error) {
+    console.error(error);
+    $("schoolReturnMsg").textContent =
+      "❌ Kayıt sırasında hata oluştu.";
+  }
+});
+async function loadSchoolReturnAttendance() {
+  const date = $("schoolReturnDate")?.value;
+  if (!date) return;
+
+  try {
+    const snap = await get(
+      ref(db, `schoolReturnAttendance/${date}`)
+    );
+
+    schoolReturnStatuses = snap.val() || {};
+
+    document.querySelectorAll("[data-school-student]").forEach(button => {
+      button.classList.remove("selected");
+
+      const studentId = button.dataset.schoolStudent;
+      const status = button.dataset.status;
+
+      if (schoolReturnStatuses[studentId] === status) {
+        button.classList.add("selected");
+      }
+    });
+    updateSchoolReturnCounts();
+  } catch (error) {
+    console.error(error);
+  }
+  $("schoolReturnDate")?.addEventListener("change", () => {
+  loadSchoolReturnAttendance();
+});
