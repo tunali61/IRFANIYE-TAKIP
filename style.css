@@ -102,3 +102,8 @@ section.card .dashboard .dashboardBox {
   gap: 5px;
   flex-wrap: wrap;
 }
+.prayerStatusButtons button.selected {
+  background: #16a34a !important;
+  color: white !important;
+  border-color: #16a34a !important;
+}
