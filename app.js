@@ -63,6 +63,7 @@ onAuthStateChanged(auth, user => {
     unsubscribe = onValue(ref(db, "students"), snap => {
       students = snap.val() || {};
       fillLeaveStudents();
+      renderPrayerStudents();
       render();
       updateDashboard();
     });
@@ -892,4 +893,176 @@ studentModal?.addEventListener("click", (e) => {
   if (e.target === studentModal) {
     studentModal.classList.add("hidden");
   }
+});
+// ==============================
+// NAMAZ TAKİP SİSTEMİ
+// ==============================
+
+let selectedPrayer = "sabah";
+let prayerStatuses = {};
+
+function renderPrayerStudents() {
+  const container = $("prayerStudentList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  Object.entries(students || {}).forEach(([id, student]) => {
+    const row = document.createElement("div");
+    row.className = "prayerStudentRow";
+
+    row.innerHTML = `
+      <div class="prayerStudentName">
+        <strong>${student.name || "İsimsiz"}</strong>
+        <small>${student.className || ""}</small>
+      </div>
+
+      <div class="prayerStatusButtons">
+        <button type="button" data-prayer-student="${id}" data-status="var">Var</button>
+        <button type="button" data-prayer-student="${id}" data-status="yok">Yok</button>
+        <button type="button" data-prayer-student="${id}" data-status="gec">Geç</button>
+        <button type="button" data-prayer-student="${id}" data-status="takkesiz">Takkesiz</button>
+        <button type="button" data-prayer-student="${id}" data-status="izinli">İzinli</button>
+      </div>
+    `;
+
+    container.appendChild(row);
+  });
+}
+$("prayerStudentList")?.addEventListener("click", (e) => {
+  const button = e.target.closest("[data-prayer-student]");
+  if (!button) return;
+
+  const studentId = button.dataset.prayerStudent;
+  const status = button.dataset.status;
+
+  prayerStatuses[studentId] = status;
+
+  button.parentElement.querySelectorAll("button").forEach(btn => {
+    btn.classList.remove("selected");
+  });
+
+  button.classList.add("selected");
+  updatePrayerCounts();
+  loadPrayerAttendance();
+});
+$("prayerAllPresentBtn")?.addEventListener("click", () => {
+  Object.keys(students || {}).forEach(id => {
+    prayerStatuses[id] = "var";
+  });
+
+  document.querySelectorAll("[data-prayer-student]").forEach(button => {
+    button.classList.remove("selected");
+
+    if (button.dataset.status === "var") {
+      button.classList.add("selected");
+    }
+  });
+
+  updatePrayerCounts();
+});
+function updatePrayerCounts() {
+  const counts = {
+    var: 0,
+    yok: 0,
+    gec: 0,
+    takkesiz: 0,
+    izinli: 0
+  };
+
+  Object.values(prayerStatuses).forEach(status => {
+    if (counts[status] !== undefined) {
+      counts[status]++;
+    }
+  });
+
+  $("prayerVarCount").textContent = counts.var;
+  $("prayerYokCount").textContent = counts.yok;
+  $("prayerGecCount").textContent = counts.gec;
+  $("prayerTakkesizCount").textContent = counts.takkesiz;
+  $("prayerIzinliCount").textContent = counts.izinli;
+}
+document.querySelectorAll("#prayerTimes [data-prayer]").forEach(button => {
+  button.addEventListener("click", () => {
+    selectedPrayer = button.dataset.prayer;
+
+    const names = {
+      sabah: "Sabah",
+      ogle: "Öğle",
+      ikindi: "İkindi",
+      aksam: "Akşam",
+      yatsi: "Yatsı"
+    };
+
+    $("selectedPrayer").textContent =
+      "Seçili Vakit: " + names[selectedPrayer];
+
+    prayerStatuses = {};
+
+    document.querySelectorAll("[data-prayer-student]").forEach(btn => {
+      btn.classList.remove("selected");
+    });
+
+    updatePrayerCounts();
+  });
+});
+const prayerDateInput = $("prayerDate");
+
+if (prayerDateInput && !prayerDateInput.value) {
+  prayerDateInput.value = new Date().toISOString().slice(0, 10);
+}
+$("savePrayerBtn")?.addEventListener("click", async () => {
+  const date = $("prayerDate")?.value;
+
+  if (!date) {
+    $("prayerMsg").textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  if (Object.keys(prayerStatuses).length === 0) {
+    $("prayerMsg").textContent = "Önce namaz yoklamasını işaretleyin.";
+    return;
+  }
+
+  try {
+    await set(
+      ref(db, `prayerAttendance/${date}/${selectedPrayer}`),
+      prayerStatuses
+    );
+
+    $("prayerMsg").textContent = "✅ Namaz yoklaması kaydedildi.";
+  } catch (error) {
+    console.error(error);
+    $("prayerMsg").textContent = "❌ Kayıt sırasında hata oluştu.";
+  }
+});
+async function loadPrayerAttendance() {
+  const date = $("prayerDate")?.value;
+  if (!date) return;
+
+  try {
+    const snap = await get(
+      ref(db, `prayerAttendance/${date}/${selectedPrayer}`)
+    );
+
+    prayerStatuses = snap.val() || {};
+
+    document.querySelectorAll("[data-prayer-student]").forEach(button => {
+      button.classList.remove("selected");
+
+      const studentId = button.dataset.prayerStudent;
+      const status = button.dataset.status;
+
+      if (prayerStatuses[studentId] === status) {
+        button.classList.add("selected");
+      }
+    });
+
+    updatePrayerCounts();
+  } catch (error) {
+    console.error(error);
+  }
+}
+$("prayerDate")?.addEventListener("change", () => {
+  loadPrayerAttendance();
 });
