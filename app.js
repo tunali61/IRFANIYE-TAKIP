@@ -66,6 +66,7 @@ onAuthStateChanged(auth, user => {
       renderPrayerStudents();
       renderBedStudents();
       renderSchoolReturnStudents();
+      fillDailyDutyStudents();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -1419,6 +1420,43 @@ $("schoolReturnDate")?.addEventListener("change", () => {
 });
 
 loadSchoolReturnAttendance();
+// ==============================
+// GÜNÜN GÖREVLİLERİ
+// ==============================
+
+function fillDailyDutyStudents() {
+  const select = $("dailyDutyStudent");
+  if (!select) return;
+
+  select.innerHTML = `<option value="">Talebe Seçin</option>`;
+
+  Object.entries(students || {}).forEach(([id, student]) => {
+    const option = document.createElement("option");
+    option.value = id;
+    option.textContent = student.name || "İsimsiz";
+    select.appendChild(option);
+  });
+}
+const dailyDutyDateInput = $("dailyDutyDate");
+
+if (dailyDutyDateInput && !dailyDutyDateInput.value) {
+  dailyDutyDateInput.value = new Date().toISOString().slice(0, 10);
+}
+$("addDailyDutyBtn")?.addEventListener("click", () => {
+  const studentId = $("dailyDutyStudent")?.value;
+  const dutyType = $("dailyDutyType")?.value;
+
+  if (!studentId || !dutyType) {
+    $("dailyDutyMsg").textContent =
+      "Lütfen görev ve talebe seçin.";
+    return;
+  }
+
+  const student = students[studentId];
+
+  $("dailyDutyMsg").textContent =
+    `✅ ${student.name} göreve eklendi.`;
+});
 // ==============================
 // NAMAZ RAPORLARI
 // ==============================
