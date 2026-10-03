@@ -15,7 +15,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
-const $ = id => document.getElementById(id);
+const $ = id => document.getElementById(id); 
 let students = {}, editingId = null, unsubscribe = null; 
 
 $("loginForm").addEventListener("submit", async e => {
