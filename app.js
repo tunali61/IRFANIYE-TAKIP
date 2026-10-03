@@ -1147,6 +1147,7 @@ function renderBedStudents() {
     container.appendChild(row);
   });
 }
+
 $("bedStudentList")?.addEventListener("click", (e) => {
   const button = e.target.closest("[data-bed-student]");
   if (!button) return;
@@ -1161,8 +1162,9 @@ $("bedStudentList")?.addEventListener("click", (e) => {
   });
 
   button.classList.add("selected");
-updateBedCounts();
+  updateBedCounts();
 });
+
 function updateBedCounts() {
   let present = 0;
   let absent = 0;
@@ -1178,15 +1180,29 @@ function updateBedCounts() {
   $("bedAbsentCount").textContent = absent;
   $("bedExcusedCount").textContent = excused;
 }
+
 $("bedAllPresentBtn")?.addEventListener("click", () => {
   Object.keys(students || {}).forEach(id => {
     bedStatuses[id] = "present";
   });
-  const bedDateInput = $("bedDate");
+
+  document.querySelectorAll("[data-bed-student]").forEach(button => {
+    button.classList.remove("selected");
+
+    if (button.dataset.status === "present") {
+      button.classList.add("selected");
+    }
+  });
+
+  updateBedCounts();
+});
+
+const bedDateInput = $("bedDate");
 
 if (bedDateInput && !bedDateInput.value) {
   bedDateInput.value = new Date().toISOString().slice(0, 10);
 }
+
 $("saveBedBtn")?.addEventListener("click", async () => {
   const date = $("bedDate")?.value;
 
@@ -1212,7 +1228,8 @@ $("saveBedBtn")?.addEventListener("click", async () => {
     $("bedMsg").textContent = "❌ Kayıt sırasında hata oluştu.";
   }
 });
-  async function loadBedAttendance() {
+
+async function loadBedAttendance() {
   const date = $("bedDate")?.value;
   if (!date) return;
 
@@ -1245,25 +1262,4 @@ $("bedDate")?.addEventListener("change", () => {
 });
 
 loadBedAttendance();
-      $("bedDate")?.addEventListener("change", () => {
-  loadBedAttendance();
-});
-
-loadBedAttendance();
-    });
-
-    updateBedCounts();
-  } catch (error) {
-    console.error(error);
-  }
-}
-  document.querySelectorAll("[data-bed-student]").forEach(button => {
-    button.classList.remove("selected");
-
-    if (button.dataset.status === "present") {
-      button.classList.add("selected");
-    }
-  });
-
-  updateBedCounts();
-});
+// ==============================
