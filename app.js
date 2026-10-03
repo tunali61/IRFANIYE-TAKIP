@@ -1419,3 +1419,37 @@ $("schoolReturnDate")?.addEventListener("change", () => {
 });
 
 loadSchoolReturnAttendance();
+// ==============================
+// NAMAZ RAPORLARI
+// ==============================
+
+const prayerReportDateInput = $("prayerReportDate");
+
+if (prayerReportDateInput && !prayerReportDateInput.value) {
+  prayerReportDateInput.value = new Date().toISOString().slice(0, 10);
+}
+$("showPrayerReportBtn")?.addEventListener("click", async () => {
+  const date = $("prayerReportDate")?.value;
+
+  if (!date) {
+    $("prayerReportMsg").textContent = "Lütfen tarih seçin.";
+    return;
+  }
+
+  $("prayerReportMsg").textContent = "Rapor hazırlanıyor...";
+
+  try {
+    const snap = await get(
+      ref(db, `prayerAttendance/${date}`)
+    );
+
+    const reportData = snap.val() || {};
+
+    console.log("Namaz raporu:", reportData);
+
+    $("prayerReportMsg").textContent = "✅ Rapor verileri alındı.";
+  } catch (error) {
+    console.error(error);
+    $("prayerReportMsg").textContent = "❌ Rapor alınırken hata oluştu.";
+  }
+});
