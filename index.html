@@ -24,6 +24,45 @@
   </section>
 
   <main id="appArea" class="hidden">
+    <section class="card" id="prayerTrackingCard">
+  <h2>🕌 Namaz Takip</h2>
+
+  <label>
+    Tarih
+    <input type="date" id="prayerDate">
+  </label>
+
+  <div id="prayerTimes">
+    <button type="button" data-prayer="sabah">🌅 Sabah</button>
+    <button type="button" data-prayer="ogle">☀️ Öğle</button>
+    <button type="button" data-prayer="ikindi">🌤️ İkindi</button>
+    <button type="button" data-prayer="aksam">🌇 Akşam</button>
+    <button type="button" data-prayer="yatsi">🌙 Yatsı</button>
+  </div>
+
+  <p id="selectedPrayer">Seçili Vakit: Sabah</p>
+
+  <div id="prayerSummary">
+    <strong>Durum:</strong>
+    <span>Var: <b id="prayerVarCount">0</b></span>
+    <span>Yok: <b id="prayerYokCount">0</b></span>
+    <span>Geç: <b id="prayerGecCount">0</b></span>
+    <span>Takkesiz: <b id="prayerTakkesizCount">0</b></span>
+    <span>İzinli: <b id="prayerIzinliCount">0</b></span>
+  </div>
+
+  <button type="button" id="prayerAllPresentBtn">
+    ⚡ Tümünü Var Yap
+  </button>
+
+  <div id="prayerStudentList"></div>
+
+  <button type="button" id="savePrayerBtn">
+    💾 Namaz Yoklamasını Kaydet
+  </button>
+
+  <p id="prayerMsg"></p>
+</section>
     <section class="card">
   <h2>📊 Genel Durum</h2>
 
