@@ -1469,7 +1469,7 @@ try {
 
   $("dailyDutyMsg").textContent =
     `✅ ${student.name} göreve kaydedildi.`;
-
+await loadDailyDuties();
 } catch (error) {
   console.error(error);
   $("dailyDutyMsg").textContent =
