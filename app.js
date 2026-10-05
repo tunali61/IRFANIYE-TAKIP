@@ -67,6 +67,7 @@ onAuthStateChanged(auth, user => {
       renderBedStudents();
       renderSchoolReturnStudents();
       fillDailyDutyStudents();
+      fillSupportLessonStudents();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -77,8 +78,41 @@ setTimeout(() => {
   } else {
     students = {};
   }
-});
+  const supportLessonDateInput = $("supportLessonDate");
 
+if (supportLessonDateInput && !supportLessonDateInput.value) {
+  supportLessonDateInput.value = new Date().toISOString().slice(0, 10);
+}
+  $("saveSupportLessonBtn")?.addEventListener("click", async () => {
+  const date = $("supportLessonDate")?.value;
+  const studentId = $("supportLessonStudent")?.value;
+  const lessonType = $("supportLessonType")?.value;
+  const note = $("supportLessonNote")?.value.trim();
+    if (!date || !studentId || !lessonType || !note) {
+  $("supportLessonMsg").textContent =
+    "Lütfen tarih, talebe, ders ve not girin.";
+  return;
+}
+const student = students[studentId];
+
+try {
+  await set(
+    ref(db, `supportLessons/${date}/${studentId}/${lessonType}`),
+    {
+      name: student.name || "İsimsiz",
+      note: note
+    }
+  );
+
+  $("supportLessonMsg").textContent =
+    "✅ Ders notu kaydedildi.";
+} catch (error) {
+  console.error(error);
+
+  $("supportLessonMsg").textContent =
+    "❌ Ders notu kaydedilirken hata oluştu.";
+}    
+});
 $("studentForm").addEventListener("submit", async e => {
   e.preventDefault();
   const data = {
@@ -1547,7 +1581,23 @@ $("dailyDutyList")?.addEventListener("click", async (e) => {
 $("dailyDutyDate")?.addEventListener("change", () => {
   loadDailyDuties();
 });
+// ==============================
+// TAKVİYE DERS NOTLARI
+// ==============================
 
+function fillSupportLessonStudents() {
+  const select = $("supportLessonStudent");
+  if (!select) return;
+
+  select.innerHTML = `<option value="">Talebe Seçin</option>`;
+
+  Object.entries(students || {}).forEach(([id, student]) => {
+    const option = document.createElement("option");
+    option.value = id;
+    option.textContent = student.name || "İsimsiz";
+    select.appendChild(option);
+  });
+}
 loadDailyDuties();
 
 // ==============================
