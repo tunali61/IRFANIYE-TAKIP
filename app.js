@@ -1551,10 +1551,12 @@ async function loadDailyDuties() {
       });
     });
 
-  } catch (error) {
+    } catch (error) {
     console.error(error);
-}
+    list.innerHTML = "<p>❌ Ders notları yüklenemedi.</p>";
   }
+}
+
 $("dailyDutyList")?.addEventListener("click", async (e) => {
   const button = e.target.closest("[data-duty-delete]");
   if (!button) return;
@@ -1629,7 +1631,27 @@ async function loadSupportLessons() {
           Ders: ${lessonType}<br>
           Not: ${record.note || ""}
         `;
+const deleteBtn = document.createElement("button");
+deleteBtn.type = "button";
+deleteBtn.textContent = "🗑️ Sil";
+deleteBtn.className = "danger";
 
+deleteBtn.addEventListener("click", async () => {
+  try {
+    await set(
+      ref(db, `supportLessons/${date}/${studentId}/${lessonType}`),
+      null
+    );
+
+    await loadSupportLessons();
+  } catch (error) {
+    console.error(error);
+    $("supportLessonMsg").textContent =
+      "❌ Ders notu silinirken hata oluştu.";
+  }
+});
+
+item.appendChild(deleteBtn);
         list.appendChild(item);
       });
     });
