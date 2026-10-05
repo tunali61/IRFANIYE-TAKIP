@@ -1497,11 +1497,19 @@ async function loadDailyDuties() {
     };
 
     Object.entries(data).forEach(([dutyType, dutyStudents]) => {
-      Object.values(dutyStudents || {}).forEach(student => {
+      Object.entries(dutyStudents || {}).forEach(([studentId, student]) => {
         const item = document.createElement("p");
 
-        item.innerHTML =
-          `<strong>${dutyNames[dutyType] || dutyType}:</strong> ${student.name}`;
+        item.innerHTML = `
+  <strong>${dutyNames[dutyType] || dutyType}:</strong>
+  ${student.name}
+  <button
+  type="button"
+  data-duty-delete="${studentId}"
+  data-duty-type="${dutyType}">
+  🗑️ Sil
+</button>
+`;
 
         list.appendChild(item);
       });
@@ -1511,7 +1519,32 @@ async function loadDailyDuties() {
     console.error(error);
   }
 }
+}
+$("dailyDutyList")?.addEventListener("click", async (e) => {
+  const button = e.target.closest("[data-duty-delete]");
+  if (!button) return;
 
+  const studentId = button.dataset.dutyDelete;
+  const dutyType = button.dataset.dutyType;
+  const date = $("dailyDutyDate")?.value;
+
+  if (!date) return;
+
+  try {
+    await set(
+      ref(db, `dailyDuties/${date}/${dutyType}/${studentId}`),
+      null
+    );
+
+    await loadDailyDuties();
+
+    $("dailyDutyMsg").textContent = "✅ Görevli silindi.";
+  } catch (error) {
+    console.error(error);
+    $("dailyDutyMsg").textContent =
+      "❌ Görevli silinirken hata oluştu.";
+  }
+});
 $("dailyDutyDate")?.addEventListener("change", () => {
   loadDailyDuties();
 });
