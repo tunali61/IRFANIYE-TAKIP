@@ -78,6 +78,7 @@ setTimeout(() => {
   } else {
     students = {};
   }
+  });
   const supportLessonDateInput = $("supportLessonDate");
 
 if (supportLessonDateInput && !supportLessonDateInput.value) {
