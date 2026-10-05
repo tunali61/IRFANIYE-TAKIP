@@ -107,6 +107,7 @@ try {
 
   $("supportLessonMsg").textContent =
     "✅ Ders notu kaydedildi.";
+  await loadSupportLessons();
 } catch (error) {
   console.error(error);
 
@@ -1599,6 +1600,47 @@ function fillSupportLessonStudents() {
     select.appendChild(option);
   });
 }
+async function loadSupportLessons() {
+  const date = $("supportLessonDate")?.value;
+  const list = $("supportLessonList");
+
+  if (!date || !list) return;
+
+  list.innerHTML = "Yükleniyor...";
+
+  try {
+    const snapshot = await get(ref(db, `supportLessons/${date}`));
+    const data = snapshot.val();
+
+    if (!data) {
+      list.innerHTML = "<p>Bu tarihte kayıtlı ders notu yok.</p>";
+      return;
+    }
+
+    list.innerHTML = "";
+
+    Object.entries(data).forEach(([studentId, lessons]) => {
+      Object.entries(lessons).forEach(([lessonType, record]) => {
+        const item = document.createElement("div");
+        item.className = "listItem";
+
+        item.innerHTML = `
+          <strong>${record.name || "İsimsiz"}</strong><br>
+          Ders: ${lessonType}<br>
+          Not: ${record.note || ""}
+        `;
+
+        list.appendChild(item);
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    list.innerHTML = "<p>❌ Ders notları yüklenemedi.</p>";
+  }
+  }
+$("supportLessonDate")?.addEventListener("change", () => {
+  loadSupportLessons();
+});
 loadDailyDuties();
 
 // ==============================
