@@ -1517,9 +1517,8 @@ async function loadDailyDuties() {
 
   } catch (error) {
     console.error(error);
+}
   }
-}
-}
 $("dailyDutyList")?.addEventListener("click", async (e) => {
   const button = e.target.closest("[data-duty-delete]");
   if (!button) return;
