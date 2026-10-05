@@ -205,7 +205,43 @@
       <button type="button" id="importExcelBtn">Excel'den Aktar</button>
       <p id="importMsg"></p>
     </section>
+<section class="card" id="supportLessonCard">
+  <h2>📚 Takviye Ders Notları</h2>
+  <label>
+  Tarih
+  <input type="date" id="supportLessonDate">
+</label>
+  <label>
+  Talebe
+  <select id="supportLessonStudent">
+    <option value="">Talebe Seçin</option>
+  </select>
+</label>
+  <label>
+  Ders
+  <select id="supportLessonType">
+    <option value="">Ders Seçin</option>
+    <option value="matematik">Matematik</option>
+    <option value="turkce">Türkçe</option>
+    <option value="fen">Fen Bilimleri</option>
+    <option value="ingilizce">İngilizce</option>
+    <option value="sosyal">Sosyal Bilgiler</option>
+    <option value="diger">Diğer</option>
+  </select>
+</label>
+  <label>
+  Ders Notu
+  <textarea
+    id="supportLessonNote"
+    rows="3"
+    placeholder="Talebe hakkında ders notunu yazın..."></textarea>
+</label>
+  <button type="button" id="saveSupportLessonBtn">
+  💾 Ders Notunu Kaydet
+</button>
 
+<p id="supportLessonMsg"></p>
+</section>
     <section class="card">
       <h2>Talebe Ekle / Düzenle</h2>
       <form id="studentForm">
