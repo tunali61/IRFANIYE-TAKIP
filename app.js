@@ -1648,7 +1648,11 @@ const testResultDateInput = $("testResultDate");
 if (testResultDateInput && !testResultDateInput.value) {
   testResultDateInput.value = new Date().toISOString().slice(0, 10);
 }
+const quranDateInput = $("quranDate");
 
+if (quranDateInput && !quranDateInput.value) {
+  quranDateInput.value = new Date().toISOString().slice(0, 10);
+}
 calculateTestNet();
 $("saveTestResultBtn")?.addEventListener("click", async () => {
   const date = $("testResultDate")?.value;
