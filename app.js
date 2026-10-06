@@ -68,6 +68,7 @@ onAuthStateChanged(auth, user => {
       renderSchoolReturnStudents();
       fillDailyDutyStudents();
       fillSupportLessonStudents();
+      fillTestResultStudents();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -1602,6 +1603,82 @@ function fillSupportLessonStudents() {
     select.appendChild(option);
   });
 }
+function fillTestResultStudents() {
+  const select = $("testResultStudent");
+  if (!select) return;
+
+  select.innerHTML = `<option value="">Talebe Seçin</option>`;
+
+  Object.entries(students || {}).forEach(([id, student]) => {
+    const option = document.createElement("option");
+    option.value = id;
+    option.textContent = student.name || "İsimsiz";
+    select.appendChild(option);
+  });
+}
+function calculateTestNet() {
+  const correct = Number($("testResultCorrect")?.value || 0);
+  const wrong = Number($("testResultWrong")?.value || 0);
+
+  const net = correct - (wrong / 4);
+
+  if ($("testResultNet")) {
+    $("testResultNet").value = net.toFixed(2);
+  }
+}
+
+$("testResultCorrect")?.addEventListener("input", calculateTestNet);
+$("testResultWrong")?.addEventListener("input", calculateTestNet);
+const testResultDateInput = $("testResultDate");
+
+if (testResultDateInput && !testResultDateInput.value) {
+  testResultDateInput.value = new Date().toISOString().slice(0, 10);
+}
+
+calculateTestNet();
+$("saveTestResultBtn")?.addEventListener("click", async () => {
+  const date = $("testResultDate")?.value;
+  const studentId = $("testResultStudent")?.value;
+  const testName = $("testResultName")?.value.trim();
+  const lesson = $("testResultLesson")?.value;
+
+  const correct = Number($("testResultCorrect")?.value || 0);
+  const wrong = Number($("testResultWrong")?.value || 0);
+  const empty = Number($("testResultEmpty")?.value || 0);
+  const net = correct - (wrong / 4);
+
+  if (!date || !studentId || !testName || !lesson) {
+    $("testResultMsg").textContent =
+      "Lütfen tarih, talebe, test adı ve ders seçin.";
+    return;
+  }
+
+  const student = students[studentId];
+
+  try {
+    const recordId = Date.now().toString();
+
+    await set(
+      ref(db, `testResults/${date}/${studentId}/${recordId}`),
+      {
+        name: student.name || "İsimsiz",
+        testName,
+        lesson,
+        correct,
+        wrong,
+        empty,
+        net
+      }
+    );
+
+    $("testResultMsg").textContent =
+      "✅ Test neticesi kaydedildi.";
+  } catch (error) {
+    console.error(error);
+    $("testResultMsg").textContent =
+      "❌ Test neticesi kaydedilirken hata oluştu.";
+  }
+});
 async function loadSupportLessons() {
   const date = $("supportLessonDate")?.value;
   const list = $("supportLessonList");
