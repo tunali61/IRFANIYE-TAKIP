@@ -354,6 +354,42 @@
   <h3>📋 Kur'an & Hatim Kayıtları</h3>
   <div id="quranList"></div>
 </section>
+    <section class="card" id="studentAwardsCard">
+  <h2>🏆 Haftanın / Ayın Talebesi</h2>
+
+  <label>
+    Ödül Türü
+    <select id="awardType">
+      <option value="">Seçiniz</option>
+      <option value="hafta">Haftanın Talebesi</option>
+      <option value="ay">Ayın Talebesi</option>
+    </select>
+  </label>
+
+  <label>
+    Talebe
+    <select id="awardStudent">
+      <option value="">Talebe Seçin</option>
+    </select>
+  </label>
+
+  <label>
+    Açıklama / Başarı Sebebi
+    <textarea
+      id="awardNote"
+      rows="3"
+      placeholder="Örn: Derslere düzenli katılımı ve güzel davranışları"></textarea>
+  </label>
+
+  <button type="button" id="saveAwardBtn">
+    🏆 Seçimi Kaydet
+  </button>
+
+  <p id="awardMsg"></p>
+
+  <h3>🏅 Seçilen Talebeler</h3>
+  <div id="awardList"></div>
+</section>
     <section class="card">
       <h2>Talebe Ekle / Düzenle</h2>
       <form id="studentForm">
