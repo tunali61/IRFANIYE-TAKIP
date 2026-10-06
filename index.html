@@ -310,6 +310,50 @@
       <h3>📋 Kayıtlı Test Neticeleri</h3>
 <div id="testResultList"></div>
 </section>
+    <section class="card" id="quranTrackingCard">
+  <h2>📖 Kur'an-ı Kerim & Hatim Takibi</h2>
+
+  <label>
+    Tarih
+    <input type="date" id="quranDate">
+  </label>
+
+  <label>
+    Talebe
+    <select id="quranStudent">
+      <option value="">Talebe Seçin</option>
+    </select>
+  </label>
+
+  <label>
+    Cüz
+    <input type="number" id="quranJuz" min="1" max="30" placeholder="1-30">
+  </label>
+
+  <label>
+    Sayfa
+    <input type="number" id="quranPage" min="1" placeholder="Sayfa numarası">
+  </label>
+
+  <label>
+    Durum
+    <select id="quranStatus">
+      <option value="">Durum Seçin</option>
+      <option value="okundu">Okundu</option>
+      <option value="devam">Devam Ediyor</option>
+      <option value="tamamlandi">Hatim Tamamlandı</option>
+    </select>
+  </label>
+
+  <button type="button" id="saveQuranBtn">
+    💾 Kur'an Kaydını Kaydet
+  </button>
+
+  <p id="quranMsg"></p>
+
+  <h3>📋 Kur'an & Hatim Kayıtları</h3>
+  <div id="quranList"></div>
+</section>
     <section class="card">
       <h2>Talebe Ekle / Düzenle</h2>
       <form id="studentForm">
