@@ -1786,11 +1786,60 @@ $("saveQuranBtn")?.addEventListener("click", async () => {
 
     $("quranMsg").textContent =
       "✅ Kur'an kaydı kaydedildi.";
+    await loadQuranRecords();
   } catch (error) {
     console.error(error);
     $("quranMsg").textContent =
       "❌ Kur'an kaydı kaydedilirken hata oluştu.";
   }
+});
+async function loadQuranRecords() {
+  const date = $("quranDate")?.value;
+  const list = $("quranList");
+
+  if (!date || !list) return;
+
+  list.innerHTML = "Yükleniyor...";
+
+  try {
+    const snapshot = await get(ref(db, `quranTracking/${date}`));
+    const data = snapshot.val();
+
+    if (!data) {
+      list.innerHTML = "<p>Bu tarihte kayıtlı Kur'an kaydı yok.</p>";
+      return;
+    }
+
+    list.innerHTML = "";
+
+    Object.entries(data).forEach(([studentId, records]) => {
+      Object.entries(records).forEach(([recordId, record]) => {
+        const item = document.createElement("div");
+        item.className = "listItem";
+
+        const statusNames = {
+          okundu: "Okundu",
+          devam: "Devam Ediyor",
+          tamamlandi: "Hatim Tamamlandı"
+        };
+
+        item.innerHTML = `
+          <strong>${record.name || "İsimsiz"}</strong><br>
+          Cüz: ${record.juz || "-"} |
+          Sayfa: ${record.page || "-"}<br>
+          Durum: ${statusNames[record.status] || record.status || "-"}
+        `;
+
+        list.appendChild(item);
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    list.innerHTML = "<p>❌ Kur'an kayıtları yüklenemedi.</p>";
+  }
+}
+$("quranDate")?.addEventListener("change", () => {
+  loadQuranRecords();
 });
 async function loadTestResults() {
   const date = $("testResultDate")?.value;
