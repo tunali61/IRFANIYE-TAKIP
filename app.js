@@ -1673,6 +1673,7 @@ $("saveTestResultBtn")?.addEventListener("click", async () => {
 
     $("testResultMsg").textContent =
       "✅ Test neticesi kaydedildi.";
+    await loadTestResults();
   } catch (error) {
     console.error(error);
     $("testResultMsg").textContent =
@@ -1737,6 +1738,51 @@ item.appendChild(deleteBtn);
     list.innerHTML = "<p>❌ Ders notları yüklenemedi.</p>";
   }
   }
+async function loadTestResults() {
+  const date = $("testResultDate")?.value;
+  const list = $("testResultList");
+
+  if (!date || !list) return;
+
+  list.innerHTML = "Yükleniyor...";
+
+  try {
+    const snapshot = await get(ref(db, `testResults/${date}`));
+    const data = snapshot.val();
+
+    if (!data) {
+      list.innerHTML = "<p>Bu tarihte kayıtlı test neticesi yok.</p>";
+      return;
+    }
+
+    list.innerHTML = "";
+
+    Object.entries(data).forEach(([studentId, records]) => {
+      Object.entries(records).forEach(([recordId, record]) => {
+        const item = document.createElement("div");
+        item.className = "listItem";
+
+        item.innerHTML = `
+          <strong>${record.name || "İsimsiz"}</strong><br>
+          Test: ${record.testName || ""}<br>
+          Ders: ${record.lesson || ""}<br>
+          Doğru: ${record.correct ?? 0} |
+          Yanlış: ${record.wrong ?? 0} |
+          Boş: ${record.empty ?? 0} |
+          Net: ${Number(record.net || 0).toFixed(2)}
+        `;
+
+        list.appendChild(item);
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    list.innerHTML = "<p>❌ Test neticeleri yüklenemedi.</p>";
+  }
+}
+$("testResultDate")?.addEventListener("change", () => {
+  loadTestResults();
+});
 $("supportLessonDate")?.addEventListener("change", () => {
   loadSupportLessons();
 });
