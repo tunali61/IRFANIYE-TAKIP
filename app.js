@@ -1771,7 +1771,27 @@ async function loadTestResults() {
           Boş: ${record.empty ?? 0} |
           Net: ${Number(record.net || 0).toFixed(2)}
         `;
+const deleteBtn = document.createElement("button");
+deleteBtn.type = "button";
+deleteBtn.textContent = "🗑️ Sil";
+deleteBtn.className = "danger";
 
+deleteBtn.addEventListener("click", async () => {
+  try {
+    await set(
+      ref(db, `testResults/${date}/${studentId}/${recordId}`),
+      null
+    );
+
+    await loadTestResults();
+  } catch (error) {
+    console.error(error);
+    $("testResultMsg").textContent =
+      "❌ Test neticesi silinirken hata oluştu.";
+  }
+});
+
+item.appendChild(deleteBtn);
         list.appendChild(item);
       });
     });
