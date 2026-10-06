@@ -94,7 +94,7 @@
 
   <p id="dashboardDate"></p>
 </section>
-    <section class="card" id="bedTrackingCard">
+    "bedTrackingCard">
   <h2>🛏️ Yatak Yoklaması</h2>
 
   <label>
@@ -120,7 +120,7 @@
 
   <p id="bedMsg"></p>
 </section>
-    <section class="card" id="schoolReturnCard">
+    "schoolReturnCard">
   <h2>🏫 Okul Dönüşü Yoklaması</h2>
 
   <label>
@@ -147,7 +147,7 @@
 
   <p id="schoolReturnMsg"></p>
 </section>
-    <section class="card" id="prayerReportsCard">
+    "prayerReportsCard">
         <h2>📊 Namaz Raporları</h2>
 
   <label>
@@ -163,7 +163,7 @@
 
   <p id="prayerReportMsg"></p>
 </section>
-    <section class="card" id="dailyDutiesCard">
+    "dailyDutiesCard">
   <h2>👥 Günün Görevlileri</h2>
 
   <label>
@@ -205,7 +205,7 @@
       <button type="button" id="importExcelBtn">Excel'den Aktar</button>
       <p id="importMsg"></p>
     </section>
-<section class="card" id="supportLessonCard">
+"supportLessonCard">
   <h2>📚 Takviye Ders Notları</h2>
   <label>
   Tarih
@@ -243,6 +243,70 @@
 <p id="supportLessonMsg"></p>
   <h3>📋 Kayıtlı Ders Notları</h3>
 <div id="supportLessonList"></div>
+</section>
+    <section class="card" id="testResultsCard">
+  <h2>📝 Test Neticeleri & Etüt</h2>
+
+  <label>
+    Tarih
+    <input type="date" id="testResultDate">
+  </label>
+
+  <label>
+    Talebe
+    <select id="testResultStudent">
+      <option value="">Talebe Seçin</option>
+    </select>
+  </label>
+
+  <label>
+    Test / Sınav Adı
+    <input
+      type="text"
+      id="testResultName"
+      placeholder="Örn: Matematik Deneme 1">
+  </label>
+
+  <label>
+    Ders
+    <select id="testResultLesson">
+      <option value="">Ders Seçin</option>
+      <option value="matematik">Matematik</option>
+      <option value="turkce">Türkçe</option>
+      <option value="fen">Fen Bilimleri</option>
+      <option value="ingilizce">İngilizce</option>
+      <option value="sosyal">Sosyal Bilgiler</option>
+      <option value="diger">Diğer</option>
+    </select>
+  </label>
+
+  <div class="grid">
+    <label>
+      Doğru
+      <input type="number" id="testResultCorrect" min="0" value="0">
+    </label>
+
+    <label>
+      Yanlış
+      <input type="number" id="testResultWrong" min="0" value="0">
+    </label>
+
+    <label>
+      Boş
+      <input type="number" id="testResultEmpty" min="0" value="0">
+    </label>
+  </div>
+
+  <label>
+    Net
+    <input type="number" id="testResultNet" step="0.01" readonly>
+  </label>
+
+  <button type="button" id="saveTestResultBtn">
+    💾 Test Neticesini Kaydet
+  </button>
+
+  <p id="testResultMsg"></p>
 </section>
     <section class="card">
       <h2>Talebe Ekle / Düzenle</h2>
