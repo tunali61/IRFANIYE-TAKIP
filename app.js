@@ -1829,7 +1829,27 @@ async function loadQuranRecords() {
           Sayfa: ${record.page || "-"}<br>
           Durum: ${statusNames[record.status] || record.status || "-"}
         `;
+const deleteBtn = document.createElement("button");
+deleteBtn.type = "button";
+deleteBtn.textContent = "🗑️ Sil";
+deleteBtn.className = "danger";
 
+deleteBtn.addEventListener("click", async () => {
+  try {
+    await set(
+      ref(db, `quranTracking/${date}/${studentId}/${recordId}`),
+      null
+    );
+
+    await loadQuranRecords();
+  } catch (error) {
+    console.error(error);
+    $("quranMsg").textContent =
+      "❌ Kur'an kaydı silinirken hata oluştu.";
+  }
+});
+
+item.appendChild(deleteBtn);
         list.appendChild(item);
       });
     });
