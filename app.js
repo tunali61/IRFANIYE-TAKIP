@@ -1756,6 +1756,42 @@ item.appendChild(deleteBtn);
     list.innerHTML = "<p>❌ Ders notları yüklenemedi.</p>";
   }
   }
+$("saveQuranBtn")?.addEventListener("click", async () => {
+  const date = $("quranDate")?.value;
+  const studentId = $("quranStudent")?.value;
+  const juz = Number($("quranJuz")?.value || 0);
+  const page = Number($("quranPage")?.value || 0);
+  const status = $("quranStatus")?.value;
+
+  if (!date || !studentId || !juz || !page || !status) {
+    $("quranMsg").textContent =
+      "Lütfen tarih, talebe, cüz, sayfa ve durum bilgilerini doldurun.";
+    return;
+  }
+
+  const student = students[studentId];
+
+  try {
+    const recordId = Date.now().toString();
+
+    await set(
+      ref(db, `quranTracking/${date}/${studentId}/${recordId}`),
+      {
+        name: student.name || "İsimsiz",
+        juz,
+        page,
+        status
+      }
+    );
+
+    $("quranMsg").textContent =
+      "✅ Kur'an kaydı kaydedildi.";
+  } catch (error) {
+    console.error(error);
+    $("quranMsg").textContent =
+      "❌ Kur'an kaydı kaydedilirken hata oluştu.";
+  }
+});
 async function loadTestResults() {
   const date = $("testResultDate")?.value;
   const list = $("testResultList");
