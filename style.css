@@ -311,3 +311,31 @@ textarea {
   border-color: #8b5cf6 !important;
   color: white !important;
 }
+/* ===== Minimal Namaz Vakit Sekmeleri ===== */
+
+#prayerTimes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  margin: 8px 0 12px;
+  background: #f3f6f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+#prayerTimes button {
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #dbe3ec;
+  border-radius: 9px;
+  padding: 7px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+#prayerTimes button:hover {
+  background: #f8fafc;
+}
