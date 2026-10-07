@@ -197,3 +197,47 @@ section.card .dashboard .dashboardBox {
   border-radius: 8px;
   background: #f5f5f5;
 }
+/* ===== Minimal Modern Görünüm ===== */
+
+body {
+  background: #f4f7fb;
+  color: #172033;
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e4eaf2;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.card h2 {
+  font-size: 19px;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.card h3 {
+  font-size: 15px;
+  margin-top: 18px;
+}
+
+button {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  border-radius: 10px;
+  border: 1px solid #dbe2ea;
+}
