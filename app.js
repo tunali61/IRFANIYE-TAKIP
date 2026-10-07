@@ -72,6 +72,7 @@ onAuthStateChanged(auth, user => {
       fillQuranStudents();
       fillAwardStudents();
       loadTodayAttendanceSummary();
+      loadTodayPrayerSummary();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -1999,6 +2000,41 @@ async function loadTodayAttendanceSummary() {
   } catch (error) {
     console.error(error);
     area.textContent = "❌ Yoklama özeti yüklenemedi.";
+  }
+}
+async function loadTodayPrayerSummary() {
+  const area = $("summaryPrayer");
+  if (!area) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const snapshot = await get(ref(db, `prayerAttendance/${today}`));
+    const data = snapshot.val() || {};
+
+    let present = 0;
+    let absent = 0;
+    let late = 0;
+    let excused = 0;
+    let noCap = 0;
+
+    Object.values(data).forEach(prayerRecords => {
+      Object.values(prayerRecords || {}).forEach(record => {
+        if (!record || typeof record !== "object") return;
+
+        if (record.durum === "var") present++;
+        if (record.durum === "yok") absent++;
+        if (record.durum === "gec") late++;
+        if (record.durum === "izinli") excused++;
+        if (record.takkesiz === true) noCap++;
+      });
+    });
+
+    area.textContent =
+      `Var: ${present} | Yok: ${absent} | Geç: ${late} | İzinli: ${excused} | Takkesiz: ${noCap}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ Namaz özeti yüklenemedi.";
   }
 }
 async function loadTestResults() {
