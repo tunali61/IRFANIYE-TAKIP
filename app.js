@@ -74,6 +74,7 @@ onAuthStateChanged(auth, user => {
       loadTodayAttendanceSummary();
       loadWeeklyAttendanceSummary();
       loadTodayPrayerSummary();
+      loadWeeklyPrayerSummary();
       loadTodayBedSummary();
       loadTodaySchoolReturnSummary();
       loadTodayLeaveSummary();
@@ -2081,6 +2082,55 @@ async function loadTodayPrayerSummary() {
   } catch (error) {
     console.error(error);
     area.textContent = "❌ Namaz özeti yüklenemedi.";
+  }
+}
+async function loadWeeklyPrayerSummary() {
+  const area = $("summaryWeeklyPrayer");
+  if (!area) return;
+
+  try {
+    const today = new Date();
+    const day = today.getDay();
+
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+
+    let present = 0;
+    let absent = 0;
+    let late = 0;
+    let excused = 0;
+    let noCap = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
+
+      const dateText = date.toISOString().slice(0, 10);
+
+      const snapshot = await get(
+        ref(db, `prayerAttendance/${dateText}`)
+      );
+
+      const data = snapshot.val() || {};
+
+      Object.values(data).forEach(prayerRecords => {
+        Object.values(prayerRecords || {}).forEach(record => {
+          if (!record || typeof record !== "object") return;
+
+          if (record.durum === "var") present++;
+          if (record.durum === "yok") absent++;
+          if (record.durum === "gec") late++;
+          if (record.durum === "izinli") excused++;
+          if (record.takkesiz === true) noCap++;
+        });
+      });
+    }
+
+    area.textContent =
+      `Haftalık: Var: ${present} | Yok: ${absent} | Geç: ${late} | İzinli: ${excused} | Takkesiz: ${noCap}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ Haftalık namaz özeti yüklenemedi.";
   }
 }
 async function loadTodayBedSummary() {
