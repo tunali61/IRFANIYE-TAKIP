@@ -241,3 +241,30 @@ textarea {
   border-radius: 10px;
   border: 1px solid #dbe2ea;
 }
+/* ===== Kompakt Namaz Takip ===== */
+
+.prayerStudentRow {
+  padding: 9px 12px;
+  margin-bottom: 6px;
+  border: 1px solid #e6ebf1;
+  border-radius: 12px;
+  background: #fff;
+  gap: 10px;
+}
+
+.prayerStudentName {
+  min-width: 190px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.prayerStatusButtons {
+  gap: 5px;
+}
+
+.prayerStatusButtons button {
+  padding: 7px 12px;
+  min-height: 32px;
+  border-radius: 9px;
+  font-size: 12px;
+}
