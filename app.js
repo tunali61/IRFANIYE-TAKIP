@@ -70,6 +70,7 @@ onAuthStateChanged(auth, user => {
       fillSupportLessonStudents();
       fillTestResultStudents();
       fillQuranStudents();
+      fillAwardStudents();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -1619,6 +1620,19 @@ function fillTestResultStudents() {
 }
 function fillQuranStudents() {
   const select = $("quranStudent");
+  if (!select) return;
+
+  select.innerHTML = `<option value="">Talebe Seçin</option>`;
+
+  Object.entries(students || {}).forEach(([id, student]) => {
+    const option = document.createElement("option");
+    option.value = id;
+    option.textContent = student.name || "İsimsiz";
+    select.appendChild(option);
+  });
+}
+function fillAwardStudents() {
+  const select = $("awardStudent");
   if (!select) return;
 
   select.innerHTML = `<option value="">Talebe Seçin</option>`;
