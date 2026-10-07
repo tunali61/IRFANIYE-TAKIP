@@ -74,6 +74,7 @@ onAuthStateChanged(auth, user => {
       loadTodayAttendanceSummary();
       loadTodayPrayerSummary();
       loadTodayBedSummary();
+      loadTodaySchoolReturnSummary();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -2063,6 +2064,35 @@ async function loadTodayBedSummary() {
   } catch (error) {
     console.error(error);
     area.textContent = "❌ Yatak özeti yüklenemedi.";
+  }
+}
+async function loadTodaySchoolReturnSummary() {
+  const area = $("summarySchoolReturn");
+  if (!area) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const snapshot = await get(
+      ref(db, `schoolReturnAttendance/${today}`)
+    );
+    const data = snapshot.val() || {};
+
+    let present = 0;
+    let absent = 0;
+    let excused = 0;
+
+    Object.values(data).forEach(status => {
+      if (status === "present") present++;
+      if (status === "absent") absent++;
+      if (status === "excused") excused++;
+    });
+
+    area.textContent =
+      `Geldi: ${present} | Gelmedi: ${absent} | İzinli: ${excused}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ Okul dönüşü özeti yüklenemedi.";
   }
 }
 async function loadTestResults() {
