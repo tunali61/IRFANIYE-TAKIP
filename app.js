@@ -1835,6 +1835,7 @@ $("saveAwardBtn")?.addEventListener("click", async () => {
 
     $("awardMsg").textContent =
       "✅ Seçim başarıyla kaydedildi.";
+    await loadAwards();
   } catch (error) {
     console.error(error);
     $("awardMsg").textContent =
@@ -1909,6 +1910,47 @@ item.appendChild(deleteBtn);
 $("quranDate")?.addEventListener("change", () => {
   loadQuranRecords();
 });
+async function loadAwards() {
+  const list = $("awardList");
+  if (!list) return;
+
+  list.innerHTML = "Yükleniyor...";
+
+  try {
+    const snapshot = await get(ref(db, "studentAwards"));
+    const data = snapshot.val();
+
+    if (!data) {
+      list.innerHTML = "<p>Henüz seçilen talebe yok.</p>";
+      return;
+    }
+
+    list.innerHTML = "";
+
+    Object.entries(data).forEach(([type, records]) => {
+      Object.entries(records || {}).forEach(([recordId, record]) => {
+        const item = document.createElement("div");
+        item.className = "listItem";
+
+        const typeName =
+          type === "hafta" ? "🏆 Haftanın Talebesi" :
+          type === "ay" ? "🏆 Ayın Talebesi" :
+          type;
+
+        item.innerHTML = `
+          <strong>${record.name || "İsimsiz"}</strong><br>
+          ${typeName}<br>
+          Açıklama: ${record.note || "-"}
+        `;
+
+        list.appendChild(item);
+      });
+    });
+  } catch (error) {
+    console.error(error);
+    list.innerHTML = "<p>❌ Seçilen talebeler yüklenemedi.</p>";
+  }
+}
 async function loadTestResults() {
   const date = $("testResultDate")?.value;
   const list = $("testResultList");
