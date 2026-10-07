@@ -1807,6 +1807,40 @@ $("saveQuranBtn")?.addEventListener("click", async () => {
       "❌ Kur'an kaydı kaydedilirken hata oluştu.";
   }
 });
+$("saveAwardBtn")?.addEventListener("click", async () => {
+  const type = $("awardType")?.value;
+  const studentId = $("awardStudent")?.value;
+  const note = $("awardNote")?.value.trim();
+
+  if (!type || !studentId || !note) {
+    $("awardMsg").textContent =
+      "Lütfen ödül türü, talebe ve başarı sebebini doldurun.";
+    return;
+  }
+
+  const student = students[studentId];
+
+  try {
+    const recordId = Date.now().toString();
+
+    await set(
+      ref(db, `studentAwards/${type}/${recordId}`),
+      {
+        studentId,
+        name: student.name || "İsimsiz",
+        note,
+        createdAt: new Date().toISOString()
+      }
+    );
+
+    $("awardMsg").textContent =
+      "✅ Seçim başarıyla kaydedildi.";
+  } catch (error) {
+    console.error(error);
+    $("awardMsg").textContent =
+      "❌ Seçim kaydedilirken hata oluştu.";
+  }
+});
 async function loadQuranRecords() {
   const date = $("quranDate")?.value;
   const list = $("quranList");
