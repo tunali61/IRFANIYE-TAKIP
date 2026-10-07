@@ -268,3 +268,46 @@ textarea {
   border-radius: 9px;
   font-size: 12px;
 }
+/* ===== Namaz Durum Renkleri ===== */
+
+/* Seçili olmayan butonlar */
+.prayerStatusButtons button {
+  background: #f3f6f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* VAR - Yeşil */
+.prayerStatusButtons button[data-status="var"].selected {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  color: white !important;
+}
+
+/* YOK - Kırmızı */
+.prayerStatusButtons button[data-status="yok"].selected {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: white !important;
+}
+
+/* GEÇ - Sarı */
+.prayerStatusButtons button[data-status="gec"].selected {
+  background: #facc15 !important;
+  border-color: #facc15 !important;
+  color: #422006 !important;
+}
+
+/* İZİNLİ - Açık Mavi */
+.prayerStatusButtons button[data-status="izinli"].selected {
+  background: #38bdf8 !important;
+  border-color: #38bdf8 !important;
+  color: #082f49 !important;
+}
+
+/* TAKKESİZ - Mor */
+.prayerStatusButtons button[data-status="takkesiz"].selected {
+  background: #8b5cf6 !important;
+  border-color: #8b5cf6 !important;
+  color: white !important;
+}
