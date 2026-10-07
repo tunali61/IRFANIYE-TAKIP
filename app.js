@@ -80,6 +80,7 @@ onAuthStateChanged(auth, user => {
       loadTodaySchoolReturnSummary();
       loadWeeklySchoolReturnSummary();
       loadTodayLeaveSummary();
+      loadWeeklyLeaveSummary();
       loadTodayDutySummary();
 setTimeout(() => {
   loadBedAttendance();
@@ -2294,6 +2295,42 @@ async function loadTodayLeaveSummary() {
   } catch (error) {
     console.error(error);
     area.textContent = "❌ İzin özeti yüklenemedi.";
+  }
+}
+async function loadWeeklyLeaveSummary() {
+  const area = $("summaryWeeklyLeave");
+  if (!area) return;
+
+  try {
+    const snapshot = await get(ref(db, "leaves"));
+    const data = snapshot.val() || {};
+
+    const today = new Date();
+    const day = today.getDay();
+
+    const monday = new Date(today);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+
+    const nextMonday = new Date(monday);
+    nextMonday.setDate(monday.getDate() + 7);
+
+    let total = 0;
+
+    Object.values(data).forEach(record => {
+      if (!record?.start) return;
+
+      const startDate = new Date(record.start);
+
+      if (startDate >= monday && startDate < nextMonday) {
+        total++;
+      }
+    });
+
+    area.textContent = `Haftalık: Bu hafta izin kaydı: ${total}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ Haftalık izin özeti yüklenemedi.";
   }
 }
 async function loadTodayDutySummary() {
