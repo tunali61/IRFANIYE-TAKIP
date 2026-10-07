@@ -76,6 +76,7 @@ onAuthStateChanged(auth, user => {
       loadTodayBedSummary();
       loadTodaySchoolReturnSummary();
       loadTodayLeaveSummary();
+      loadTodayDutySummary();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -2116,6 +2117,28 @@ async function loadTodayLeaveSummary() {
   } catch (error) {
     console.error(error);
     area.textContent = "❌ İzin özeti yüklenemedi.";
+  }
+}
+async function loadTodayDutySummary() {
+  const area = $("summaryDuty");
+  if (!area) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const snapshot = await get(ref(db, `dailyDuties/${today}`));
+    const data = snapshot.val() || {};
+
+    let total = 0;
+
+    Object.values(data).forEach(dutyRecords => {
+      total += Object.keys(dutyRecords || {}).length;
+    });
+
+    area.textContent = `Bugünkü görevli: ${total}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ Görevli özeti yüklenemedi.";
   }
 }
 async function loadTestResults() {
