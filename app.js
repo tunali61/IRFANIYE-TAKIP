@@ -71,6 +71,7 @@ onAuthStateChanged(auth, user => {
       fillTestResultStudents();
       fillQuranStudents();
       fillAwardStudents();
+      loadTodayAttendanceSummary();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -1969,6 +1970,35 @@ item.appendChild(deleteBtn);
   } catch (error) {
     console.error(error);
     list.innerHTML = "<p>❌ Seçilen talebeler yüklenemedi.</p>";
+  }
+}
+async function loadTodayAttendanceSummary() {
+  const area = $("summaryAttendance");
+  if (!area) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const snapshot = await get(ref(db, `attendance/${today}`));
+    const data = snapshot.val() || {};
+
+    let present = 0;
+    let absent = 0;
+    let excused = 0;
+
+    Object.values(data).forEach(status => {
+      if (status === "present") present++;
+      if (status === "absent") absent++;
+      if (status === "excused") excused++;
+    });
+
+    const total = Object.keys(students || {}).length;
+
+    area.textContent =
+      `Toplam: ${total} | Geldi: ${present} | Gelmedi: ${absent} | İzinli: ${excused}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ Yoklama özeti yüklenemedi.";
   }
 }
 async function loadTestResults() {
