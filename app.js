@@ -72,6 +72,7 @@ onAuthStateChanged(auth, user => {
       fillQuranStudents();
       fillAwardStudents();
       loadTodayAttendanceSummary();
+      loadWeeklyAttendanceSummary();
       loadTodayPrayerSummary();
       loadTodayBedSummary();
       loadTodaySchoolReturnSummary();
@@ -2004,6 +2005,47 @@ async function loadTodayAttendanceSummary() {
   } catch (error) {
     console.error(error);
     area.textContent = "❌ Yoklama özeti yüklenemedi.";
+  }
+}
+async function loadWeeklyAttendanceSummary() {
+  const area = $("summaryWeeklyAttendance");
+  if (!area) return;
+
+  try {
+    const today = new Date();
+    const day = today.getDay();
+
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+
+    let present = 0;
+    let absent = 0;
+    let excused = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
+
+      const dateText = date.toISOString().slice(0, 10);
+
+      const snapshot = await get(
+        ref(db, `attendance/${dateText}`)
+      );
+
+      const data = snapshot.val() || {};
+
+      Object.values(data).forEach(status => {
+        if (status === "present") present++;
+        if (status === "absent") absent++;
+        if (status === "excused") excused++;
+      });
+    }
+
+    area.textContent =
+      `Haftalık: Geldi: ${present} | Gelmedi: ${absent} | İzinli: ${excused}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ Haftalık yoklama yüklenemedi.";
   }
 }
 async function loadTodayPrayerSummary() {
