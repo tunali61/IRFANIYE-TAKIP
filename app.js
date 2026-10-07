@@ -82,6 +82,7 @@ onAuthStateChanged(auth, user => {
       loadTodayLeaveSummary();
       loadWeeklyLeaveSummary();
       loadTodayDutySummary();
+      loadWeeklyDutySummary();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -2353,6 +2354,42 @@ async function loadTodayDutySummary() {
   } catch (error) {
     console.error(error);
     area.textContent = "❌ Görevli özeti yüklenemedi.";
+  }
+}
+async function loadWeeklyDutySummary() {
+  const area = $("summaryWeeklyDuty");
+  if (!area) return;
+
+  try {
+    const today = new Date();
+    const day = today.getDay();
+
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+
+    let total = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
+
+      const dateText = date.toISOString().slice(0, 10);
+
+      const snapshot = await get(
+        ref(db, `dailyDuties/${dateText}`)
+      );
+
+      const data = snapshot.val() || {};
+
+      Object.values(data).forEach(dutyRecords => {
+        total += Object.keys(dutyRecords || {}).length;
+      });
+    }
+
+    area.textContent = `Haftalık: Toplam görevli: ${total}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ Haftalık görevli özeti yüklenemedi.";
   }
 }
 async function loadTestResults() {
