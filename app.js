@@ -75,6 +75,7 @@ onAuthStateChanged(auth, user => {
       loadTodayPrayerSummary();
       loadTodayBedSummary();
       loadTodaySchoolReturnSummary();
+      loadTodayLeaveSummary();
 setTimeout(() => {
   loadBedAttendance();
   loadSchoolReturnAttendance();
@@ -2093,6 +2094,28 @@ async function loadTodaySchoolReturnSummary() {
   } catch (error) {
     console.error(error);
     area.textContent = "❌ Okul dönüşü özeti yüklenemedi.";
+  }
+}
+async function loadTodayLeaveSummary() {
+  const area = $("summaryLeave");
+  if (!area) return;
+
+  try {
+    const snapshot = await get(ref(db, "leaves"));
+    const data = snapshot.val() || {};
+
+    let outside = 0;
+
+    Object.values(data).forEach(record => {
+      if (record && record.returned === false) {
+        outside++;
+      }
+    });
+
+    area.textContent = `Şu an dışarıda: ${outside}`;
+  } catch (error) {
+    console.error(error);
+    area.textContent = "❌ İzin özeti yüklenemedi.";
   }
 }
 async function loadTestResults() {
