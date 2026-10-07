@@ -1942,7 +1942,27 @@ async function loadAwards() {
           ${typeName}<br>
           Açıklama: ${record.note || "-"}
         `;
+const deleteBtn = document.createElement("button");
+deleteBtn.type = "button";
+deleteBtn.textContent = "🗑️ Sil";
+deleteBtn.className = "danger";
 
+deleteBtn.addEventListener("click", async () => {
+  try {
+    await set(
+      ref(db, `studentAwards/${type}/${recordId}`),
+      null
+    );
+
+    await loadAwards();
+  } catch (error) {
+    console.error(error);
+    $("awardMsg").textContent =
+      "❌ Seçim silinirken hata oluştu.";
+  }
+});
+
+item.appendChild(deleteBtn);
         list.appendChild(item);
       });
     });
