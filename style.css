@@ -470,3 +470,26 @@ textarea {
   color: white !important;
   border-color: #38bdf8 !important;
 }
+.studyStatusButtons button {
+  background: #f1f5f9;
+  color: #1f2937;
+  border: 1px solid #dbe3ec;
+}
+
+.studyStatusButtons button[data-status="katildi"].selected {
+  background: #16a34a !important;
+  color: white !important;
+  border-color: #16a34a !important;
+}
+
+.studyStatusButtons button[data-status="katilmadi"].selected {
+  background: #ef4444 !important;
+  color: white !important;
+  border-color: #ef4444 !important;
+}
+
+.studyStatusButtons button[data-status="izinli"].selected {
+  background: #38bdf8 !important;
+  color: white !important;
+  border-color: #38bdf8 !important;
+}
