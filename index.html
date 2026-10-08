@@ -43,13 +43,28 @@
   <p id="selectedPrayer">Seçili Vakit: Sabah</p>
 
   <div id="prayerSummary">
-    <strong>Durum:</strong> 
-    <span>Var: <b id="prayerVarCount">0</b></span>
-    <span>Yok: <b id="prayerYokCount">0</b></span>
-    <span>Geç: <b id="prayerGecCount">0</b></span>
-    <span>Takkesiz: <b id="prayerTakkesizCount">0</b></span>
-    <span>İzinli: <b id="prayerIzinliCount">0</b></span>
-  </div>
+  <strong>Durum:</strong>
+
+  <span class="prayerStat statVar">
+    Var <b id="prayerVarCount">0</b>
+  </span>
+
+  <span class="prayerStat statYok">
+    Yok <b id="prayerYokCount">0</b>
+  </span>
+
+  <span class="prayerStat statGec">
+    Geç <b id="prayerGecCount">0</b>
+  </span>
+
+  <span class="prayerStat statIzinli">
+    İzinli <b id="prayerIzinliCount">0</b>
+  </span>
+
+  <span class="prayerStat statTakkesiz">
+    Takkesiz <b id="prayerTakkesizCount">0</b>
+  </span>
+</div>
 
   <button type="button" id="prayerAllPresentBtn">
     ⚡ Tümünü Var Yap
