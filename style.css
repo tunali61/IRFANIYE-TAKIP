@@ -540,3 +540,48 @@ textarea {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
+/* NAMAZ TAKİP - DURUM SAYAÇLARI */
+#prayerSummary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+
+.prayerStat {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  border: 1px solid;
+}
+
+.statVar {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.statYok {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.statGec {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.statIzinli {
+  background: #e0f2fe;
+  color: #075985;
+  border-color: #7dd3fc;
+}
+
+.statTakkesiz {
+  background: #f3e8ff;
+  color: #6b21a8;
+  border-color: #d8b4fe;
+}
