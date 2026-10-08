@@ -374,3 +374,27 @@ textarea {
   border-radius: 9px;
   font-size: 12px;
 }
+/* Yatak Yoklaması - durum renkleri */
+.bedStudentRow button {
+  background: #f4f7fa !important;
+  color: #334155 !important;
+  border: 1px solid #dbe3ec !important;
+}
+
+.bedStudentRow button[data-status="present"].selected {
+  background: #16a34a !important;
+  color: white !important;
+  border-color: #16a34a !important;
+}
+
+.bedStudentRow button[data-status="absent"].selected {
+  background: #ef4444 !important;
+  color: white !important;
+  border-color: #ef4444 !important;
+}
+
+.bedStudentRow button[data-status="excused"].selected {
+  background: #38bdf8 !important;
+  color: white !important;
+  border-color: #38bdf8 !important;
+}
