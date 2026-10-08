@@ -496,24 +496,16 @@ async function loadStudy() {
       <div class="student">
         <strong>${esc(student.name)}</strong>
         — ${esc(student.className || "")}
+<div class="studyStatusButtons">
+  <button type="button" data-study-id="${id}" data-status="katildi"
+    class="${status === "katildi" ? "selected" : ""}">Katıldı</button>
 
-        <select class="studyStatus" data-id="${id}">
-          <option value="katildi"
-            ${status === "katildi" ? "selected" : ""}>
-            Katıldı
-          </option>
+  <button type="button" data-study-id="${id}" data-status="katilmadi"
+    class="${status === "katilmadi" ? "selected" : ""}">Katılmadı</button>
 
-          <option value="katilmadi"
-            ${status === "katilmadi" ? "selected" : ""}>
-            Katılmadı
-          </option>
-
-          <option value="izinli"
-            ${status === "izinli" ? "selected" : ""}>
-            İzinli
-          </option>
-        </select>
-
+  <button type="button" data-study-id="${id}" data-status="izinli"
+    class="${status === "izinli" ? "selected" : ""}">İzinli</button>
+</div>
         <input
           type="text"
           class="studyNote"
@@ -524,7 +516,19 @@ async function loadStudy() {
       </div>
     `;
   }).join("");
+document.querySelectorAll("[data-study-id]").forEach(button => {
+  button.addEventListener("click", () => {
+    const studentId = button.dataset.studyId;
 
+    document
+      .querySelectorAll(`[data-study-id="${studentId}"]`)
+      .forEach(btn => btn.classList.remove("selected"));
+
+    button.classList.add("selected");
+
+    updateStudySummary();
+  });
+});
   updateStudySummary();
   studyMsg.textContent = "Etüt açıldı.";
 }
