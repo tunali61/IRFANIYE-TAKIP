@@ -520,3 +520,23 @@ textarea {
   border-color: #059669 !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
 }
+/* NAMAZ TAKİP - TALEBE ARAMA */
+.prayerSearchBox {
+  margin: 12px 0;
+}
+
+#prayerStudentSearch {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 15px;
+  border: 1px solid #dbe3ec;
+  border-radius: 12px;
+  font-size: 15px;
+  background: #ffffff;
+}
+
+#prayerStudentSearch:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
