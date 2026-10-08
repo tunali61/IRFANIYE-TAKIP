@@ -334,21 +334,22 @@ async function loadAttendance() {
       </div>
     `;
   }).join("");
-updateAttendanceSummary();
-  attendanceMsg.textContent = "Yoklama açıldı.";
-}
-document.querySelectorAll("[data-attendance-id]").forEach(button => {
+  document.querySelectorAll("[data-attendance-id]").forEach(button => {
   button.addEventListener("click", () => {
     const studentId = button.dataset.attendanceId;
-    const status = button.dataset.status;
 
     document
       .querySelectorAll(`[data-attendance-id="${studentId}"]`)
       .forEach(btn => btn.classList.remove("selected"));
 
     button.classList.add("selected");
+    updateAttendanceSummary();
   });
 });
+updateAttendanceSummary();
+  attendanceMsg.textContent = "Yoklama açıldı.";
+}
+
 async function saveAttendance() {
   const date = attendanceDate.value;
 
