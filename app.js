@@ -968,6 +968,7 @@ studentModal?.addEventListener("click", (e) => {
 
 let selectedPrayer = "sabah";
 let prayerStatuses = {};
+let prayerClassFilter = "all";
 
 function renderPrayerStudents() {
   const container = $("prayerStudentList");
@@ -976,6 +977,10 @@ function renderPrayerStudents() {
   container.innerHTML = "";
 
   Object.entries(students || {}).forEach(([id, student]) => {
+    if (
+  prayerClassFilter !== "all" &&
+  student.className !== prayerClassFilter
+) return;
     const row = document.createElement("div");
     row.className = "prayerStudentRow";
 
@@ -997,6 +1002,19 @@ function renderPrayerStudents() {
     container.appendChild(row);
   });
 }
+$("prayerClassFilters")?.addEventListener("click", (e) => {
+  const button = e.target.closest("[data-class]");
+  if (!button) return;
+
+  prayerClassFilter = button.dataset.class;
+
+  document
+    .querySelectorAll("#prayerClassFilters [data-class]")
+    .forEach(btn => btn.classList.remove("active"));
+
+  button.classList.add("active");
+  renderPrayerStudents();
+});
 $("prayerStudentList")?.addEventListener("click", (e) => {
   const button = e.target.closest("[data-prayer-student]");
   if (!button) return;
