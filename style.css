@@ -339,3 +339,11 @@ textarea {
 #prayerTimes button:hover {
   background: #f8fafc;
 }
+/* ===== Seçili Namaz Vakti ===== */
+
+#prayerTimes button.active {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
