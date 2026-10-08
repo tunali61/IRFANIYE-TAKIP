@@ -1072,7 +1072,11 @@ function updatePrayerCounts() {
 document.querySelectorAll("#prayerTimes [data-prayer]").forEach(button => {
   button.addEventListener("click", () => {
     selectedPrayer = button.dataset.prayer;
+document.querySelectorAll("#prayerTimes [data-prayer]").forEach(btn => {
+  btn.classList.remove("active");
+});
 
+button.classList.add("active");
     const names = {
       sabah: "Sabah",
       ogle: "Öğle",
