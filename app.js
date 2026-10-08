@@ -1158,7 +1158,13 @@ $("savePrayerBtn")?.addEventListener("click", async () => {
       ref(db, `prayerAttendance/${date}/${selectedPrayer}`),
       prayerStatuses
     );
-
+await set(
+  ref(db, `prayerAudit/${date}/${selectedPrayer}`),
+  {
+    recordedAt: Date.now(),
+    recordedBy: "Sistem Kaydı"
+  }
+);
     $("prayerMsg").textContent = "✅ Namaz yoklaması kaydedildi.";
     await loadPrayerAuditPanel();
   } catch (error) {
