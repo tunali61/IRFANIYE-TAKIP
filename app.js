@@ -321,26 +321,34 @@ async function loadAttendance() {
         <strong>${esc(s.name)}</strong>
         <span> — ${esc(s.className || "")}</span>
 
-        <select class="attendanceStatus" data-id="${id}">
-          <option value="geldi" ${status === "geldi" ? "selected" : ""}>
-            Geldi
-          </option>
+        <div class="attendanceStatusButtons">
+  <button type="button" data-attendance-id="${id}" data-status="geldi"
+    class="${status === "geldi" ? "selected" : ""}">Geldi</button>
 
-          <option value="gelmedi" ${status === "gelmedi" ? "selected" : ""}>
-            Gelmedi
-          </option>
+  <button type="button" data-attendance-id="${id}" data-status="gelmedi"
+    class="${status === "gelmedi" ? "selected" : ""}">Gelmedi</button>
 
-          <option value="izinli" ${status === "izinli" ? "selected" : ""}>
-            İzinli
-          </option>
-        </select>
+  <button type="button" data-attendance-id="${id}" data-status="izinli"
+    class="${status === "izinli" ? "selected" : ""}">İzinli</button>
+</div>
       </div>
     `;
   }).join("");
 updateAttendanceSummary();
   attendanceMsg.textContent = "Yoklama açıldı.";
 }
+document.querySelectorAll("[data-attendance-id]").forEach(button => {
+  button.addEventListener("click", () => {
+    const studentId = button.dataset.attendanceId;
+    const status = button.dataset.status;
 
+    document
+      .querySelectorAll(`[data-attendance-id="${studentId}"]`)
+      .forEach(btn => btn.classList.remove("selected"));
+
+    button.classList.add("selected");
+  });
+});
 async function saveAttendance() {
   const date = attendanceDate.value;
 
@@ -351,15 +359,18 @@ async function saveAttendance() {
 
   const records = {};
 
-  document.querySelectorAll(".attendanceStatus").forEach(select => {
-    const id = select.dataset.id;
+  document.querySelectorAll(".attendanceStatusButtons").forEach(group => {
+  const selected = group.querySelector("button.selected");
+  if (!selected) return;
 
-    records[id] = {
-      status: select.value,
-      studentName: students[id]?.name || "",
-      studentNo: students[id]?.studentNo || ""
-    };
-  });
+  const id = selected.dataset.attendanceId;
+
+  records[id] = {
+    status: selected.dataset.status,
+    studentName: students[id]?.name || "",
+    studentNo: students[id]?.studentNo || ""
+  };
+});
 
   if (!Object.keys(records).length) {
     attendanceMsg.textContent = "Önce Yoklamayı Aç butonuna basın.";
@@ -412,6 +423,7 @@ async function loadMonthlyReport() {
       geldi: 0,
       gelmedi: 0,
       izinli: 0
+      
     };
   });
 
