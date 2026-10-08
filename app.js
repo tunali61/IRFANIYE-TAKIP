@@ -969,18 +969,24 @@ studentModal?.addEventListener("click", (e) => {
 let selectedPrayer = "sabah";
 let prayerStatuses = {};
 let prayerClassFilter = "all";
-
+let prayerStudentSearch = "";
 function renderPrayerStudents() {
   const container = $("prayerStudentList");
   if (!container) return;
 
   container.innerHTML = "";
 
-  Object.entries(students || {}).forEach(([id, student]) => {
-    if (
+  if (
   prayerClassFilter !== "all" &&
-  student.className !== prayerClassFilter
+  (student.className || "").trim().toUpperCase() !== prayerClassFilter.toUpperCase()
 ) return;
+
+if (prayerStudentSearch) {
+  const searchText = prayerStudentSearch.toLowerCase();
+  const studentName = (student.name || "").toLowerCase();
+
+  if (!studentName.includes(searchText)) return;
+}
     const row = document.createElement("div");
     row.className = "prayerStudentRow";
 
@@ -1013,6 +1019,10 @@ $("prayerClassFilters")?.addEventListener("click", (e) => {
     .forEach(btn => btn.classList.remove("active"));
 
   button.classList.add("active");
+  renderPrayerStudents();
+});
+$("prayerStudentSearch")?.addEventListener("input", (e) => {
+  prayerStudentSearch = e.target.value.trim();
   renderPrayerStudents();
 });
 $("prayerStudentList")?.addEventListener("click", (e) => {
