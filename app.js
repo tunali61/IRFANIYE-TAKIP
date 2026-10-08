@@ -975,7 +975,7 @@ function renderPrayerStudents() {
   if (!container) return;
 
   container.innerHTML = "";
-
+Object.entries(students || {}).forEach(([id, student]) => {
   if (
   prayerClassFilter !== "all" &&
   (student.className || "").trim().toUpperCase() !== prayerClassFilter.toUpperCase()
@@ -1006,6 +1006,7 @@ if (prayerStudentSearch) {
     `;
 
     container.appendChild(row);
+  });
 }
 $("prayerClassFilters")?.addEventListener("click", (e) => {
   const button = e.target.closest("[data-class]");
