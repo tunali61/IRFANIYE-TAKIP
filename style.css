@@ -585,3 +585,88 @@ textarea {
   color: #6b21a8;
   border-color: #d8b4fe;
 }
+/* NAMAZ - YÖNETİCİ VAKİT DENETİM PANELİ */
+.prayerAuditPanel {
+  background: #f8fafc;
+  border: 1px solid #dbe3ec;
+  border-radius: 16px;
+  padding: 15px;
+}
+
+.prayerAuditHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+#prayerAuditDate {
+  color: #64748b;
+  font-size: 13px;
+}
+
+#prayerAuditTotal {
+  margin-left: auto;
+  background: #d1fae5;
+  color: #047857;
+  border: 1px solid #6ee7b7;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-weight: 700;
+}
+
+.prayerAuditGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.prayerAuditItem {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  background: white;
+  border: 1px solid #dbe3ec;
+  border-radius: 13px;
+  padding: 12px;
+  min-height: 85px;
+}
+
+.prayerAuditItem > strong {
+  font-size: 15px;
+}
+
+.prayerAuditItem .auditStatus {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.prayerAuditItem .auditCounts {
+  color: #64748b;
+}
+
+.prayerAuditItem.completed {
+  border: 2px solid #10b981;
+}
+
+.prayerAuditItem.completed .auditStatus {
+  color: #059669;
+}
+
+/* Küçük ekranlarda kartlar alt alta geçsin */
+@media (max-width: 900px) {
+  .prayerAuditGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .prayerAuditGrid {
+    grid-template-columns: 1fr;
+  }
+
+  #prayerAuditTotal {
+    margin-left: 0;
+  }
+}
