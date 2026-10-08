@@ -1006,7 +1006,6 @@ if (prayerStudentSearch) {
     `;
 
     container.appendChild(row);
-  });
 }
 $("prayerClassFilters")?.addEventListener("click", (e) => {
   const button = e.target.closest("[data-class]");
