@@ -17,7 +17,7 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 const $ = id => document.getElementById(id); 
 let students = {}, editingId = null, unsubscribe = null; 
-
+let currentAdminName = "Sistem Kaydı";
 $("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
   $("loginMsg").textContent = "Giriş yapılıyor...";
@@ -60,6 +60,7 @@ onAuthStateChanged(auth, user => {
   $("logoutBtn").classList.toggle("hidden", !user);
   if (unsubscribe) unsubscribe();
   if (user) {
+    currentAdminName = user.email || "Sistem Kaydı";
     unsubscribe = onValue(ref(db, "students"), snap => {
       students = snap.val() || {};
       fillLeaveStudents();
@@ -1162,7 +1163,7 @@ await set(
   ref(db, `prayerAudit/${date}/${selectedPrayer}`),
   {
     recordedAt: Date.now(),
-    recordedBy: "Sistem Kaydı"
+   recordedBy: currentAdminName
   }
 );
     $("prayerMsg").textContent = "✅ Namaz yoklaması kaydedildi.";
