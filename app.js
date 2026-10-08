@@ -1229,7 +1229,10 @@ async function loadPrayerAuditPanel() {
   try {
     const snap = await get(ref(db, `prayerAttendance/${date}`));
     const dayData = snap.val() || {};
-
+const auditSnap = await get(
+  ref(db, `prayerAudit/${date}`)
+);
+const auditData = auditSnap.val() || {};
     prayers.forEach(prayer => {
       const card = document.querySelector(
         `[data-audit-prayer="${prayer}"]`
@@ -1239,6 +1242,7 @@ async function loadPrayerAuditPanel() {
 
       const statusEl = card.querySelector(".auditStatus");
       const countsEl = card.querySelector(".auditCounts");
+      const auditInfo = auditData[prayer] || {};
       const records = dayData[prayer] || {};
 
       const entries = Object.values(records);
@@ -1270,7 +1274,14 @@ async function loadPrayerAuditPanel() {
 
       card.classList.add("completed");
       statusEl.textContent = `✓ Alındı (${entries.length} T.)`;
+if (auditInfo.recordedAt) {
+  const time = new Date(auditInfo.recordedAt).toLocaleTimeString("tr-TR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 
+  statusEl.textContent += ` • ${auditInfo.recordedBy || "Sistem Kaydı"} • ${time}`;
+}
       countsEl.textContent =
         `Var: ${varCount} • Yok: ${yokCount} • Geç: ${gecCount} • İzinli: ${izinliCount} • Takkesiz: ${takkesizCount}`;
     });
