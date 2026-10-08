@@ -532,29 +532,26 @@ document.querySelectorAll("[data-study-id]").forEach(button => {
   updateStudySummary();
   studyMsg.textContent = "Etüt açıldı.";
 }
-
 function updateStudySummary() {
-  const selects = document.querySelectorAll(".studyStatus");
+  const selectedButtons = document.querySelectorAll(
+    ".studyStatusButtons button.selected"
+  );
 
   let katildi = 0;
   let katilmadi = 0;
   let izinli = 0;
 
-  selects.forEach(select => {
-    if (select.value === "katildi") katildi++;
-    if (select.value === "katilmadi") katilmadi++;
-    if (select.value === "izinli") izinli++;
+  selectedButtons.forEach(button => {
+    const status = button.dataset.status;
+
+    if (status === "katildi") katildi++;
+    if (status === "katilmadi") katilmadi++;
+    if (status === "izinli") izinli++;
   });
 
   studySummary.textContent =
-    `Toplam: ${selects.length} | Katıldı: ${katildi} | Katılmadı: ${katilmadi} | İzinli: ${izinli}`;
+    `Toplam: ${selectedButtons.length} | Katıldı: ${katildi} | Katılmadı: ${katilmadi} | İzinli: ${izinli}`;
 }
-
-document.addEventListener("change", e => {
-  if (e.target.classList.contains("studyStatus")) {
-    updateStudySummary();
-  }
-});
 
 async function saveStudy() {
   const date = studyDate.value;
@@ -566,21 +563,17 @@ async function saveStudy() {
   }
 
   const records = {};
+document.querySelectorAll(".studyStatusButtons button.selected").forEach(button => {
+  const id = button.dataset.studyId;
+  const noteInput = document.querySelector(`.studyNote[data-id="${id}"]`);
 
-  document.querySelectorAll(".studyStatus").forEach(select => {
-    const id = select.dataset.id;
-
-    const noteInput =
-      document.querySelector(`.studyNote[data-id="${id}"]`);
-
-    records[id] = {
-      status: select.value,
-      note: noteInput ? noteInput.value.trim() : "",
-      studentName: students[id]?.name || "",
-      studentNo: students[id]?.studentNo || ""
-    };
-  });
-
+  records[id] = {
+    status: button.dataset.status,
+    note: noteInput ? noteInput.value.trim() : "",
+    studentName: students[id]?.name || "",
+    studentNo: students[id]?.studentNo || ""
+  };
+});
   if (!Object.keys(records).length) {
     studyMsg.textContent = "Önce Etüdü Aç butonuna basın.";
     return;
