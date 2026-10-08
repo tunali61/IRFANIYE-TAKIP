@@ -398,3 +398,52 @@ textarea {
   color: white !important;
   border-color: #38bdf8 !important;
 }
+/* Okul Dönüşü - kompakt ve minimal görünüm */
+.schoolStudentRow {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 6px 0;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.schoolStudentRow > div:first-child {
+  min-width: 180px;
+}
+
+.schoolStudentRow > div:last-child {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.schoolStudentRow button {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border: 1px solid #dbe3ec !important;
+}
+
+.schoolStudentRow button.selected[data-status="present"] {
+  background: #16a34a !important;
+  color: white !important;
+  border-color: #16a34a !important;
+}
+
+.schoolStudentRow button.selected[data-status="absent"] {
+  background: #ef4444 !important;
+  color: white !important;
+  border-color: #ef4444 !important;
+}
+
+.schoolStudentRow button.selected[data-status="excused"] {
+  background: #38bdf8 !important;
+  color: white !important;
+  border-color: #38bdf8 !important;
+}
