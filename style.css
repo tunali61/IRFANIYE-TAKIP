@@ -447,3 +447,26 @@ textarea {
   color: white !important;
   border-color: #38bdf8 !important;
 }
+.attendanceStatusButtons button {
+  background: #f1f5f9;
+  color: #1f2937;
+  border: 1px solid #dbe3ec;
+}
+
+.attendanceStatusButtons button[data-status="geldi"].selected {
+  background: #16a34a !important;
+  color: white !important;
+  border-color: #16a34a !important;
+}
+
+.attendanceStatusButtons button[data-status="gelmedi"].selected {
+  background: #ef4444 !important;
+  color: white !important;
+  border-color: #ef4444 !important;
+}
+
+.attendanceStatusButtons button[data-status="izinli"].selected {
+  background: #38bdf8 !important;
+  color: white !important;
+  border-color: #38bdf8 !important;
+}
