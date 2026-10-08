@@ -347,3 +347,30 @@ textarea {
   color: #ffffff !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
+/* ===== Kompakt Yatak Yoklaması ===== */
+
+.bedStudentRow {
+  padding: 9px 12px;
+  margin: 6px 0;
+  border: 1px solid #e6ebf1;
+  border-radius: 12px;
+  background: #ffffff;
+  gap: 10px;
+}
+
+.bedStudentRow > div:first-child {
+  min-width: 190px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.bedStudentRow > div:last-child {
+  gap: 5px;
+}
+
+.bedStudentRow button {
+  padding: 7px 12px;
+  min-height: 32px;
+  border-radius: 9px;
+  font-size: 12px;
+}
