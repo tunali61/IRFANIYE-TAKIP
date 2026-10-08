@@ -1081,6 +1081,34 @@ $("prayerAllPresentBtn")?.addEventListener("click", () => {
 
   updatePrayerCounts();
 });
+$("prayerReviewAbsentBtn")?.addEventListener("click", () => {
+  const absentStudents = [];
+
+  Object.entries(prayerStatuses || {}).forEach(([studentId, record]) => {
+    if (!record || typeof record !== "object") return;
+
+    if (["yok", "gec", "izinli"].includes(record.durum)) {
+      const student = students?.[studentId];
+
+      absentStudents.push(
+        `${student?.name || "İsimsiz"} - ${
+          record.durum === "yok"
+            ? "Yok"
+            : record.durum === "gec"
+            ? "Geç"
+            : "İzinli"
+        }`
+      );
+    }
+  });
+
+  if (absentStudents.length === 0) {
+    alert("Bu vakitte Yok, Geç veya İzinli talebe bulunmuyor.");
+    return;
+  }
+
+  alert("Olmayan Talebeler:\n\n" + absentStudents.join("\n"));
+});
 function updatePrayerCounts() {
   const counts = {
     var: 0,
