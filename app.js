@@ -1160,6 +1160,7 @@ $("savePrayerBtn")?.addEventListener("click", async () => {
     );
 
     $("prayerMsg").textContent = "✅ Namaz yoklaması kaydedildi.";
+    await loadPrayerAuditPanel();
   } catch (error) {
     console.error(error);
     $("prayerMsg").textContent = "❌ Kayıt sırasında hata oluştu.";
@@ -1205,6 +1206,81 @@ $("prayerDate")?.addEventListener("change", () => {
   loadPrayerAttendance();
 });
 loadPrayerAttendance();
+async function loadPrayerAuditPanel() {
+  const date = $("prayerDate")?.value;
+  if (!date) return;
+
+  const auditDate = $("prayerAuditDate");
+  const auditTotal = $("prayerAuditTotal");
+
+  if (auditDate) {
+    auditDate.textContent = `(${date})`;
+  }
+
+  const prayers = ["sabah", "ogle", "ikindi", "aksam", "yatsi"];
+  let completedCount = 0;
+
+  try {
+    const snap = await get(ref(db, `prayerAttendance/${date}`));
+    const dayData = snap.val() || {};
+
+    prayers.forEach(prayer => {
+      const card = document.querySelector(
+        `[data-audit-prayer="${prayer}"]`
+      );
+
+      if (!card) return;
+
+      const statusEl = card.querySelector(".auditStatus");
+      const countsEl = card.querySelector(".auditCounts");
+      const records = dayData[prayer] || {};
+
+      const entries = Object.values(records);
+
+      if (entries.length === 0) {
+        card.classList.remove("completed");
+        statusEl.textContent = "Bekleniyor";
+        countsEl.textContent = "-";
+        return;
+      }
+
+      completedCount++;
+
+      let varCount = 0;
+      let yokCount = 0;
+      let gecCount = 0;
+      let izinliCount = 0;
+      let takkesizCount = 0;
+
+      entries.forEach(record => {
+        if (!record || typeof record !== "object") return;
+
+        if (record.durum === "var") varCount++;
+        if (record.durum === "yok") yokCount++;
+        if (record.durum === "gec") gecCount++;
+        if (record.durum === "izinli") izinliCount++;
+        if (record.takkesiz === true) takkesizCount++;
+      });
+
+      card.classList.add("completed");
+      statusEl.textContent = `✓ Alındı (${entries.length} T.)`;
+
+      countsEl.textContent =
+        `Var: ${varCount} • Yok: ${yokCount} • Geç: ${gecCount} • İzinli: ${izinliCount} • Takkesiz: ${takkesizCount}`;
+    });
+
+    if (auditTotal) {
+      auditTotal.textContent = `${completedCount} / 5 Vakit Alındı`;
+    }
+  } catch (error) {
+    console.error("Namaz denetim paneli yüklenemedi:", error);
+  }
+}
+$("prayerDate")?.addEventListener("change", () => {
+  loadPrayerAuditPanel();
+});
+
+loadPrayerAuditPanel();
 // ==============================
 // YATAK YOKLAMASI
 // ==============================
