@@ -7,9 +7,86 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<!-- Sol Kayar Pencere Menüsü Arka Plan Karartması -->
+<div id="drawerBackdrop" class="drawerBackdrop"></div>
+
+<!-- Sol Kayar Pencere Menüsü -->
+<aside id="sideDrawer" class="sideDrawer">
+  <div class="drawerHeader">
+    <div class="drawerBrand">
+      <span class="drawerLogo">🕌</span>
+      <div>
+        <div class="drawerTitle">İrfaniye Takip</div>
+        <div id="drawerUserBadge" class="drawerUserBadge">Yönetici</div>
+      </div>
+    </div>
+    <button type="button" id="closeDrawerBtn" class="closeDrawerBtn" aria-label="Menüyü Kapat">✕</button>
+  </div>
+
+  <div class="drawerBody">
+    <nav class="drawerNav">
+      <div class="drawerGroup">
+        <div class="drawerGroupTitle">GENEL & ÖZETLER</div>
+        <a href="#dashboardCard" class="drawerItem"><span class="drawerItemIcon">📊</span> Genel Durum</a>
+        <a href="#todaySummaryCard" class="drawerItem"><span class="drawerItemIcon">📈</span> Bugün / Hafta Özet</a>
+        <a href="#prayerAuditPanel" class="drawerItem"><span class="drawerItemIcon">🛡️</span> Vakit Denetim Paneli</a>
+      </div>
+
+      <div class="drawerGroup">
+        <div class="drawerGroupTitle">YOKLAMALAR</div>
+        <a href="#prayerTrackingCard" class="drawerItem"><span class="drawerItemIcon">🕌</span> Namaz Takibi</a>
+        <a href="#bedTrackingCard" class="drawerItem"><span class="drawerItemIcon">🛏️</span> Yatak Yoklaması</a>
+        <a href="#schoolReturnCard" class="drawerItem"><span class="drawerItemIcon">🏫</span> Okul Dönüşü Yoklaması</a>
+        <a href="#attendanceCard" class="drawerItem"><span class="drawerItemIcon">📋</span> Günlük Yoklama</a>
+        <a href="#studyCard" class="drawerItem"><span class="drawerItemIcon">📖</span> Etüt Takibi</a>
+      </div>
+
+      <div class="drawerGroup">
+        <div class="drawerGroupTitle">TALEBE YÖNETİMİ</div>
+        <a href="#studentListCard" class="drawerItem"><span class="drawerItemIcon">👥</span> Talebe Listesi</a>
+        <a href="#studentFormCard" class="drawerItem"><span class="drawerItemIcon">➕</span> Talebe Ekle / Düzenle</a>
+        <a href="#leaveCard" class="drawerItem"><span class="drawerItemIcon">🚪</span> İzin / Çıkış Takibi</a>
+        <a href="#dailyDutiesCard" class="drawerItem"><span class="drawerItemIcon">👤</span> Günün Görevlileri</a>
+        <a href="#excelCard" class="drawerItem"><span class="drawerItemIcon">📁</span> Excel'den Talebe Aktar</a>
+      </div>
+
+      <div class="drawerGroup">
+        <div class="drawerGroupTitle">DERS & GELİŞİM</div>
+        <a href="#quranTrackingCard" class="drawerItem"><span class="drawerItemIcon">📖</span> Kur'an-ı Kerim & Hatim</a>
+        <a href="#supportLessonCard" class="drawerItem"><span class="drawerItemIcon">📚</span> Takviye Ders Notları</a>
+        <a href="#testResultsCard" class="drawerItem"><span class="drawerItemIcon">📝</span> Test Neticeleri & Etüt</a>
+        <a href="#studentAwardsCard" class="drawerItem"><span class="drawerItemIcon">🏆</span> Haftanın / Ayın Talebesi</a>
+      </div>
+
+      <div class="drawerGroup">
+        <div class="drawerGroupTitle">RAPORLAR</div>
+        <a href="#prayerReportsCard" class="drawerItem"><span class="drawerItemIcon">📑</span> Namaz Raporları</a>
+        <a href="#monthlyAttendanceCard" class="drawerItem"><span class="drawerItemIcon">📊</span> Aylık Yoklama Raporu</a>
+        <a href="#monthlyStudyCard" class="drawerItem"><span class="drawerItemIcon">📈</span> Aylık Etüt Raporu</a>
+      </div>
+
+      <div class="drawerGroup drawerGroupExit">
+        <button type="button" id="drawerLogoutBtn" class="drawerItem drawerItemLogout"><span class="drawerItemIcon">🚪</span> Çıkış Yap</button>
+      </div>
+    </nav>
+  </div>
+</aside>
+
+<!-- Mobil Yüzen Menü Butonu -->
+<button type="button" id="floatingMenuBtn" class="floatingMenuBtn hidden" aria-label="Menüyü Aç">
+  <span>☰</span> Menü
+</button>
+
 <div class="container">
   <header>
-    <div><h1>İrfaniye Takip Sistemi</h1><p>Talebe kayıt ve takip sistemi</p></div>
+    <div class="headerLeft">
+      <button type="button" id="menuToggleBtn" class="menuToggleBtn hidden" aria-label="Menüyü Aç">
+        <span class="menuIconBar"></span>
+        <span class="menuIconBar"></span>
+        <span class="menuIconBar"></span>
+      </button>
+      <div><h1>İrfaniye Takip Sistemi</h1><p>Talebe kayıt ve takip sistemi</p></div>
+    </div>
     <button id="logoutBtn" class="danger hidden">Çıkış Yap</button>
   </header>
 
@@ -156,7 +233,7 @@
 
   </div>
 </section>
-    <section class="card">
+    <section class="card" id="dashboardCard">
   <h2>📊 Genel Durum</h2>
 
   <div class="dashboard">
@@ -187,7 +264,7 @@
 
   <p id="dashboardDate"></p>
 </section>
-    "bedTrackingCard">
+    <section class="card" id="bedTrackingCard">
   <h2>🛏️ Yatak Yoklaması</h2>
 
   <label>
@@ -213,7 +290,7 @@
 
   <p id="bedMsg"></p>
 </section>
-    "schoolReturnCard">
+    <section class="card" id="schoolReturnCard">
   <h2>🏫 Okul Dönüşü Yoklaması</h2>
 
   <label>
@@ -240,7 +317,7 @@
 
   <p id="schoolReturnMsg"></p>
 </section>
-    "prayerReportsCard">
+    <section class="card" id="prayerReportsCard">
         <h2>📊 Namaz Raporları</h2>
 
   <label>
@@ -256,7 +333,7 @@
 
   <p id="prayerReportMsg"></p>
 </section>
-    "dailyDutiesCard">
+    <section class="card" id="dailyDutiesCard">
   <h2>👥 Günün Görevlileri</h2>
 
   <label>
@@ -291,14 +368,14 @@
 
   <p id="dailyDutyMsg"></p>
 </section>
-    <section class="card">
+    <section class="card" id="excelCard">
       <h2>Excel'den Talebe Aktar</h2>
       <p>Excel dosyanızı seçin. Aynı Öğrenci No sistemde varsa tekrar eklenmez.</p>
       <input id="excelFile" type="file" accept=".xlsx,.xls">
       <button type="button" id="importExcelBtn">Excel'den Aktar</button>
       <p id="importMsg"></p>
     </section>
-"supportLessonCard">
+    <section class="card" id="supportLessonCard">
   <h2>📚 Takviye Ders Notları</h2>
   <label>
   Tarih
@@ -524,7 +601,7 @@
     </div>
   </div>
 </section>
-    <section class="card">
+    <section class="card" id="studentFormCard">
       <h2>Talebe Ekle / Düzenle</h2>
       <form id="studentForm">
         <div class="grid">
@@ -541,11 +618,11 @@
       </form>
     </section>
 
-    <section class="card">
+    <section class="card" id="studentListCard">
       <div class="listHeader"><h2>Talebeler</h2><input id="search" placeholder="Ad, öğrenci no veya sınıf ara..."></div>
       <div id="studentList"></div>
     </section>
-    <section class="card">
+    <section class="card" id="attendanceCard">
   <h2>Günlük Yoklama</h2>
 
   <label>
@@ -567,7 +644,7 @@
 
   <p id="attendanceMsg"></p>
 </section>
-    <section class="card">
+    <section class="card" id="monthlyAttendanceCard">
   <h2>Aylık Yoklama Raporu</h2>
 
   <label>
@@ -583,7 +660,7 @@
 
   <div id="reportList"></div>
 </section>
-    <section class="card">
+    <section class="card" id="studyCard">
   <h2>Etüt Takibi</h2>
 
   <label>
@@ -615,7 +692,7 @@
 
   <p id="studyMsg"></p>
 </section>
-    <section class="card">
+    <section class="card" id="monthlyStudyCard">
   <h2>Aylık Etüt Raporu</h2>
 
   <label>
@@ -631,7 +708,7 @@
 
   <div id="studyReportList"></div>
 </section>
-    <section class="card">
+    <section class="card" id="leaveCard">
   <h2>İzin / Çıkış Takibi</h2>
 
   <label>

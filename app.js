@@ -58,6 +58,14 @@ onAuthStateChanged(auth, user => {
   $("loginCard").classList.toggle("hidden", !!user);
   $("appArea").classList.toggle("hidden", !user);
   $("logoutBtn").classList.toggle("hidden", !user);
+  $("menuToggleBtn")?.classList.toggle("hidden", !user);
+  $("floatingMenuBtn")?.classList.toggle("hidden", !user);
+  if ($("drawerUserBadge")) {
+    $("drawerUserBadge").textContent = user ? (user.email || "Yönetici") : "Giriş Yapılmadı";
+  }
+  if (!user) {
+    closeDrawer();
+  }
   if (unsubscribe) unsubscribe();
   if (user) {
     currentAdminName = user.email || "Sistem Kaydı";
@@ -2776,4 +2784,48 @@ Object.entries(students || {}).forEach(([studentId, student]) => {
     console.error(error);
     $("prayerReportMsg").textContent = "❌ Rapor alınırken hata oluştu.";
   }
+});
+
+/* ========================================================
+   SOL KAYAR PENCERE MENÜSÜ (DRAWER) KONTROLLERİ
+   ======================================================== */
+function openDrawer() {
+  $("sideDrawer")?.classList.add("open");
+  $("drawerBackdrop")?.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDrawer() {
+  $("sideDrawer")?.classList.remove("open");
+  $("drawerBackdrop")?.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// Menü açma / kapama butonları
+$("menuToggleBtn")?.addEventListener("click", openDrawer);
+$("floatingMenuBtn")?.addEventListener("click", openDrawer);
+$("closeDrawerBtn")?.addEventListener("click", closeDrawer);
+$("drawerBackdrop")?.addEventListener("click", closeDrawer);
+
+// Menü içindeki Güvenli Çıkış butonu
+$("drawerLogoutBtn")?.addEventListener("click", () => {
+  closeDrawer();
+  signOut(auth);
+});
+
+// Menü bağlantılarına tıklandığında ilgili karta yumuşakça kaydırma
+document.querySelectorAll(".drawerItem[href^='#']").forEach(link => {
+  link.addEventListener("click", e => {
+    e.preventDefault();
+    const targetId = link.getAttribute("href");
+    closeDrawer();
+    const targetEl = document.querySelector(targetId);
+    if (targetEl) {
+      setTimeout(() => {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        targetEl.classList.add("cardHighlight");
+        setTimeout(() => targetEl.classList.remove("cardHighlight"), 2000);
+      }, 200);
+    }
+  });
 });

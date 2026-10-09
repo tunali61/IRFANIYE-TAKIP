@@ -728,3 +728,268 @@ textarea {
 #prayerAbsentModalList {
   line-height: 1.8;
 }
+
+/* ========================================================
+   SOL KAYAR PENCERE MENÜSÜ & MOBİL NAVİGASYON STİLLERİ
+   ======================================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+.card {
+  scroll-margin-top: 24px;
+}
+
+@media (max-width: 700px) {
+  .card {
+    scroll-margin-top: 85px;
+  }
+}
+
+/* Header & Hamburger Butonu */
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.menuToggleBtn {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 9px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.menuToggleBtn:hover, .menuToggleBtn:active {
+  background: rgba(255, 255, 255, 0.28) !important;
+  transform: scale(1.05);
+}
+
+.menuIconBar {
+  display: block;
+  width: 20px;
+  height: 2.5px;
+  background-color: #ffffff;
+  border-radius: 2px;
+}
+
+/* Arka Plan Karartması (Backdrop) */
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 99998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawerBackdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Sol Kayar Menü Penceresi (Drawer) */
+.sideDrawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 310px;
+  max-width: 86vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 99999;
+  box-shadow: 6px 0 35px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.sideDrawer.open {
+  transform: translateX(0);
+}
+
+/* Menü Başlığı */
+.drawerHeader {
+  padding: 18px 16px;
+  background: linear-gradient(135deg, #1f2937, #111827);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #374151;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.drawerBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawerLogo {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.drawerTitle {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.drawerUserBadge {
+  font-size: 11px;
+  color: #93c5fd;
+  margin-top: 2px;
+  word-break: break-all;
+  font-weight: 500;
+}
+
+.closeDrawerBtn {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: none !important;
+  color: #ffffff !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 9px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.closeDrawerBtn:hover {
+  background: rgba(239, 68, 68, 0.8) !important;
+  transform: rotate(90deg);
+}
+
+/* Menü Gövdesi ve Linkler */
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 10px 30px;
+}
+
+.drawerGroup {
+  margin-bottom: 14px;
+}
+
+.drawerGroupTitle {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #6b7280;
+  letter-spacing: 0.9px;
+  padding: 6px 12px 4px;
+  margin-top: 6px;
+}
+
+.drawerItem {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  color: #1f2937;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.drawerItem:hover, .drawerItem:active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  transform: translateX(3px);
+}
+
+.drawerItemIcon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.drawerItemLogout {
+  width: 100% !important;
+  border: none !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  text-align: left !important;
+  margin-top: 10px !important;
+  border-radius: 10px !important;
+  padding: 12px 14px !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+}
+
+.drawerItemLogout:hover {
+  background: #fecaca !important;
+  color: #991b1b !important;
+}
+
+/* Mobil Alt Yüzen Menü Butonu (Floating Button) */
+.floatingMenuBtn {
+  position: fixed;
+  bottom: 22px;
+  left: 20px;
+  z-index: 9990;
+  background: #1f2937;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50px !important;
+  padding: 11px 18px !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floatingMenuBtn span {
+  font-size: 18px;
+}
+
+.floatingMenuBtn:hover, .floatingMenuBtn:active {
+  background: #111827;
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+/* Tıklanan Kartı Vurgulama Animasyonu */
+.cardHighlight {
+  outline: 3.5px solid #2563eb !important;
+  box-shadow: 0 0 25px rgba(37, 99, 235, 0.4) !important;
+  transition: outline 0.3s ease, box-shadow 0.3s ease !important;
+}
+
