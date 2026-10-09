@@ -1121,6 +1121,9 @@ if (modal && info && list) {
   modal.classList.remove("hidden");
 }
 });
+$("closePrayerAbsentModal")?.addEventListener("click", () => {
+  $("prayerAbsentModal")?.classList.add("hidden");
+});
 function updatePrayerCounts() {
   const counts = {
     var: 0,
