@@ -1252,10 +1252,47 @@ async function loadPrayerAttendance() {
     console.error(error);
   }
 }
+async function loadPrayerTimeCounts() {
+  const date = $("prayerDate")?.value;
+  if (!date) return;
+
+  try {
+    const snap = await get(ref(db, `prayerAttendance/${date}`));
+    const dayData = snap.val() || {};
+
+    document.querySelectorAll("#prayerTimes [data-prayer]").forEach(button => {
+      const prayer = button.dataset.prayer;
+      const records = dayData[prayer] || {};
+
+      let varCount = 0;
+
+      Object.values(records).forEach(record => {
+        if (record && typeof record === "object" && record.durum === "var") {
+          varCount++;
+        }
+      });
+
+      button.dataset.varCount = varCount;
+      const prayerNames = {
+  sabah: "🔒 Sabah",
+  ogle: "🌞 Öğle",
+  ikindi: "🌤️ İkindi",
+  aksam: "🌆 Akşam",
+  yatsi: "🌙 Yatsı"
+};
+
+button.textContent = `${prayerNames[prayer]} (${varCount})`;
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
 $("prayerDate")?.addEventListener("change", () => {
   loadPrayerAttendance();
+  loadPrayerTimeCounts();
 });
 loadPrayerAttendance();
+loadPrayerTimeCounts();
 async function loadPrayerAuditPanel() {
   const date = $("prayerDate")?.value;
   if (!date) return;
