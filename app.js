@@ -1103,9 +1103,18 @@ $("prayerReviewAbsentBtn")?.addEventListener("click", () => {
   });
 
   if (absentStudents.length === 0) {
-    alert("Bu vakitte Yok, Geç veya İzinli talebe bulunmuyor.");
-    return;
+  const modal = $("prayerAbsentModal");
+  const info = $("prayerAbsentModalInfo");
+  const list = $("prayerAbsentModalList");
+
+  if (modal && info && list) {
+    info.textContent = "Bu vakitte olmayan talebe bulunmuyor.";
+    list.innerHTML = `<div class="prayerAbsentItem">✅ Tüm talebeler mevcut.</div>`;
+    modal.classList.remove("hidden");
   }
+
+  return;
+}
 
   const modal = $("prayerAbsentModal");
 const info = $("prayerAbsentModalInfo");
