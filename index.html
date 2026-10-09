@@ -2,1164 +2,422 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>İrfaniye Takip Sistemi</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Ömer Avniyel Akademi</title>
+  <meta name="description" content="Öğrenci Bilgi ve Takip Portalı">
+
+  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v10.6 - KUR'AN TAKİP KESİNTİSİZ SAYFA GİRİŞİ & SİLME KORUMASI) -->
+  <script>
+    (function() {
+      var CURRENT_BUILD = '20261009_v10.6_KURAN_INPUT_FIX';
+      var savedBuild = localStorage.getItem('oay_app_build_version');
+
+      // Kullanıcının dilediğinde manuel de tetikleyebileceği evrensel sıfırlama fonksiyonu
+      window.forcePurgeAppCache = function() {
+        if (window.App && window.App.showToast) {
+          window.App.showToast('Önbellek siliniyor, en güncel sistem yükleniyor...', 'info');
+        }
+        try {
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              names.forEach(function(name) { caches.delete(name); });
+            });
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            });
+          }
+          localStorage.setItem('oay_app_build_version', CURRENT_BUILD);
+        } catch (e) {
+          console.warn('Cache purge error:', e);
+        }
+        setTimeout(function() {
+          try { window.location.reload(); } catch(e) { window.location.href = window.location.href; }
+        }, 250);
+      };
+
+      // Eski önbellek varsa arka planda sessizce temizle, ASLA sayfayı döngüye sokup tarayıcıyı kitleme!
+      if (savedBuild !== CURRENT_BUILD) {
+        console.log('[Auto-Purge] Sürüm güncellendi:', savedBuild, '->', CURRENT_BUILD);
+        try { localStorage.setItem('oay_app_build_version', CURRENT_BUILD); } catch(e){}
+        if (window.location.protocol !== 'file:') {
+          try {
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                return Promise.all(names.map(function(n) { return caches.delete(n); }));
+              }).catch(function() {});
+            }
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                return Promise.all(regs.map(function(r) { return r.unregister(); }));
+              }).catch(function() {});
+            }
+          } catch(e) {}
+        }
+      }
+    })();
+  </script>
+  
+  <!-- WhatsApp ve Sosyal Medya Paylaşım Kartı (Open Graph) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Ömer Avniyel Akademi">
+  <meta property="og:description" content="Öğrenci Bilgi ve Takip Portalı">
+  <meta property="og:site_name" content="Ömer Avniyel Akademi">
+  <meta property="og:image" content="icon.svg">
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#059669">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="shortcut icon" href="icon.svg">
+
+  <!-- Apple iOS & Standalone Kısayol Desteği -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Ömer Avniyel Akademi">
+  <link rel="apple-touch-icon" href="icon.svg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas CDN (Veli ile Paylaşım İçin Görüntü Alma Kütüphanesi - Çift CDN Korumalı) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';"></script>
+  <!-- jsQR CDN (Tüm Cihazlar ve Windows Chrome İçin Kesintisiz Evrensel QR Kod Okuyucu - Çift CDN Korumalı) -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js';"></script>
+  
+  <!-- Özel Stiller ve Yazdırma Kuralları -->
+  <link rel="stylesheet" href="css/custom.css">
+  
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d'
+            }
+          }
+        }
+      }
+    };
+
+    // Global Hata Yakalayıcı
+    window.addEventListener('error', function(e) {
+      if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT')) {
+        return;
+      }
+      var main = document.getElementById('main-content');
+      if (main && (!main.children || main.children.length === 0)) {
+        main.innerHTML = '<div style="max-width:640px;margin:40px auto;padding:24px;background:#fff1f2;border:2px solid #f43f5e;border-radius:20px;color:#9f1239;font-family:system-ui,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,0.1);">' +
+          '<h3 style="font-weight:900;font-size:18px;margin-bottom:8px;display:flex;align-items:center;gap:8px;"><span>⚠️</span> <span>Sistem Başlatma Uyarısı</span></h3>' +
+          '<p style="font-size:13px;margin-bottom:12px;color:#881337;">Sayfa çalışırken bir hata yakalandı:</p>' +
+          '<div style="background:#fff;padding:12px;border-radius:12px;border:1px solid #fecdd3;font-family:monospace;font-size:12px;word-break:break-all;color:#be123c;">' +
+          '<strong>' + (e.message || 'JavaScript Hatası') + '</strong><br><small style="color:#64748b;">Dosya: ' + (e.filename || 'Bilinmiyor') + ' | Satır: ' + (e.lineno || '?') + '</small></div>' +
+          '</div>';
+      }
+    });
+
+    // Dosya & Modül Yüklenme Kontrolü (Ağ gecikmelerini ve yanlış yerel çalıştırmaları güvenle yönetir)
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        if (!window.App || !window.Store) {
+          var main = document.getElementById('main-content');
+          if (main && (!main.children || main.children.length === 0)) {
+            main.innerHTML = '<div style="max-width:600px;margin:40px auto;padding:30px;background:#ffffff;border:2px solid #f59e0b;border-radius:24px;box-shadow:0 15px 35px rgba(0,0,0,0.08);font-family:system-ui,sans-serif;text-align:center;">' +
+              '<div style="font-size:44px;margin-bottom:12px;">📁</div>' +
+              '<h2 style="font-size:19px;font-weight:900;color:#92400e;margin-bottom:10px;">JavaScript Modülleri Bulunamadı</h2>' +
+              '<p style="font-size:14px;color:#475569;line-height:1.6;margin-bottom:16px;">' +
+              'Bu sayfanın açılabilmesi için <strong>js/</strong> ve <strong>css/</strong> klasörlerinin <code>index.html</code> dosyasının yanında bulunması gerekir.' +
+              '</p>' +
+              '<div style="background:#fef3c7;padding:12px 16px;border-radius:14px;font-size:12px;color:#78350f;text-align:left;line-height:1.5;margin-bottom:14px;">' +
+              '💡 <strong>Çözüm:</strong> Eğer bu dosyayı Masaüstüne tek başına kopyaladıysanız, lütfen <code>okul-yoklama-performans</code> klasörünün tamamını açıp içindeki <code>baslat.bat</code> veya <code>index.html</code> dosyasına tıklayınız.' +
+              '</div>' +
+              '<button onclick="location.reload()" style="padding:10px 22px;background:#059669;color:#fff;font-weight:bold;border:none;border-radius:14px;cursor:pointer;font-size:13px;">Sayfayı Yeniden Yükle ⟳</button>' +
+              '</div>';
+          }
+        }
+      }, 3000);
+    });
+  </script>
 </head>
-<body>
-<!-- Sol Kayar Pencere Menüsü Arka Plan Karartması -->
-<div id="drawerBackdrop" class="drawerBackdrop"></div>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white overflow-x-hidden">
 
-<!-- Sol Kayar Pencere Menüsü (Drawer) -->
-<aside id="sideDrawer" class="sideDrawer">
-  <div class="drawerHeader">
-    <div class="drawerBrand">
-      <div class="drawerLogoThumb">🏫</div>
-      <div class="drawerBrandText">
-        <div id="drawerAdminName" class="drawerAdminName">ÖMER AVNİYEL</div>
-        <div id="drawerAdminRole" class="drawerAdminRole">Kurum Yöneticisi</div>
-      </div>
-    </div>
-    <button type="button" id="closeDrawerBtn" class="closeDrawerBtn" aria-label="Menüyü Kapat">✕</button>
-  </div>
-
-  <div class="drawerBody">
-    <nav class="drawerNav">
-      <!-- DİNİ DERSLER & MANEVİYAT -->
-      <div class="drawerGroup">
-        <div class="drawerGroupTitle">DİNİ DERSLER & MANEVİYAT</div>
-        <a href="#quranTrackingCard" class="drawerCardItem">
-          <div class="dItemIcon">📖</div>
-          <div class="dItemContent">
-            <strong>Kur'an & Hatim Takibi</strong>
-            <span>Dini ders grupları, sayfa takibi ve cüz hesabı</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-        <a href="#supportLessonCard" class="drawerCardItem">
-          <div class="dItemIcon">📚</div>
-          <div class="dItemContent">
-            <strong>Takviye Ders Notları & Testler</strong>
-            <span>Ders notları ve deneme sınavları</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-      </div>
-
-      <!-- YARIŞMA & LİDERLİK -->
-      <div class="drawerGroup">
-        <div class="drawerGroupTitle">🏆 YARIŞMA & LİDERLİK</div>
-        <a href="#studentAwardsCard" class="drawerCardItem">
-          <div class="dItemIcon">🏆</div>
-          <div class="dItemContent">
-            <strong>Haftanın & Ayın Talebesi</strong>
-            <span>Puanlama ve şampiyonluk podyumu</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-        <a href="javascript:void(0)" id="drawerTvKioskLink" class="drawerCardItem">
-          <div class="dItemIcon">📺</div>
-          <div class="dItemContent">
-            <div class="dItemTitleWithBadge">
-              <strong>Canlı TV / Dijital Pano</strong>
-              <span class="badgeManager">YÖNETİCİ</span>
-            </div>
-            <span>TV ekranı ve projeksiyon kiosk modu</span>
-          </div>
-          <div class="dItemAction">Aç ↗</div>
-        </a>
-      </div>
-
-      <!-- HAFTA SONU İZİN İŞLEMLERİ -->
-      <div class="drawerGroup">
-        <div class="drawerGroupTitle">HAFTA SONU İZİN İŞLEMLERİ</div>
-        <a href="#leaveCard" class="drawerCardItem">
-          <div class="dItemIcon">🚪</div>
-          <div class="dItemContent">
-            <strong>İzine Çıkış Takibi</strong>
-            <span>Kusur başı 30 dk gecikme ve kapı saatleri</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-        <a href="#leaveCard" class="drawerCardItem">
-          <div class="dItemIcon">🧳</div>
-          <div class="dItemContent">
-            <strong>İzin Dönüşü Takibi</strong>
-            <span>Saatli varış kaydı ve 3 katı izne ek telafi süresi</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-      </div>
-
-      <!-- ÖĞRENCİ & SINIF (VURGULANMIŞ YEŞİL ÇERÇEVELİ) -->
-      <div class="drawerGroup">
-        <div class="drawerGroupTitle">ÖĞRENCİ & SINIF</div>
-        <a href="#studentListCard" class="drawerCardItem drawerItemActiveGreen">
-          <div class="dItemIcon">👥</div>
-          <div class="dItemContent">
-            <strong>Öğrenci & Şifre Yönetimi</strong>
-            <span>Tüm sınıf kütüğü ve veli şifreleri</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-      </div>
-
-      <!-- YÖNETİCİ İŞLEMLERİ -->
-      <div class="drawerGroup">
-        <div class="drawerGroupTitle">YÖNETİCİ İŞLEMLERİ</div>
-        <a href="#staffManagementCard" class="drawerCardItem">
-          <div class="dItemIcon">👨‍🏫</div>
-          <div class="dItemContent">
-            <strong>Personel & Şifre Yönetimi</strong>
-            <span>Hoca ekleme, silme ve şifreler</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-        <a href="#dailyDutiesCard" class="drawerCardItem">
-          <div class="dItemIcon">🎯</div>
-          <div class="dItemContent">
-            <strong>Günün Görevlileri Yönetimi</strong>
-            <span>Yemekhane nöbetçileri ve müezzin atama</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-        <a href="#systemSettingsCard" class="drawerCardItem">
-          <div class="dItemIcon">⚙️</div>
-          <div class="dItemContent">
-            <strong>Sistem Ayarları & E-posta</strong>
-            <span>Yönetici maili ve veri yedekleme</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-      </div>
-
-      <!-- YOKLAMALAR -->
-      <div class="drawerGroup">
-        <div class="drawerGroupTitle">YOKLAMALAR & DİĞER</div>
-        <a href="#prayerTrackingCard" class="drawerCardItem">
-          <div class="dItemIcon">🕌</div>
-          <div class="dItemContent">
-            <strong>Namaz Takibi</strong>
-            <span>5 vakit cemaat ve namaz denetimi</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-        <a href="#bedTrackingCard" class="drawerCardItem">
-          <div class="dItemIcon">🛏️</div>
-          <div class="dItemContent">
-            <strong>Yatak & Okul Dönüşü</strong>
-            <span>Gece yatak ve okul yoklaması</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-        <a href="#attendanceCard" class="drawerCardItem">
-          <div class="dItemIcon">📋</div>
-          <div class="dItemContent">
-            <strong>Günlük Yoklama & Etüt</strong>
-            <span>Dershane ve etüt yoklaması</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-        <a href="#dashboardCard" class="drawerCardItem">
-          <div class="dItemIcon">📊</div>
-          <div class="dItemContent">
-            <strong>Genel Durum & Raporlar</strong>
-            <span>Bugün / hafta özeti ve sayaçlar</span>
-          </div>
-          <div class="dItemArrow">→</div>
-        </a>
-      </div>
-    </nav>
-  </div>
-
-  <div class="drawerFooter">
-    <button type="button" id="refreshAppBtn" class="drawerBtnAction btnActionRefresh">
-      <span>🔄</span> Sistemi & Önbelleği Yenile
-    </button>
-    <button type="button" id="drawerLogoutBtn" class="drawerBtnAction btnActionLogout">
-      <span>🚪</span> Güvenli Çıkış Yap
-    </button>
-  </div>
-</aside>
-
-<!-- Mobil Yüzen Menü Butonu (Sol Alt) -->
-<button type="button" id="floatingMenuBtn" class="floatingMenuBtn hidden" aria-label="Menüyü Aç">
-  <span>☰</span> Menü
-</button>
-
-<!-- Sağ Alttaki Önbelleği Temizle Butonu -->
-<button type="button" id="floatingClearCacheBtn" class="floatingClearCacheBtn hidden">
-  🔄 Önbelleği Temizle (v10.6)
-</button>
-
-<div class="container">
-  <header class="topNavBar">
-    <div class="topNavLeft">
-      <button type="button" id="menuToggleBtn" class="menuPillBtn hidden" aria-label="Menüyü Aç">
-        <span>☰</span> Menü
-      </button>
-      <div class="institutionLogoThumb">🏫</div>
-      <div id="headerManagerBadge" class="headerPillBadge badgeGold hidden">
-        👑 Kurum Yöneticisi
-      </div>
-      <div id="headerStudentBadge" class="headerPillBadge badgeMint hidden">
-        👥 Öğrenci Yönetimi
-      </div>
-    </div>
-    <div class="topNavRight">
-      <button type="button" id="headerRefreshBtn" class="headerPillActionBtn btnAmber hidden">
-        🔄 Önbelleği Yenile
-      </button>
-      <button id="logoutBtn" class="danger hidden">Çıkış Yap</button>
-    </div>
+  <!-- Üst Başlık & Menü -->
+  <header id="header-nav" class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <!-- app.js renderHeader() ile doldurulacak -->
   </header>
 
-  <section id="loginCard" class="card login">
-    <h2>Yönetici Girişi</h2>
-    <form id="loginForm">
-      <label>E-posta veya Kullanıcı Adı
-        <input id="email" type="text" required placeholder="admin@irfaniye.com veya kullanıcı adı">
-      </label>
-      <label>Şifre
-        <input id="password" type="password" required placeholder="Şifreniz">
-      </label>
-      <button type="submit" id="submitLoginBtn">Giriş Yap</button>
-      <p id="loginMsg"></p>
-    </form>
-  </section>
-
-  <main id="appArea" class="hidden">
-    <!-- YÖNETİCİ ANA EKRANI: ÖĞRENCİ YÖNETİMİ & VELİ ŞİFRELERİ -->
-    <section class="card modernCard" id="studentListCard">
-      <div class="cardHeaderRow">
-        <div>
-          <h2>👥 Öğrenci Yönetimi & Veli Şifreleri</h2>
-          <p class="cardSubtitle">Talebe kütüğünü, sınıfları, hocaları ve veli şifrelerini yönetin. Sütun başlıklarına tıklayarak sıralayabilirsiniz.</p>
-        </div>
-      </div>
-
-      <!-- Toolbar Butonları -->
-      <div class="studentToolbar">
-        <button type="button" id="excelModeBtn" class="toolbarBtn btnPurple">
-          📊 Excel Tablo Modu (Toplu Düzenle)
-        </button>
-        <button type="button" id="exportCsvBtn" class="toolbarBtn btnNavy">
-          ☁️ CSV
-        </button>
-        <button type="button" id="restoreBackupBtn" class="toolbarBtn btnYellow">
-          🛡️ Yedekten Kurtar
-        </button>
-        <button type="button" id="exportJsonBtn" class="toolbarBtn btnWhite">
-          💾 JSON Yedek
-        </button>
-        <button type="button" id="importJsonBtn" class="toolbarBtn btnWhite">
-          📁 JSON Yükle
-        </button>
-        <button type="button" id="bulkAddBtn" class="toolbarBtn btnWhite">
-          📋 Toplu Ekle
-        </button>
-        <button type="button" id="openAddStudentBtn" class="toolbarBtn btnGreen">
-          + Yeni Öğrenci
-        </button>
-      </div>
-
-      <!-- Filtre ve Arama Çubuğu -->
-      <div class="studentFilterBar">
-        <div class="filterGroup">
-          <label for="classFilter">Sınıf:</label>
-          <select id="classFilter">
-            <option value="">Tüm Sınıflar</option>
-          </select>
-        </div>
-        <div class="searchGroup">
-          <input type="text" id="studentSearch" placeholder="İsim, No, Hoca veya Oda ara..." autocomplete="off">
-        </div>
-        <div class="sortGroup">
-          <label for="studentSort">Sırala:</label>
-          <select id="studentSort">
-            <option value="noAsc">No (Küçükten Büyüğe ▲)</option>
-            <option value="noDesc">No (Büyükten Küçüğe ▼)</option>
-            <option value="nameAsc">İsim (A-Z)</option>
-            <option value="roomAsc">Oda (Küçükten Büyüğe)</option>
-          </select>
-        </div>
-        <div class="countGroup">
-          <span id="studentCountBadge" class="studentCountBadge">Listelenen: 0 Talebe</span>
-        </div>
-      </div>
-
-      <!-- Öğrenci Tablosu -->
-      <div class="tableResponsive">
-        <table class="modernTable" id="studentTable">
-          <thead>
-            <tr>
-              <th data-sort="no">No ▲</th>
-              <th data-sort="name">Giriş Yapılacak İsim ↕</th>
-              <th data-sort="class">Sınıf ↕</th>
-              <th data-sort="teacher">HOCA: Etüt / Dahili ↕</th>
-              <th data-sort="room">Oda ↕</th>
-              <th>Şifre ↕</th>
-              <th>Aile Kodu ↕</th>
-              <th>Veli Tel ↕</th>
-              <th style="text-align: center;">İŞLEM</th>
-            </tr>
-          </thead>
-          <tbody id="studentTableBody">
-            <!-- JS ile doldurulacak -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- PERSONEL & ŞİFRE YÖNETİMİ -->
-    <section class="card modernCard" id="staffManagementCard">
-      <div class="cardHeaderRow">
-        <div>
-          <h2>👨‍🏫 Personel & Şifre Yönetimi</h2>
-          <p class="cardSubtitle">Hoca ekleme, silme, branş ve veli/sistem şifrelerini yönetin.</p>
-        </div>
-        <button type="button" id="openAddStaffBtn" class="toolbarBtn btnGreen">
-          + Yeni Personel / Hoca Ekle
-        </button>
-      </div>
-
-      <div class="tableResponsive">
-        <table class="modernTable" id="staffTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Ad Soyad</th>
-              <th>Görev / Branş</th>
-              <th>Telefon</th>
-              <th>E-posta / Kod</th>
-              <th>Şifre</th>
-              <th>Yetki</th>
-              <th style="text-align: center;">İŞLEM</th>
-            </tr>
-          </thead>
-          <tbody id="staffTableBody">
-            <!-- JS ile doldurulacak -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- SİSTEM AYARLARI & E-POSTA -->
-    <section class="card modernCard" id="systemSettingsCard">
-      <div class="cardHeaderRow">
-        <div>
-          <h2>⚙️ Sistem Ayarları & E-posta</h2>
-          <p class="cardSubtitle">Yönetici profili, kurum bilgileri ve veri yedekleme ayarları.</p>
-        </div>
-      </div>
-
-      <form id="systemSettingsForm">
-        <div class="grid">
-          <label>Kurum Adı
-            <input type="text" id="settingInstitutionName" value="Ömer Avniyel Akademi">
-          </label>
-          <label>Kurum Yöneticisi Adı Soyadı
-            <input type="text" id="settingAdminName" value="ÖMER AVNİYEL">
-          </label>
-          <label>Yönetici Unvanı
-            <input type="text" id="settingAdminRole" value="Kurum Yöneticisi">
-          </label>
-          <label>Yönetici E-posta
-            <input type="email" id="settingAdminEmail" placeholder="admin@irfaniye.com">
-          </label>
-          <label class="full">Bildirim / Rapor E-postası
-            <input type="email" id="settingNotifyEmail" placeholder="rapor@irfaniye.com">
-          </label>
-        </div>
-        <button type="submit" id="saveSettingsBtn" class="btnGreen" style="margin-top: 14px;">
-          💾 Ayarları Kaydet
-        </button>
-        <span id="settingsMsg" style="margin-left: 10px; font-weight: 600;"></span>
-      </form>
-
-      <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e5e7eb;">
-
-      <h3>🛡️ Veri Güvenliği & Tam Yedekleme</h3>
-      <p style="color: #64748b; font-size: 14px; margin-bottom: 15px;">
-        Veritabanının tam kopyasını bilgisayarınıza indirebilir veya daha önce aldığınız bir yedekten sistemi anında kurtarabilirsiniz.
-      </p>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <button type="button" id="btnDownloadFullJson" class="toolbarBtn btnPurple">
-          💾 Tam Sistem Yedeği İndir (JSON)
-        </button>
-        <button type="button" id="btnUploadFullJson" class="toolbarBtn btnYellow">
-          📁 JSON Yedeği Geri Yükle
-        </button>
-        <button type="button" id="btnDownloadCsv" class="toolbarBtn btnNavy">
-          ☁️ Talebe Listesini CSV İndir
-        </button>
-      </div>
-    </section>
-
-    <section class="card" id="prayerTrackingCard">
-  <h2>🕌 Namaz Takip</h2>
-
-  <label>
-    Tarih
-    <input type="date" id="prayerDate">
-  </label>
-
-  <div id="prayerTimes">
-    <button type="button" data-prayer="sabah">🌅 Sabah</button>
-    <button type="button" data-prayer="ogle">☀️ Öğle</button>
-    <button type="button" data-prayer="ikindi">🌤️ İkindi</button>
-    <button type="button" data-prayer="aksam">🌇 Akşam</button>
-    <button type="button" data-prayer="yatsi">🌙 Yatsı</button>
-  </div>
-
-  <p id="selectedPrayer">Seçili Vakit: Sabah</p>
-
-  <div id="prayerSummary">
-  <strong>Durum:</strong>
-
-  <span class="prayerStat statVar">
-    Var <b id="prayerVarCount">0</b>
-  </span>
-
-  <span class="prayerStat statYok">
-    Yok <b id="prayerYokCount">0</b>
-  </span>
-
-  <span class="prayerStat statGec">
-    Geç <b id="prayerGecCount">0</b>
-  </span>
-
-  <span class="prayerStat statIzinli">
-    İzinli <b id="prayerIzinliCount">0</b>
-  </span>
-
-  <span class="prayerStat statTakkesiz">
-    Takkesiz <b id="prayerTakkesizCount">0</b>
-  </span>
-</div>
-
-  <button type="button" id="prayerReviewAbsentBtn">
-  🔍 Olmayanları İncele
-</button>
-      <div id="prayerAbsentModal" class="prayerAbsentModal hidden">
-  <div class="prayerAbsentModalBox">
-
-    <div class="prayerAbsentModalHeader">
-      <h3>🔍 Olmayan Talebeler</h3>
-      <button type="button" id="closePrayerAbsentModal">✕</button>
-    </div>
-
-    <p id="prayerAbsentModalInfo"></p>
-
-    <div id="prayerAbsentModalList"></div>
-
-  </div>
-</div>
-      <button type="button" id="prayerAllPresentBtn">
-    ⚡ Tümünü Var Yap
-  </button>
-      <button type="button" id="prayerUncheckedBtn">
-  ⚠️ İşaretlenmemişleri Göster
-</button>
-<div id="prayerClassFilters">
-  <strong>Sınıf Filtresi:</strong>
-  <button type="button" data-class="all" class="active">Tüm Sınıflar</button>
-  <button type="button" data-class="5-A">5-A</button>
-  <button type="button" data-class="6-A">6-A</button>
-  <button type="button" data-class="7-A">7-A</button>
-  <button type="button" data-class="8-A">8-A</button>
-  
-</div>
-      <div class="prayerSearchBox">
-  <input
-    type="text"
-    id="prayerStudentSearch"
-    placeholder="🔎 Talebe ara..."
-    autocomplete="off"
-  >
-</div>
-
-<div id="prayerStudentList"></div>
-  
-  <button type="button" id="savePrayerBtn">
-    💾 Namaz Yoklamasını Kaydet
-  </button>
-
-  <p id="prayerMsg"></p>
-</section>
-    <section class="card prayerAuditPanel" id="prayerAuditPanel">
-  <div class="prayerAuditHeader">
-    <strong>🕌 YÖNETİCİ VAKİT DENETİM PANELİ</strong>
-    <span id="prayerAuditDate"></span>
-    <span id="prayerAuditTotal">0 / 5 Vakit Alındı</span>
-  </div>
-
-  <div class="prayerAuditGrid">
-
-    <div class="prayerAuditItem" data-audit-prayer="sabah">
-      <strong>🔒 Sabah</strong>
-      <span class="auditStatus">Bekleniyor</span>
-      <small class="auditCounts">-</small>
-    </div>
-
-    <div class="prayerAuditItem" data-audit-prayer="ogle">
-      <strong>☀️ Öğle</strong>
-      <span class="auditStatus">Bekleniyor</span>
-      <small class="auditCounts">-</small>
-    </div>
-
-    <div class="prayerAuditItem" data-audit-prayer="ikindi">
-      <strong>🌤️ İkindi</strong>
-      <span class="auditStatus">Bekleniyor</span>
-      <small class="auditCounts">-</small>
-    </div>
-
-    <div class="prayerAuditItem" data-audit-prayer="aksam">
-      <strong>🌆 Akşam</strong>
-      <span class="auditStatus">Bekleniyor</span>
-      <small class="auditCounts">-</small>
-    </div>
-
-    <div class="prayerAuditItem" data-audit-prayer="yatsi">
-      <strong>🌙 Yatsı</strong>
-      <span class="auditStatus">Bekleniyor</span>
-      <small class="auditCounts">-</small>
-    </div>
-
-  </div>
-</section>
-    <section class="card" id="dashboardCard">
-  <h2>📊 Genel Durum</h2>
-
-  <div class="dashboard">
-    <div class="dashboardBox">
-      <strong id="dashTotal">0</strong>
-      <span>Toplam Talebe</span>
-    </div>
-
-   <div class="dashboardBox" id="boxPresent">
-      <strong id="dashPresent">0</strong>
-      <span>Bugün Geldi</span>
-    </div>
-     <div class="dashboardBox" id="boxAbsent">
-      <strong id="dashAbsent">0</strong>
-<span>Bugün Gelmedi</span>
-    </div>
-
-   <div class="dashboardBox" id="boxExcused">
-      <strong id="dashExcused">0</strong>
-      <span>Bugün İzinli</span>
-    </div>
-
-   <div class="dashboardBox" id="boxOutside">
-      <strong id="dashOutside">0</strong>
-      <span>Şu An Dışarıda</span>
-    </div>
-  </div>
-
-  <p id="dashboardDate"></p>
-</section>
-    <section class="card" id="bedTrackingCard">
-  <h2>🛏️ Yatak Yoklaması</h2>
-
-  <label>
-    Tarih
-    <input type="date" id="bedDate">
-  </label>
-
-  <p><strong>Durum:</strong>
-    Yatağında: <b id="bedPresentCount">0</b>
-    Yatağında Değil: <b id="bedAbsentCount">0</b>
-    İzinli: <b id="bedExcusedCount">0</b>
-  </p>
-
-  <button type="button" id="bedAllPresentBtn">
-    ⚡ Tümünü Yatağında Yap
-  </button>
-
-  <div id="bedStudentList"></div>
-
-  <button type="button" id="saveBedBtn">
-    💾 Yatak Yoklamasını Kaydet
-  </button>
-
-  <p id="bedMsg"></p>
-</section>
-    <section class="card" id="schoolReturnCard">
-  <h2>🏫 Okul Dönüşü Yoklaması</h2>
-
-  <label>
-    Tarih
-    <input type="date" id="schoolReturnDate">
-  </label>
-
-  <p>
-    <strong>Durum:</strong>
-    Geldi: <b id="schoolPresentCount">0</b>
-    Gelmedi: <b id="schoolAbsentCount">0</b>
-    İzinli: <b id="schoolExcusedCount">0</b>
-  </p>
-
-  <button type="button" id="schoolAllPresentBtn">
-    ⚡ Tümünü Geldi Yap
-  </button>
-
-  <div id="schoolStudentList"></div>
-
-  <button type="button" id="saveSchoolReturnBtn">
-    💾 Okul Dönüşü Yoklamasını Kaydet
-  </button>
-
-  <p id="schoolReturnMsg"></p>
-</section>
-    <section class="card" id="prayerReportsCard">
-        <h2>📊 Namaz Raporları</h2>
-
-  <label>
-    Tarih
-    <input type="date" id="prayerReportDate">
-  </label>
-
-  <button type="button" id="showPrayerReportBtn">
-    📋 Raporu Göster
-  </button>
-
-  <div id="prayerReportArea"></div>
-
-  <p id="prayerReportMsg"></p>
-</section>
-    <section class="card modernCard" id="dailyDutiesCard">
-      <div class="cardHeaderRow">
-        <div>
-          <h2>🎯 Günün Görevlileri Yönetimi</h2>
-          <p class="cardSubtitle">Yemekhane nöbetçileri, müezzin, kat sorumlusu ve temizlik görevlilerini atayın.</p>
-        </div>
-      </div>
-
-      <div class="grid" style="align-items: flex-end;">
-        <label>Tarih
-          <input type="date" id="dailyDutyDate">
-        </label>
-        <label>Görev
-          <select id="dailyDutyType">
-            <option value="">Görev Seçin</option>
-            <option value="yemekhane">🍲 Yemekhane Nöbetçisi</option>
-            <option value="muezzin">🕌 Müezzin</option>
-            <option value="temizlik">🧹 Temizlik & Kat Nöbetçisi</option>
-            <option value="bulasik">🍽️ Bulaşıkhane</option>
-            <option value="cay">☕ Çay Ocağı</option>
-            <option value="nobet">🛡️ Gece / Yurt Nöbeti</option>
-          </select>
-        </label>
-        <label>Görevli Talebe / Personel
-          <select id="dailyDutyStudent">
-            <option value="">Seçin</option>
-          </select>
-        </label>
-        <label>Vakit / Not (İsteğe Bağlı)
-          <input type="text" id="dailyDutyNote" placeholder="Örn: Öğle ve İkindi, Akşam yemeği">
-        </label>
-      </div>
-
-      <button type="button" id="addDailyDutyBtn" class="btnGreen" style="margin-top: 14px;">
-        ➕ Görevli Ata
-      </button>
-
-      <div id="dailyDutyList" style="margin-top: 18px;"></div>
-      <p id="dailyDutyMsg"></p>
-    </section>
-    <section class="card" id="excelCard">
-      <h2>Excel'den Talebe Aktar</h2>
-      <p>Excel dosyanızı seçin. Aynı Öğrenci No sistemde varsa tekrar eklenmez.</p>
-      <input id="excelFile" type="file" accept=".xlsx,.xls">
-      <button type="button" id="importExcelBtn">Excel'den Aktar</button>
-      <p id="importMsg"></p>
-    </section>
-    <section class="card" id="supportLessonCard">
-  <h2>📚 Takviye Ders Notları</h2>
-  <label>
-  Tarih
-  <input type="date" id="supportLessonDate">
-</label>
-  <label>
-  Talebe
-  <select id="supportLessonStudent">
-    <option value="">Talebe Seçin</option>
-  </select>
-</label>
-  <label>
-  Ders
-  <select id="supportLessonType">
-    <option value="">Ders Seçin</option>
-    <option value="matematik">Matematik</option>
-    <option value="turkce">Türkçe</option>
-    <option value="fen">Fen Bilimleri</option>
-    <option value="ingilizce">İngilizce</option>
-    <option value="sosyal">Sosyal Bilgiler</option>
-    <option value="diger">Diğer</option>
-  </select>
-</label>
-  <label>
-  Ders Notu
-  <textarea
-    id="supportLessonNote"
-    rows="3"
-    placeholder="Talebe hakkında ders notunu yazın..."></textarea>
-</label>
-  <button type="button" id="saveSupportLessonBtn">
-  💾 Ders Notunu Kaydet
-</button>
-
-<p id="supportLessonMsg"></p>
-  <h3>📋 Kayıtlı Ders Notları</h3>
-<div id="supportLessonList"></div>
-</section>
-    <section class="card" id="testResultsCard">
-  <h2>📝 Test Neticeleri & Etüt</h2>
-
-  <label>
-    Tarih
-    <input type="date" id="testResultDate">
-  </label>
-
-  <label>
-    Talebe
-    <select id="testResultStudent">
-      <option value="">Talebe Seçin</option>
-    </select>
-  </label>
-
-  <label>
-    Test / Sınav Adı
-    <input
-      type="text"
-      id="testResultName"
-      placeholder="Örn: Matematik Deneme 1">
-  </label>
-
-  <label>
-    Ders
-    <select id="testResultLesson">
-      <option value="">Ders Seçin</option>
-      <option value="matematik">Matematik</option>
-      <option value="turkce">Türkçe</option>
-      <option value="fen">Fen Bilimleri</option>
-      <option value="ingilizce">İngilizce</option>
-      <option value="sosyal">Sosyal Bilgiler</option>
-      <option value="diger">Diğer</option>
-    </select>
-  </label>
-
-  <div class="grid">
-    <label>
-      Doğru
-      <input type="number" id="testResultCorrect" min="0" value="0">
-    </label>
-
-    <label>
-      Yanlış
-      <input type="number" id="testResultWrong" min="0" value="0">
-    </label>
-
-    <label>
-      Boş
-      <input type="number" id="testResultEmpty" min="0" value="0">
-    </label>
-  </div>
-
-  <label>
-    Net
-    <input type="number" id="testResultNet" step="0.01" readonly>
-  </label>
-
-  <button type="button" id="saveTestResultBtn">
-    💾 Test Neticesini Kaydet
-  </button>
-
-  <p id="testResultMsg"></p>
-      <h3>📋 Kayıtlı Test Neticeleri</h3>
-<div id="testResultList"></div>
-</section>
-    <section class="card" id="quranTrackingCard">
-  <h2>📖 Kur'an-ı Kerim & Hatim Takibi</h2>
-
-  <label>
-    Tarih
-    <input type="date" id="quranDate">
-  </label>
-
-  <label>
-    Talebe
-    <select id="quranStudent">
-      <option value="">Talebe Seçin</option>
-    </select>
-  </label>
-
-  <label>
-    Cüz
-    <input type="number" id="quranJuz" min="1" max="30" placeholder="1-30">
-  </label>
-
-  <label>
-    Sayfa
-    <input type="number" id="quranPage" min="1" placeholder="Sayfa numarası">
-  </label>
-
-  <label>
-    Durum
-    <select id="quranStatus">
-      <option value="">Durum Seçin</option>
-      <option value="okundu">Okundu</option>
-      <option value="devam">Devam Ediyor</option>
-      <option value="tamamlandi">Hatim Tamamlandı</option>
-    </select>
-  </label>
-
-  <button type="button" id="saveQuranBtn">
-    💾 Kur'an Kaydını Kaydet
-  </button>
-
-  <p id="quranMsg"></p>
-
-  <h3>📋 Kur'an & Hatim Kayıtları</h3>
-  <div id="quranList"></div>
-</section>
-    <section class="card" id="studentAwardsCard">
-  <h2>🏆 Haftanın / Ayın Talebesi</h2>
-
-  <label>
-    Ödül Türü
-    <select id="awardType">
-      <option value="">Seçiniz</option>
-      <option value="hafta">Haftanın Talebesi</option>
-      <option value="ay">Ayın Talebesi</option>
-    </select>
-  </label>
-
-  <label>
-    Talebe
-    <select id="awardStudent">
-      <option value="">Talebe Seçin</option>
-    </select>
-  </label>
-
-  <label>
-    Açıklama / Başarı Sebebi
-    <textarea
-      id="awardNote"
-      rows="3"
-      placeholder="Örn: Derslere düzenli katılımı ve güzel davranışları"></textarea>
-  </label>
-
-  <button type="button" id="saveAwardBtn">
-    🏆 Seçimi Kaydet
-  </button>
-
-  <p id="awardMsg"></p>
-
-  <h3>🏅 Seçilen Talebeler</h3>
-  <div id="awardList"></div>
-</section>
-    <section class="card" id="todaySummaryCard">
-  <h2>📊 Bugün / Bu Hafta Özet</h2>
-
-  <div class="grid">
-    <div>
-      <strong>👥 Günlük Yoklama</strong>
-      <p id="summaryAttendance">Yükleniyor...</p>
-      <p id="summaryWeeklyAttendance">Haftalık: Yükleniyor...</p>
-    </div>
-
-    <div>
-      <strong>🕌 Namaz Takibi</strong>
-      <p id="summaryPrayer">Yükleniyor...</p>
-      <p id="summaryWeeklyPrayer">Haftalık: Yükleniyor...</p>
-    </div>
-
-    <div>
-      <strong>🛏️ Yatak Yoklaması</strong>
-      <p id="summaryBed">Yükleniyor...</p>
-      <p id="summaryWeeklyBed">Haftalık: Yükleniyor...</p>
-    </div>
-
-    <div>
-      <strong>🏫 Okul Dönüşü</strong>
-      <p id="summarySchoolReturn">Yükleniyor...</p>
-      <p id="summaryWeeklySchoolReturn">Haftalık: Yükleniyor...</p>
-    </div>
-
-    <div>
-      <strong>🚪 İzin / Dışarıda</strong>
-      <p id="summaryLeave">Yükleniyor...</p>
-      <p id="summaryWeeklyLeave">Haftalık: Yükleniyor...</p>
-    </div>
-
-    <div>
-      <strong>👤 Günün Görevlileri</strong>
-      <p id="summaryDuty">Yükleniyor...</p>
-      <p id="summaryWeeklyDuty">Haftalık: Yükleniyor...</p>
-    </div>
-  </div>
-</section>
-    <section class="card" id="attendanceCard">
-  <h2>Günlük Yoklama</h2>
-
-  <label>
-    Yoklama Tarihi
-    <input type="date" id="attendanceDate">
-  </label>
-
-  <button type="button" id="loadAttendanceBtn">
-    Yoklamayı Aç
-  </button>
-<div id="attendanceSummary">
-  Toplam: 0 | Geldi: 0 | Gelmedi: 0 | İzinli: 0
-</div>
-  <div id="attendanceList"></div>
-
-  <button type="button" id="saveAttendanceBtn">
-    Yoklamayı Kaydet
-  </button>
-
-  <p id="attendanceMsg"></p>
-</section>
-    <section class="card" id="monthlyAttendanceCard">
-  <h2>Aylık Yoklama Raporu</h2>
-
-  <label>
-    Rapor Ayı
-    <input type="month" id="reportMonth">
-  </label>
-
-  <button type="button" id="loadReportBtn">
-    Raporu Göster
-  </button>
-
-  <p id="reportSummary"></p>
-
-  <div id="reportList"></div>
-</section>
-    <section class="card" id="studyCard">
-  <h2>Etüt Takibi</h2>
-
-  <label>
-    Etüt Tarihi
-    <input type="date" id="studyDate">
-  </label>
-
-  <label>
-    Etüt
-    <select id="studySession">
-      <option value="1">1. Etüt</option>
-      <option value="2">2. Etüt</option>
-      <option value="3">3. Etüt</option>
-      <option value="4">4. Etüt</option>
-    </select>
-  </label>
-
-  <button type="button" id="loadStudyBtn">Etüdü Aç</button>
-
-  <p id="studySummary">
-    Toplam: 0 | Katıldı: 0 | Katılmadı: 0 | İzinli: 0
-  </p>
-
-  <div id="studyList"></div>
-
-  <button type="button" id="saveStudyBtn">
-    Etüdü Kaydet
-  </button>
-
-  <p id="studyMsg"></p>
-</section>
-    <section class="card" id="monthlyStudyCard">
-  <h2>Aylık Etüt Raporu</h2>
-
-  <label>
-    Rapor Ayı
-    <input type="month" id="studyReportMonth">
-  </label>
-
-  <button type="button" id="loadStudyReportBtn">
-    Etüt Raporunu Göster
-  </button>
-
-  <p id="studyReportSummary"></p>
-
-  <div id="studyReportList"></div>
-</section>
-    <section class="card" id="leaveCard">
-  <h2>İzin / Çıkış Takibi</h2>
-
-  <label>
-    Talebe
-    <select id="leaveStudent">
-      <option value="">Talebe seçin</option>
-    </select>
-  </label>
-
-  <div class="grid">
-    <label>
-      Çıkış Tarihi ve Saati
-      <input type="datetime-local" id="leaveStart">
-    </label>
-
-    <label>
-      Dönüş Tarihi ve Saati
-      <input type="datetime-local" id="leaveEnd">
-    </label>
-
-    <label>
-      İzin Nedeni
-      <input type="text" id="leaveReason" placeholder="İzin nedeni">
-    </label>
-
-    <label>
-      Teslim Alan / Veli
-      <input type="text" id="leaveReceiver" placeholder="Ad Soyad">
-    </label>
-  </div>
-
-  <button type="button" id="saveLeaveBtn">
-    İzni Kaydet
-  </button>
-
-  <p id="leaveMsg"></p>
-
-  <h3>İzin Kayıtları</h3>
-  <div id="leaveList"></div>
-</section>
+  <!-- Ana İçerik Alanı (PC & Laptop Tam Uyumlu Genişlik) -->
+  <main id="main-content" class="flex-1 w-full max-w-[1600px] mx-auto p-2 sm:p-4 lg:p-6">
+    <!-- app.js renderMainContent() ile doldurulacak -->
   </main>
-</div>
-<!-- Talebe listesi açılır pencere -->
-<div id="studentModal" class="studentModal hidden">
-  <div class="studentModalContent">
-    <button type="button" id="studentModalClose">&times;</button>
 
-    <h2 id="studentModalTitle">Talebe Listesi</h2>
+  <!-- Alt Bilgi (Footer) -->
+  <footer class="no-print bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <strong>Kurs & Etüt Öğrenci Takip Sistemi</strong> • Ana Yönetici, Personel & Veli Ortak Portalı
+      </div>
+      <div class="text-[11px] text-slate-400">
+        Yoklama Durumları: <strong>Var</strong>, <strong>Yok</strong>, <strong>Geç</strong>, <strong>Takkesiz</strong>, <strong>İzinli</strong>
+      </div>
+    </div>
+  </footer>
 
-    <div class="studentModalTableWrap">
-      <table class="studentModalTable">
-        <thead>
-          <tr>
-            <th>Ad Soyad</th>
-            <th>Sınıf</th>
-            <th>Öğrenci No</th>
-          </tr>
-        </thead>
-        <tbody id="studentModalBody"></tbody>
-      </table>
+  <!-- Toast Bildirim Konteyneri -->
+  <div id="toast-container"></div>
+
+  <!-- Soldan Kayar Menü Penceresi (Slide-Over Drawer) -->
+  <div id="side-drawer-container" class="fixed inset-0 z-50 pointer-events-none transition-all duration-300">
+    <!-- Karartma Arka Planı -->
+    <div id="side-drawer-backdrop" onclick="window.App.closeDrawer()" 
+      class="absolute inset-0 bg-slate-900/60 opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+
+    <!-- Soldan Kayarak Açılan Menü Paneli -->
+    <div id="side-drawer-panel" 
+      class="absolute top-0 left-0 bottom-0 w-80 sm:w-96 max-w-[85vw] bg-white shadow-2xl border-r border-slate-200 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-auto">
+      <!-- İçerik app.js renderDrawer() ile dinamik doldurulacaktır -->
     </div>
-<!-- Talebe Ekle / Düzenle Modal -->
-<div id="studentEditModal" class="studentModal hidden">
-  <div class="studentModalContent" style="max-width: 650px;">
-    <div class="modalHeaderRow">
-      <h2 id="modalStudentTitle">➕ Yeni Öğrenci Ekle</h2>
-      <button type="button" id="closeStudentModalBtn" class="modalCloseBtn">&times;</button>
-    </div>
-    <form id="modalStudentForm">
-      <div class="grid">
-        <label>Ad Soyad *<input id="modalName" required placeholder="Ad Soyad"></label>
-        <label>Öğrenci No *<input id="modalStudentNo" required placeholder="Örn: 502"></label>
-        <label>Sınıf<input id="modalClassName" placeholder="Örn: 5-A"></label>
-        <label>Hoca (Etüt / Dahili)<input id="modalTeacherName" placeholder="Örn: YASİN EKİNCİ"></label>
-        <label>Oda (Yatakhane)<input id="modalDormNo" placeholder="Örn: Oda 101"></label>
-        <label>Şifre<input id="modalStudentPass" placeholder="Örn: 123"></label>
-        <label>Aile Kodu<input id="modalFamilyCode" placeholder="Örn: SAYGI2026"></label>
-        <label>Veli Adı<input id="modalParentName" placeholder="Veli Adı"></label>
-        <label>Veli Tel<input id="modalParentPhone" type="tel" placeholder="05xx xxx xx xx"></label>
-        <label class="full">Notlar<textarea id="modalNotes" rows="2" placeholder="Özel notlar..."></textarea></label>
-      </div>
-      <div style="display: flex; gap: 10px; margin-top: 16px;">
-        <button type="submit" id="modalSaveStudentBtn" class="btnGreen">💾 Talebeyi Kaydet</button>
-        <button type="button" id="modalCancelStudentBtn" class="secondary">İptal</button>
-      </div>
-    </form>
   </div>
-</div>
 
-<!-- Personel Ekle / Düzenle Modal -->
-<div id="staffEditModal" class="studentModal hidden">
-  <div class="studentModalContent" style="max-width: 550px;">
-    <div class="modalHeaderRow">
-      <h2 id="modalStaffTitle">👨‍🏫 Personel / Hoca Ekle</h2>
-      <button type="button" id="closeStaffModalBtn" class="modalCloseBtn">&times;</button>
-    </div>
-    <form id="modalStaffForm">
-      <div class="grid">
-        <label>Ad Soyad *<input id="modalStaffName" required placeholder="Örn: Yasin Ekinci"></label>
-        <label>Görev / Branş *<input id="modalStaffRole" required placeholder="Örn: Belletmen Hoca, Kuran Hocası"></label>
-        <label>Telefon<input id="modalStaffPhone" type="tel" placeholder="05xx xxx xx xx"></label>
-        <label>E-posta / Kod<input id="modalStaffEmail" placeholder="yasin@irfaniye.com"></label>
-        <label>Şifre<input id="modalStaffPass" placeholder="Giriş şifresi"></label>
-        <label>Yetki
-          <select id="modalStaffAccess">
-            <option value="hoca">Hoca / Belletmen</option>
-            <option value="yonetici">Kurum Yöneticisi</option>
-            <option value="personel">Personel / Görevli</option>
-          </select>
-        </label>
-      </div>
-      <div style="display: flex; gap: 10px; margin-top: 16px;">
-        <button type="submit" id="saveStaffBtn" class="btnGreen">💾 Personeli Kaydet</button>
-        <button type="button" id="cancelStaffBtn" class="secondary">İptal</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Canlı TV / Dijital Pano Modal (Fullscreen Kiosk Mode) -->
-<div id="tvKioskModal" class="tvKioskModal hidden">
-  <div class="tvKioskContent">
-    <div class="tvKioskTopBar">
-      <div class="tvKioskBrand">
-        <span class="tvLogo">🏫</span>
+  <!-- Excel'den Toplu Öğrenci Ekleme Modalı (Sadece Ana Yönetici) -->
+  <div id="bulk-import-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
         <div>
-          <h1 id="tvInstitutionTitle">İRFANİYE TAKİP - CANLI DİJİTAL PANO</h1>
-          <p id="tvKioskDate">9 Ekim 2026 Cuma</p>
+          <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+            <span>📋 Excel'den Toplu Öğrenci Ekle</span>
+          </h3>
+          <p class="text-xs text-slate-500">Excel'deki satırları kopyalayıp aşağıdaki kutuya yapıştırın</p>
         </div>
-      </div>
-      <div class="tvKioskRight">
-        <div id="tvKioskClock" class="tvKioskClock">12:00:00</div>
-        <button type="button" id="closeTvKioskBtn" class="tvCloseBtn">✕ Panodan Çık</button>
-      </div>
-    </div>
-
-    <div class="tvKioskGrid">
-      <!-- 1: Günün Görevlileri -->
-      <div class="tvCard">
-        <h2>🎯 Günün Görevlileri & Nöbetçiler</h2>
-        <div id="tvDutyList" class="tvList">
-          <p class="tvEmpty">Bugün için görevli atanmadı.</p>
-        </div>
+        <button onclick="window.App.closeBulkImportModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
       </div>
 
-      <!-- 2: Namaz Vakitleri & Cemaat Özeti -->
-      <div class="tvCard">
-        <h2>🕌 Namaz Takibi & Cemaat</h2>
-        <div id="tvPrayerStats" class="tvPrayerGrid">
-          <div class="tvPrayerBox"><strong>Sabah</strong><span id="tvSabahCount">-</span></div>
-          <div class="tvPrayerBox"><strong>Öğle</strong><span id="tvOgleCount">-</span></div>
-          <div class="tvPrayerBox"><strong>İkindi</strong><span id="tvIkindiCount">-</span></div>
-          <div class="tvPrayerBox"><strong>Akşam</strong><span id="tvAksamCount">-</span></div>
-          <div class="tvPrayerBox"><strong>Yatsı</strong><span id="tvYatsiCount">-</span></div>
+      <div class="space-y-4">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+          <div class="font-bold text-slate-800">Sütun Sırası (Excel'den kopyalanacak alanlar):</div>
+          <div class="font-mono text-[11px] text-emerald-800 bg-white p-2 rounded border border-slate-200">
+            No &nbsp;|&nbsp; Adı Soyadı &nbsp;|&nbsp; Sınıfı &nbsp;|&nbsp; Okulu &nbsp;|&nbsp; Seviye &nbsp;|&nbsp; Etüt Hocası &nbsp;|&nbsp; Dahili Hocası
+          </div>
         </div>
-      </div>
 
-      <!-- 3: Şampiyon Talebeler Podyumu -->
-      <div class="tvCard tvCardSpan">
-        <h2>🏆 Haftanın & Ayın Örnek Talebeleri</h2>
-        <div id="tvAwardList" class="tvAwardGrid">
-          <p class="tvEmpty">Seçilen talebeler yükleniyor...</p>
+        <div>
+          <textarea id="bulk-paste-textarea" rows="8" placeholder="Excel tablonuzu kopyalayıp (Ctrl+C) buraya yapıştırın (Ctrl+V)..."
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-800 focus:bg-white focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeBulkImportModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            İptal
+          </button>
+          <button type="button" onclick="window.App.handleBulkPasteImport()" 
+            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition">
+            Öğrencileri Kaydet ve Yükle
+          </button>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Gizli JSON Dosya Girişi -->
-<input type="file" id="jsonFileInput" accept=".json" class="hidden">
+  <!-- Tekil Öğrenci Ekleme & Düzenleme Modalı (Şifre Alanı Dahil) -->
+  <div id="student-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 id="student-modal-title" class="text-base font-black text-slate-900">Öğrenci & Şifre Kaydı</h3>
+        <button onclick="window.App.closeStudentModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+      </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script type="module" src="app.js"></script>
+      <form id="student-form" onsubmit="window.App.saveStudentFromModal(event)" class="space-y-3.5">
+        <input type="hidden" id="modal-student-id">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">OKUL / KURS NO *</label>
+            <input type="text" id="modal-student-no" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">SINIF / ŞUBE *</label>
+            <input type="text" id="modal-student-class" required placeholder="Örn: 5. Sınıf, 8. Sınıf" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">ÖĞRENCİ ADI *</label>
+            <input type="text" id="modal-student-fn" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">SOYADI *</label>
+            <input type="text" id="modal-student-ln" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Veli Giriş Şifresi Belirleme Alanı (Ana Yönetici Tarafından) -->
+        <div class="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200">
+          <label class="block text-xs font-bold text-emerald-900 mb-1 uppercase">VELİ GİRİŞ ŞİFRESİ (Ana Yönetici Belirler)</label>
+          <input type="text" id="modal-student-pass" required placeholder="Örn: 123" 
+            class="w-full px-3 py-2 bg-white border border-emerald-300 rounded-lg text-sm font-mono font-bold text-emerald-900 focus:outline-none">
+          <p class="text-[11px] text-emerald-700 mt-1">
+            💡 Veli sisteme giriş yaparken öğrencinin Adı Soyadı ve bu şifreyi kullanacaktır.
+          </p>
+        </div>
+
+        <!-- Hoca ve Yatakhane Bilgileri -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">ETÜT HOCASI</label>
+            <input type="text" id="modal-student-etut" placeholder="Örn: Yasin Ekinci" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">DAHİLİ (DİNİ) HOCASI</label>
+            <input type="text" id="modal-student-dahili" placeholder="Örn: Selim Bozkurt" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">YATAKHANE / ODA NO</label>
+            <input type="text" id="modal-student-yatakhane" placeholder="Örn: Oda 101" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-indigo-900 mb-1">ORTAK AİLE KODU</label>
+            <input type="text" id="modal-student-family" placeholder="Örn: KALKAN2026" 
+              class="w-full px-3 py-2 bg-indigo-50/70 border border-indigo-200 rounded-lg text-sm font-mono font-bold text-indigo-900 uppercase focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">VELİ ADI SOYADI</label>
+            <input type="text" id="modal-student-father" placeholder="Baba veya Anne Adı" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">VELİ İLETİŞİM TELEFONU</label>
+            <input type="tel" id="modal-student-phone" placeholder="0555 123 45 67" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeStudentModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Vazgeç
+          </button>
+          <button type="submit" 
+            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition">
+            Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Personel / Hoca Kendi Şifresini Değiştirme Modalı -->
+  <div id="staff-self-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 relative overflow-hidden">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 text-lg font-black flex items-center justify-center shadow-inner">
+            🔑
+          </div>
+          <div>
+            <h3 class="text-base font-black text-slate-900">Eğitmen Giriş Şifremi Değiştir</h3>
+            <p id="staff-modal-user-name" class="text-xs text-slate-500 font-bold"></p>
+          </div>
+        </div>
+        <button type="button" onclick="window.App.closeStaffSelfPasswordModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+      </div>
+
+      <div class="p-3 bg-amber-50/70 rounded-2xl border border-amber-200 text-xs text-amber-900 mb-4 flex items-center justify-between">
+        <span>Mevcut Şifreniz:</span>
+        <strong id="staff-modal-current-pass" class="font-mono bg-white px-2.5 py-1 rounded-lg border border-amber-300 text-amber-950 font-bold">123</strong>
+      </div>
+
+      <form id="staff-self-password-form" onsubmit="window.App.handleStaffSelfPasswordSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1 uppercase">YENİ GİRİŞ ŞİFRENİZ *</label>
+          <input type="text" id="staff-self-new-password" required minlength="3" placeholder="Yeni şifrenizi giriniz (en az 3 karakter)" 
+            class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-amber-500 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1 uppercase">YENİ ŞİFRE (TEKRAR) *</label>
+          <input type="text" id="staff-self-confirm-password" required minlength="3" placeholder="Yeni şifrenizi tekrar giriniz" 
+            class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-amber-500 transition">
+        </div>
+
+        <p class="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          💡 Şifrenizi değiştirdiğinizde sisteme bir sonraki girişinizde bu yeni şifrenizi kullanacaksınız. Ana Yönetici (Müdür) gerektiğinde şifrenizi sistem panelinden görebilir.
+        </p>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeStaffSelfPasswordModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Vazgeç
+          </button>
+          <button type="submit" 
+            class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow transition">
+            Şifremi Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Doğrudan HTML'e Gömülü Acil Önbellek & Sürüm Sıfırlama Butonu (Her Durumda, Giriş Yapılmasa Bile %100 Görünür) -->
+  <div id="quick-cache-clear-bar" class="no-print fixed bottom-3 right-3 z-50">
+    <button type="button" onclick="window.forcePurgeAppCache()" 
+      class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-900/95 hover:bg-slate-900 text-amber-300 hover:text-amber-200 border-2 border-amber-400 shadow-2xl text-xs font-black backdrop-blur transition-all active:scale-95 cursor-pointer"
+      title="Eski önbelleği temizleyip en yeni sistemi zorla yükler">
+      <span class="text-sm">🔄</span>
+      <span>Önbelleği Temizle (v10.6)</span>
+    </button>
+  </div>
+
+  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v10.6 Sürüm İmzası) -->
+  <script src="js/hadisler.js?v=10.6"></script>
+  <script src="js/store.js?v=10.6"></script>
+  <script src="js/attendance.js?v=10.6"></script>
+  <script src="js/leave-tracker.js?v=10.6"></script>
+  <script src="js/leave-return.js?v=10.6"></script>
+  <script src="js/quran-tracker.js?v=10.6"></script>
+  <script src="js/performance.js?v=10.6"></script>
+  <script src="js/omr-scanner.js?v=10.6"></script>
+  <script src="js/test-results.js?v=10.6"></script>
+  <script src="js/mock-exam.js?v=10.6"></script>
+  <script src="js/leaderboard.js?v=10.6"></script>
+  <script src="js/parent-portal.js?v=10.6"></script>
+  <script src="js/app.js?v=10.6"></script>
+
+  <!-- Service Worker Kaydı (Kısayol ve PWA Hızlı Başlatma) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js?v=10.6').then(function(reg) {
+          if (reg) {
+            reg.update();
+          }
+        }).catch(function(err) {
+          console.warn('[PWA] Service Worker kaydı:', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>
