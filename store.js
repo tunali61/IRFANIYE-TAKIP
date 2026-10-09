@@ -897,10 +897,21 @@ class DataStore {
     if (!baseUrl) return { success: false, message: 'Bulut bağlantısı tanımlı değil.' };
 
     try {
-      const res = await fetch(`${baseUrl}/kurs_data.json`, {
-        headers: { 'Accept': 'application/json' }
-      });
+      const user = window.firebaseAuth?.currentUser;
 
+if (!user) {
+  console.warn('[CloudSync] Firebase kullanıcısı oturum açmamış.');
+  return { success: false, message: 'Firebase oturumu bulunamadı.' };
+}
+
+const token = await user.getIdToken();
+
+const res = await fetch(
+  `${baseUrl}/kurs_data.json?auth=${encodeURIComponent(token)}`,
+  {
+    headers: { 'Accept': 'application/json' }
+  }
+);
       if (!res.ok) {
         return { success: false, message: `Bulut veri hatası: ${res.status}` };
       }
@@ -1473,7 +1484,7 @@ class DataStore {
   }
 
   // Gerçek Zamanlı (Realtime SSE) Bulut Dinleyicisi - Anında Değişim
-  initRealtimeListener() {
+  async initRealtimeListener() {
     const baseUrl = this.getFirebaseUrl();
     if (!baseUrl || typeof EventSource === 'undefined') return;
 
@@ -1483,7 +1494,17 @@ class DataStore {
     }
 
     try {
-      this._eventSource = new EventSource(`${baseUrl}/kurs_data.json`);
+      const user = window.firebaseAuth?.currentUser;
+if (!user) {
+  console.warn('[Realtime] Firebase kullanıcısı oturum açmamış.');
+  return;
+}
+
+const token = await user.getIdToken();
+
+this._eventSource = new EventSource(
+  `${baseUrl}/kurs_data.json?auth=${encodeURIComponent(token)}`
+);
 
       this._eventSource.addEventListener('put', (e) => {
         if (!e || !e.data) return;
