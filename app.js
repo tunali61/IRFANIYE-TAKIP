@@ -1107,7 +1107,19 @@ $("prayerReviewAbsentBtn")?.addEventListener("click", () => {
     return;
   }
 
-  alert("Olmayan Talebeler:\n\n" + absentStudents.join("\n"));
+  const modal = $("prayerAbsentModal");
+const info = $("prayerAbsentModalInfo");
+const list = $("prayerAbsentModalList");
+
+if (modal && info && list) {
+  info.textContent = `${absentStudents.length} talebe bulundu.`;
+
+  list.innerHTML = absentStudents
+    .map(item => `<div class="prayerAbsentItem">${item}</div>`)
+    .join("");
+
+  modal.classList.remove("hidden");
+}
 });
 function updatePrayerCounts() {
   const counts = {
