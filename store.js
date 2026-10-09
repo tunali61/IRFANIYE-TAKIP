@@ -792,20 +792,38 @@ class DataStore {
 
   // Buluta Asenkron Arka Plan Gönderimi
   async syncToCloud(endpoint, data) {
-    const baseUrl = this.getFirebaseUrl();
-    if (!baseUrl) return false;
-    try {
-      const res = await fetch(`${baseUrl}/${endpoint}.json`, {
+  const baseUrl = this.getFirebaseUrl();
+  if (!baseUrl) return false;
+
+  try {
+    const user = window.firebaseAuth?.currentUser;
+
+    if (!user) {
+      console.warn(`[CloudSync] Firebase kullanıcısı oturum açmamış.`);
+      return false;
+    }
+
+    const token = await user.getIdToken();
+
+    const res = await fetch(
+      `${baseUrl}/${endpoint}.json?auth=${encodeURIComponent(token)}`,
+      {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      });
-      return res.ok;
-    } catch (err) {
-      console.warn(`[CloudSync] ${endpoint} gönderilemedi (çevrimdışı):`, err);
-      return false;
+      }
+    );
+
+    if (!res.ok) {
+      console.warn(`[CloudSync] ${endpoint} HTTP ${res.status}`);
     }
+
+    return res.ok;
+  } catch (err) {
+    console.warn(`[CloudSync] ${endpoint} gönderilemedi:`, err);
+    return false;
   }
+}
 
   // Tüm Veritabanını Tek Tıkla Buluta İlk Yükleme
   async pushAllToCloud() {
