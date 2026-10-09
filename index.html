@@ -217,9 +217,13 @@
   <section id="loginCard" class="card login">
     <h2>Yönetici Girişi</h2>
     <form id="loginForm">
-      <label>E-posta<input id="email" type="email" required></label>
-      <label>Şifre<input id="password" type="password" required></label>
-      <button type="submit">Giriş Yap</button>
+      <label>E-posta veya Kullanıcı Adı
+        <input id="email" type="text" required placeholder="admin@irfaniye.com veya kullanıcı adı">
+      </label>
+      <label>Şifre
+        <input id="password" type="password" required placeholder="Şifreniz">
+      </label>
+      <button type="submit" id="submitLoginBtn">Giriş Yap</button>
       <p id="loginMsg"></p>
     </form>
   </section>

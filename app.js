@@ -18,16 +18,65 @@ const db = getDatabase(app);
 const $ = id => document.getElementById(id); 
 let students = {}, editingId = null, unsubscribe = null; 
 let currentAdminName = "Sistem Kaydı";
-$("loginForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  $("loginMsg").textContent = "Giriş yapılıyor...";
+async function handleLoginSubmit(e) {
+  if (e) e.preventDefault();
+  const emailInput = $("email");
+  const passInput = $("password");
+  const msgEl = $("loginMsg");
+
+  if (!emailInput || !passInput) return;
+  let emailVal = emailInput.value.trim();
+  const passVal = passInput.value;
+
+  if (!emailVal || !passVal) {
+    if (msgEl) {
+      msgEl.textContent = "Lütfen e-posta ve şifrenizi girin.";
+      msgEl.className = "error";
+    }
+    return;
+  }
+
+  // Eğer kullanıcı sadece kullanıcı adı girdiyse otomatik @irfaniye.com tamamla
+  if (!emailVal.includes("@")) {
+    emailVal = emailVal + "@irfaniye.com";
+  }
+
+  if (msgEl) {
+    msgEl.textContent = "Giriş yapılıyor...";
+    msgEl.className = "";
+  }
+
   try {
-    await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
-    $("loginMsg").textContent = "";
+    await signInWithEmailAndPassword(auth, emailVal, passVal);
+    if (msgEl) msgEl.textContent = "";
   } catch (err) {
-    console.error(err);
-    $("loginMsg").textContent = "Giriş başarısız. E-posta veya şifreyi kontrol edin.";
-    $("loginMsg").className = "error";
+    console.error("Giriş hatası:", err);
+    let msg = "Giriş başarısız. E-posta veya şifreyi kontrol edin.";
+    if (err.code === "auth/invalid-credential" || err.code === "auth/wrong-password") {
+      msg = "❌ Hatalı şifre veya e-posta girdiniz.";
+    } else if (err.code === "auth/user-not-found") {
+      msg = "❌ Bu e-posta ile kayıtlı kullanıcı bulunamadı.";
+    } else if (err.code === "auth/invalid-email") {
+      msg = "❌ Geçersiz e-posta formatı.";
+    } else if (err.code === "auth/too-many-requests") {
+      msg = "⚠️ Çok fazla başarısız deneme yapıldı. Lütfen biraz bekleyin.";
+    } else if (err.code === "auth/unauthorized-domain") {
+      msg = "⚠️ Bu site Firebase üzerinde yetkilendirilmemiş alan adı (unauthorized domain).";
+    } else if (err.code) {
+      msg = `❌ Hata (${err.code}): ${err.message}`;
+    }
+    if (msgEl) {
+      msgEl.textContent = msg;
+      msgEl.className = "error";
+    }
+  }
+}
+
+$("loginForm")?.addEventListener("submit", handleLoginSubmit);
+$("submitLoginBtn")?.addEventListener("click", e => {
+  // form submit oluyorsa çift tetiklenmeyi engelle
+  if ($("email")?.value && $("password")?.value) {
+    handleLoginSubmit(e);
   }
 });
 
@@ -159,24 +208,24 @@ try {
     "❌ Ders notu kaydedilirken hata oluştu.";
 }    
 });
-$("studentForm").addEventListener("submit", async e => {
+$("studentForm")?.addEventListener("submit", async e => {
   e.preventDefault();
   const data = {
-    name: $("name").value.trim(),
-    studentNo: $("studentNo").value.trim(),
-    parentName: $("parentName").value.trim(),
-    parentPhone: $("parentPhone").value.trim(),
-    className: $("className").value.trim(),
-    dormNo: $("dormNo").value.trim(),
-    notes: $("notes").value.trim()
+    name: $("name")?.value.trim() || "",
+    studentNo: $("studentNo")?.value.trim() || "",
+    parentName: $("parentName")?.value.trim() || "",
+    parentPhone: $("parentPhone")?.value.trim() || "",
+    className: $("className")?.value.trim() || "",
+    dormNo: $("dormNo")?.value.trim() || "",
+    notes: $("notes")?.value.trim() || ""
   };
   if (editingId) await set(ref(db, "students/" + editingId), data);
   else await set(push(ref(db, "students")), data);
   resetForm();
 });
 
-$("cancelBtn").onclick = resetForm;
-$("search").addEventListener("input", render);
+if ($("cancelBtn")) $("cancelBtn").onclick = resetForm;
+$("search")?.addEventListener("input", render);
 
 $("importExcelBtn").addEventListener("click", async () => {
   const file = $("excelFile").files[0];
@@ -264,9 +313,9 @@ for (const originalRow of rows) {
 
 function resetForm() {
   editingId = null;
-  $("studentForm").reset();
-  $("saveBtn").textContent = "Talebeyi Kaydet";
-  $("cancelBtn").classList.add("hidden");
+  $("studentForm")?.reset();
+  if ($("saveBtn")) $("saveBtn").textContent = "Talebeyi Kaydet";
+  $("cancelBtn")?.classList.add("hidden");
 }
 
 function esc(v="") {
@@ -274,15 +323,18 @@ function esc(v="") {
 }
 
 function render() {
-  const q = $("search").value.trim().toLocaleLowerCase("tr-TR");
+  const searchEl = $("search") || $("studentSearch");
+  const q = searchEl ? searchEl.value.trim().toLocaleLowerCase("tr-TR") : "";
+  const listEl = $("studentList");
+  if (!listEl) return;
   const rows = Object.entries(students).filter(([id,s]) =>
     [s.name,s.studentNo,s.className,s.dormNo].join(" ").toLocaleLowerCase("tr-TR").includes(q)
   );
   if (!rows.length) {
-    $("studentList").innerHTML = '<div class="empty">Henüz kayıt bulunmuyor.</div>';
+    listEl.innerHTML = '<div class="empty">Henüz kayıt bulunmuyor.</div>';
     return;
   }
-  $("studentList").innerHTML = rows.map(([id,s]) => `
+  listEl.innerHTML = rows.map(([id,s]) => `
     <div class="student">
       <strong>${esc(s.name)}</strong>
       <div class="meta">
@@ -302,16 +354,7 @@ function render() {
 }
 
 function editStudent(id) {
-  const s = students[id];
-  if (!s) return;
-  editingId = id;
-  $("name").value=s.name||""; $("studentNo").value=s.studentNo||"";
-  $("parentName").value=s.parentName||""; $("parentPhone").value=s.parentPhone||"";
-  $("className").value=s.className||""; $("dormNo").value=s.dormNo||"";
-  $("notes").value=s.notes||"";
-  $("saveBtn").textContent="Değişiklikleri Kaydet";
-  $("cancelBtn").classList.remove("hidden");
-  window.scrollTo({top:0,behavior:"smooth"});
+  openStudentEditModal(id);
 }
 // ===== GÜNLÜK YOKLAMA =====
 
