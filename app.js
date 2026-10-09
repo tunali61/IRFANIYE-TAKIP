@@ -185,6 +185,7 @@ window.App = {
   handleLogoError(img, fallbackId) {
     if (!img) return;
     const candidates = [
+      'kurs_logo.jpg.jpeg',
       'kurs_logo.jpg', 'kurs_logo.png', 'kurs_logo.jpeg',
       'kurs_logo.JPG', 'kurs_logo.PNG',
       'kurs_logo.jpg.jpg', 'kurs_logo.png.png',
