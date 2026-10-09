@@ -342,27 +342,29 @@ window.App = {
   },
 
   // --- 1. AŞAMA: Ana Yönetici Şifresini Doğrulama ve E-postaya Kod Gönderme ---
-  handleAdminPasswordSubmit(event) {
-    if (event) event.preventDefault();
-    const passInput = document.getElementById('admin-login-pass');
-    const password = passInput ? passInput.value.trim() : '';
+ async handleAdminPasswordSubmit(event) {
+  if (event) event.preventDefault();
 
-    if (!password) {
-      this.showToast('Lütfen yönetici giriş şifrenizi giriniz.', 'warning');
-      if (passInput) passInput.focus();
+  const emailInput = document.getElementById('admin-login-email');
+  const passInput = document.getElementById('admin-login-pass');
+
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passInput ? passInput.value : '';
+
+  if (!email || !password) {
+    this.showToast('Lütfen e-posta adresinizi ve şifrenizi giriniz.', 'warning');
+    return;
+  }
+
+  try {
+    if (!window.firebaseAuth) {
+      this.showToast('Firebase Authentication yüklenemedi.', 'error');
       return;
     }
 
-    const isValid = window.Store.verifyAdminPassword(password);
-    if (!isValid) {
-      this.showToast('❌ Hatalı yönetici şifresi! Lütfen tekrar deneyiniz.', 'error');
-      if (passInput) passInput.select();
-      return;
-    }
+    await window.firebaseAuth.signInWithEmailAndPassword(email, password);
 
-    // Şifre geçerli! 2. AŞAMA: E-postaya kod gönder
-    const settings = window.Store.getSettings();
-    const email = settings.adminEmail || 'selimbozkurt111@gmail.com';
+    // Firebase doğrulaması başarılı → mevcut OTP sistemine devam et
     const res = window.Store.generateAdminOtp(email);
 
     if (!res.success) {
@@ -377,10 +379,19 @@ window.App = {
     this.showAdminOtpOnScreen = true;
     this.otpStep = 'verify';
 
-    this.showToast(`✓ Şifre onaylandı! Onay kodu ${email} adresinize gönderildi.`, 'success');
+    this.showToast('✓ E-posta ve şifre doğrulandı. Onay kodu gönderildi.', 'success');
     this.renderMainContent();
-  },
 
+  } catch (error) {
+    console.error('Firebase yönetici giriş hatası:', error);
+    this.showToast('❌ E-posta adresi veya şifre hatalı.', 'error');
+
+    if (passInput) {
+      passInput.value = '';
+      passInput.focus();
+    }
+  }
+},
   // E-posta Kodunu Yeniden Gönderme
   handleAdminOtpResend() {
     const settings = window.Store.getSettings();
@@ -1176,7 +1187,12 @@ window.App = {
                       <span class="text-[11px] text-amber-800 font-bold bg-amber-100/70 px-2 py-0.5 rounded-lg border border-amber-300">Ana Yönetim</span>
                     </div>
                   </div>
-
+                  <div class="mb-3">
+  <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">YÖNETİCİ E-POSTA ADRESİ</label>
+  <input type="email" id="admin-login-email" required
+    placeholder="Firebase hesabınızdaki e-posta adresi"
+    class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold">
+</div>
                   <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">YÖNETİCİ GİRİŞ ŞİFRESİ</label>
                     <input type="password" id="admin-login-pass" required autofocus placeholder="Yönetici şifrenizi giriniz" 
