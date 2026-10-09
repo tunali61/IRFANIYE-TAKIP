@@ -389,7 +389,21 @@
       <span>Önbelleği Temizle (v10.6)</span>
     </button>
   </div>
-
+<script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyAvmXorDhKlBr3fzNz-NWLPUVQtNHTY8Ig",
+  authDomain: "irfaniye-takip-88e84.firebaseapp.com",
+  databaseURL: "https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "irfaniye-takip-88e84",
+  storageBucket: "irfaniye-takip-88e84.firebasestorage.app",
+  messagingSenderId: "1038479221874",
+  appId: "1:1038479221874:web:b9555c31bf5bf9cf214eeb"
+};
+  firebase.initializeApp(firebaseConfig);
+window.firebaseAuth = firebase.auth();
+</script>
   <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v10.6 Sürüm İmzası) -->
   <script src="js/hadisler.js?v=10.6"></script>
   <script src="store.js?v=10.6"></script>
