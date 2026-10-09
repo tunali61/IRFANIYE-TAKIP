@@ -10,14 +10,14 @@
 <!-- Sol Kayar Pencere Menüsü Arka Plan Karartması -->
 <div id="drawerBackdrop" class="drawerBackdrop"></div>
 
-<!-- Sol Kayar Pencere Menüsü -->
+<!-- Sol Kayar Pencere Menüsü (Drawer) -->
 <aside id="sideDrawer" class="sideDrawer">
   <div class="drawerHeader">
     <div class="drawerBrand">
-      <span class="drawerLogo">🕌</span>
-      <div>
-        <div class="drawerTitle">İrfaniye Takip</div>
-        <div id="drawerUserBadge" class="drawerUserBadge">Yönetici</div>
+      <div class="drawerLogoThumb">🏫</div>
+      <div class="drawerBrandText">
+        <div id="drawerAdminName" class="drawerAdminName">ÖMER AVNİYEL</div>
+        <div id="drawerAdminRole" class="drawerAdminRole">Kurum Yöneticisi</div>
       </div>
     </div>
     <button type="button" id="closeDrawerBtn" class="closeDrawerBtn" aria-label="Menüyü Kapat">✕</button>
@@ -25,69 +25,193 @@
 
   <div class="drawerBody">
     <nav class="drawerNav">
+      <!-- DİNİ DERSLER & MANEVİYAT -->
       <div class="drawerGroup">
-        <div class="drawerGroupTitle">GENEL & ÖZETLER</div>
-        <a href="#dashboardCard" class="drawerItem"><span class="drawerItemIcon">📊</span> Genel Durum</a>
-        <a href="#todaySummaryCard" class="drawerItem"><span class="drawerItemIcon">📈</span> Bugün / Hafta Özet</a>
-        <a href="#prayerAuditPanel" class="drawerItem"><span class="drawerItemIcon">🛡️</span> Vakit Denetim Paneli</a>
+        <div class="drawerGroupTitle">DİNİ DERSLER & MANEVİYAT</div>
+        <a href="#quranTrackingCard" class="drawerCardItem">
+          <div class="dItemIcon">📖</div>
+          <div class="dItemContent">
+            <strong>Kur'an & Hatim Takibi</strong>
+            <span>Dini ders grupları, sayfa takibi ve cüz hesabı</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
+        <a href="#supportLessonCard" class="drawerCardItem">
+          <div class="dItemIcon">📚</div>
+          <div class="dItemContent">
+            <strong>Takviye Ders Notları & Testler</strong>
+            <span>Ders notları ve deneme sınavları</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
       </div>
 
+      <!-- YARIŞMA & LİDERLİK -->
       <div class="drawerGroup">
-        <div class="drawerGroupTitle">YOKLAMALAR</div>
-        <a href="#prayerTrackingCard" class="drawerItem"><span class="drawerItemIcon">🕌</span> Namaz Takibi</a>
-        <a href="#bedTrackingCard" class="drawerItem"><span class="drawerItemIcon">🛏️</span> Yatak Yoklaması</a>
-        <a href="#schoolReturnCard" class="drawerItem"><span class="drawerItemIcon">🏫</span> Okul Dönüşü Yoklaması</a>
-        <a href="#attendanceCard" class="drawerItem"><span class="drawerItemIcon">📋</span> Günlük Yoklama</a>
-        <a href="#studyCard" class="drawerItem"><span class="drawerItemIcon">📖</span> Etüt Takibi</a>
+        <div class="drawerGroupTitle">🏆 YARIŞMA & LİDERLİK</div>
+        <a href="#studentAwardsCard" class="drawerCardItem">
+          <div class="dItemIcon">🏆</div>
+          <div class="dItemContent">
+            <strong>Haftanın & Ayın Talebesi</strong>
+            <span>Puanlama ve şampiyonluk podyumu</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
+        <a href="javascript:void(0)" id="drawerTvKioskLink" class="drawerCardItem">
+          <div class="dItemIcon">📺</div>
+          <div class="dItemContent">
+            <div class="dItemTitleWithBadge">
+              <strong>Canlı TV / Dijital Pano</strong>
+              <span class="badgeManager">YÖNETİCİ</span>
+            </div>
+            <span>TV ekranı ve projeksiyon kiosk modu</span>
+          </div>
+          <div class="dItemAction">Aç ↗</div>
+        </a>
       </div>
 
+      <!-- HAFTA SONU İZİN İŞLEMLERİ -->
       <div class="drawerGroup">
-        <div class="drawerGroupTitle">TALEBE YÖNETİMİ</div>
-        <a href="#studentListCard" class="drawerItem"><span class="drawerItemIcon">👥</span> Talebe Listesi</a>
-        <a href="#studentFormCard" class="drawerItem"><span class="drawerItemIcon">➕</span> Talebe Ekle / Düzenle</a>
-        <a href="#leaveCard" class="drawerItem"><span class="drawerItemIcon">🚪</span> İzin / Çıkış Takibi</a>
-        <a href="#dailyDutiesCard" class="drawerItem"><span class="drawerItemIcon">👤</span> Günün Görevlileri</a>
-        <a href="#excelCard" class="drawerItem"><span class="drawerItemIcon">📁</span> Excel'den Talebe Aktar</a>
+        <div class="drawerGroupTitle">HAFTA SONU İZİN İŞLEMLERİ</div>
+        <a href="#leaveCard" class="drawerCardItem">
+          <div class="dItemIcon">🚪</div>
+          <div class="dItemContent">
+            <strong>İzine Çıkış Takibi</strong>
+            <span>Kusur başı 30 dk gecikme ve kapı saatleri</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
+        <a href="#leaveCard" class="drawerCardItem">
+          <div class="dItemIcon">🧳</div>
+          <div class="dItemContent">
+            <strong>İzin Dönüşü Takibi</strong>
+            <span>Saatli varış kaydı ve 3 katı izne ek telafi süresi</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
       </div>
 
+      <!-- ÖĞRENCİ & SINIF (VURGULANMIŞ YEŞİL ÇERÇEVELİ) -->
       <div class="drawerGroup">
-        <div class="drawerGroupTitle">DERS & GELİŞİM</div>
-        <a href="#quranTrackingCard" class="drawerItem"><span class="drawerItemIcon">📖</span> Kur'an-ı Kerim & Hatim</a>
-        <a href="#supportLessonCard" class="drawerItem"><span class="drawerItemIcon">📚</span> Takviye Ders Notları</a>
-        <a href="#testResultsCard" class="drawerItem"><span class="drawerItemIcon">📝</span> Test Neticeleri & Etüt</a>
-        <a href="#studentAwardsCard" class="drawerItem"><span class="drawerItemIcon">🏆</span> Haftanın / Ayın Talebesi</a>
+        <div class="drawerGroupTitle">ÖĞRENCİ & SINIF</div>
+        <a href="#studentListCard" class="drawerCardItem drawerItemActiveGreen">
+          <div class="dItemIcon">👥</div>
+          <div class="dItemContent">
+            <strong>Öğrenci & Şifre Yönetimi</strong>
+            <span>Tüm sınıf kütüğü ve veli şifreleri</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
       </div>
 
+      <!-- YÖNETİCİ İŞLEMLERİ -->
       <div class="drawerGroup">
-        <div class="drawerGroupTitle">RAPORLAR</div>
-        <a href="#prayerReportsCard" class="drawerItem"><span class="drawerItemIcon">📑</span> Namaz Raporları</a>
-        <a href="#monthlyAttendanceCard" class="drawerItem"><span class="drawerItemIcon">📊</span> Aylık Yoklama Raporu</a>
-        <a href="#monthlyStudyCard" class="drawerItem"><span class="drawerItemIcon">📈</span> Aylık Etüt Raporu</a>
+        <div class="drawerGroupTitle">YÖNETİCİ İŞLEMLERİ</div>
+        <a href="#staffManagementCard" class="drawerCardItem">
+          <div class="dItemIcon">👨‍🏫</div>
+          <div class="dItemContent">
+            <strong>Personel & Şifre Yönetimi</strong>
+            <span>Hoca ekleme, silme ve şifreler</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
+        <a href="#dailyDutiesCard" class="drawerCardItem">
+          <div class="dItemIcon">🎯</div>
+          <div class="dItemContent">
+            <strong>Günün Görevlileri Yönetimi</strong>
+            <span>Yemekhane nöbetçileri ve müezzin atama</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
+        <a href="#systemSettingsCard" class="drawerCardItem">
+          <div class="dItemIcon">⚙️</div>
+          <div class="dItemContent">
+            <strong>Sistem Ayarları & E-posta</strong>
+            <span>Yönetici maili ve veri yedekleme</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
       </div>
 
-      <div class="drawerGroup drawerGroupExit">
-        <button type="button" id="drawerLogoutBtn" class="drawerItem drawerItemLogout"><span class="drawerItemIcon">🚪</span> Çıkış Yap</button>
+      <!-- YOKLAMALAR -->
+      <div class="drawerGroup">
+        <div class="drawerGroupTitle">YOKLAMALAR & DİĞER</div>
+        <a href="#prayerTrackingCard" class="drawerCardItem">
+          <div class="dItemIcon">🕌</div>
+          <div class="dItemContent">
+            <strong>Namaz Takibi</strong>
+            <span>5 vakit cemaat ve namaz denetimi</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
+        <a href="#bedTrackingCard" class="drawerCardItem">
+          <div class="dItemIcon">🛏️</div>
+          <div class="dItemContent">
+            <strong>Yatak & Okul Dönüşü</strong>
+            <span>Gece yatak ve okul yoklaması</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
+        <a href="#attendanceCard" class="drawerCardItem">
+          <div class="dItemIcon">📋</div>
+          <div class="dItemContent">
+            <strong>Günlük Yoklama & Etüt</strong>
+            <span>Dershane ve etüt yoklaması</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
+        <a href="#dashboardCard" class="drawerCardItem">
+          <div class="dItemIcon">📊</div>
+          <div class="dItemContent">
+            <strong>Genel Durum & Raporlar</strong>
+            <span>Bugün / hafta özeti ve sayaçlar</span>
+          </div>
+          <div class="dItemArrow">→</div>
+        </a>
       </div>
     </nav>
   </div>
+
+  <div class="drawerFooter">
+    <button type="button" id="refreshAppBtn" class="drawerBtnAction btnActionRefresh">
+      <span>🔄</span> Sistemi & Önbelleği Yenile
+    </button>
+    <button type="button" id="drawerLogoutBtn" class="drawerBtnAction btnActionLogout">
+      <span>🚪</span> Güvenli Çıkış Yap
+    </button>
+  </div>
 </aside>
 
-<!-- Mobil Yüzen Menü Butonu -->
+<!-- Mobil Yüzen Menü Butonu (Sol Alt) -->
 <button type="button" id="floatingMenuBtn" class="floatingMenuBtn hidden" aria-label="Menüyü Aç">
   <span>☰</span> Menü
 </button>
 
+<!-- Sağ Alttaki Önbelleği Temizle Butonu -->
+<button type="button" id="floatingClearCacheBtn" class="floatingClearCacheBtn hidden">
+  🔄 Önbelleği Temizle (v10.6)
+</button>
+
 <div class="container">
-  <header>
-    <div class="headerLeft">
-      <button type="button" id="menuToggleBtn" class="menuToggleBtn hidden" aria-label="Menüyü Aç">
-        <span class="menuIconBar"></span>
-        <span class="menuIconBar"></span>
-        <span class="menuIconBar"></span>
+  <header class="topNavBar">
+    <div class="topNavLeft">
+      <button type="button" id="menuToggleBtn" class="menuPillBtn hidden" aria-label="Menüyü Aç">
+        <span>☰</span> Menü
       </button>
-      <div><h1>İrfaniye Takip Sistemi</h1><p>Talebe kayıt ve takip sistemi</p></div>
+      <div class="institutionLogoThumb">🏫</div>
+      <div id="headerManagerBadge" class="headerPillBadge badgeGold hidden">
+        👑 Kurum Yöneticisi
+      </div>
+      <div id="headerStudentBadge" class="headerPillBadge badgeMint hidden">
+        👥 Öğrenci Yönetimi
+      </div>
     </div>
-    <button id="logoutBtn" class="danger hidden">Çıkış Yap</button>
+    <div class="topNavRight">
+      <button type="button" id="headerRefreshBtn" class="headerPillActionBtn btnAmber hidden">
+        🔄 Önbelleği Yenile
+      </button>
+      <button id="logoutBtn" class="danger hidden">Çıkış Yap</button>
+    </div>
   </header>
 
   <section id="loginCard" class="card login">
@@ -101,6 +225,173 @@
   </section>
 
   <main id="appArea" class="hidden">
+    <!-- YÖNETİCİ ANA EKRANI: ÖĞRENCİ YÖNETİMİ & VELİ ŞİFRELERİ -->
+    <section class="card modernCard" id="studentListCard">
+      <div class="cardHeaderRow">
+        <div>
+          <h2>👥 Öğrenci Yönetimi & Veli Şifreleri</h2>
+          <p class="cardSubtitle">Talebe kütüğünü, sınıfları, hocaları ve veli şifrelerini yönetin. Sütun başlıklarına tıklayarak sıralayabilirsiniz.</p>
+        </div>
+      </div>
+
+      <!-- Toolbar Butonları -->
+      <div class="studentToolbar">
+        <button type="button" id="excelModeBtn" class="toolbarBtn btnPurple">
+          📊 Excel Tablo Modu (Toplu Düzenle)
+        </button>
+        <button type="button" id="exportCsvBtn" class="toolbarBtn btnNavy">
+          ☁️ CSV
+        </button>
+        <button type="button" id="restoreBackupBtn" class="toolbarBtn btnYellow">
+          🛡️ Yedekten Kurtar
+        </button>
+        <button type="button" id="exportJsonBtn" class="toolbarBtn btnWhite">
+          💾 JSON Yedek
+        </button>
+        <button type="button" id="importJsonBtn" class="toolbarBtn btnWhite">
+          📁 JSON Yükle
+        </button>
+        <button type="button" id="bulkAddBtn" class="toolbarBtn btnWhite">
+          📋 Toplu Ekle
+        </button>
+        <button type="button" id="openAddStudentBtn" class="toolbarBtn btnGreen">
+          + Yeni Öğrenci
+        </button>
+      </div>
+
+      <!-- Filtre ve Arama Çubuğu -->
+      <div class="studentFilterBar">
+        <div class="filterGroup">
+          <label for="classFilter">Sınıf:</label>
+          <select id="classFilter">
+            <option value="">Tüm Sınıflar</option>
+          </select>
+        </div>
+        <div class="searchGroup">
+          <input type="text" id="studentSearch" placeholder="İsim, No, Hoca veya Oda ara..." autocomplete="off">
+        </div>
+        <div class="sortGroup">
+          <label for="studentSort">Sırala:</label>
+          <select id="studentSort">
+            <option value="noAsc">No (Küçükten Büyüğe ▲)</option>
+            <option value="noDesc">No (Büyükten Küçüğe ▼)</option>
+            <option value="nameAsc">İsim (A-Z)</option>
+            <option value="roomAsc">Oda (Küçükten Büyüğe)</option>
+          </select>
+        </div>
+        <div class="countGroup">
+          <span id="studentCountBadge" class="studentCountBadge">Listelenen: 0 Talebe</span>
+        </div>
+      </div>
+
+      <!-- Öğrenci Tablosu -->
+      <div class="tableResponsive">
+        <table class="modernTable" id="studentTable">
+          <thead>
+            <tr>
+              <th data-sort="no">No ▲</th>
+              <th data-sort="name">Giriş Yapılacak İsim ↕</th>
+              <th data-sort="class">Sınıf ↕</th>
+              <th data-sort="teacher">HOCA: Etüt / Dahili ↕</th>
+              <th data-sort="room">Oda ↕</th>
+              <th>Şifre ↕</th>
+              <th>Aile Kodu ↕</th>
+              <th>Veli Tel ↕</th>
+              <th style="text-align: center;">İŞLEM</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <!-- JS ile doldurulacak -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PERSONEL & ŞİFRE YÖNETİMİ -->
+    <section class="card modernCard" id="staffManagementCard">
+      <div class="cardHeaderRow">
+        <div>
+          <h2>👨‍🏫 Personel & Şifre Yönetimi</h2>
+          <p class="cardSubtitle">Hoca ekleme, silme, branş ve veli/sistem şifrelerini yönetin.</p>
+        </div>
+        <button type="button" id="openAddStaffBtn" class="toolbarBtn btnGreen">
+          + Yeni Personel / Hoca Ekle
+        </button>
+      </div>
+
+      <div class="tableResponsive">
+        <table class="modernTable" id="staffTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ad Soyad</th>
+              <th>Görev / Branş</th>
+              <th>Telefon</th>
+              <th>E-posta / Kod</th>
+              <th>Şifre</th>
+              <th>Yetki</th>
+              <th style="text-align: center;">İŞLEM</th>
+            </tr>
+          </thead>
+          <tbody id="staffTableBody">
+            <!-- JS ile doldurulacak -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SİSTEM AYARLARI & E-POSTA -->
+    <section class="card modernCard" id="systemSettingsCard">
+      <div class="cardHeaderRow">
+        <div>
+          <h2>⚙️ Sistem Ayarları & E-posta</h2>
+          <p class="cardSubtitle">Yönetici profili, kurum bilgileri ve veri yedekleme ayarları.</p>
+        </div>
+      </div>
+
+      <form id="systemSettingsForm">
+        <div class="grid">
+          <label>Kurum Adı
+            <input type="text" id="settingInstitutionName" value="Ömer Avniyel Akademi">
+          </label>
+          <label>Kurum Yöneticisi Adı Soyadı
+            <input type="text" id="settingAdminName" value="ÖMER AVNİYEL">
+          </label>
+          <label>Yönetici Unvanı
+            <input type="text" id="settingAdminRole" value="Kurum Yöneticisi">
+          </label>
+          <label>Yönetici E-posta
+            <input type="email" id="settingAdminEmail" placeholder="admin@irfaniye.com">
+          </label>
+          <label class="full">Bildirim / Rapor E-postası
+            <input type="email" id="settingNotifyEmail" placeholder="rapor@irfaniye.com">
+          </label>
+        </div>
+        <button type="submit" id="saveSettingsBtn" class="btnGreen" style="margin-top: 14px;">
+          💾 Ayarları Kaydet
+        </button>
+        <span id="settingsMsg" style="margin-left: 10px; font-weight: 600;"></span>
+      </form>
+
+      <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e5e7eb;">
+
+      <h3>🛡️ Veri Güvenliği & Tam Yedekleme</h3>
+      <p style="color: #64748b; font-size: 14px; margin-bottom: 15px;">
+        Veritabanının tam kopyasını bilgisayarınıza indirebilir veya daha önce aldığınız bir yedekten sistemi anında kurtarabilirsiniz.
+      </p>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <button type="button" id="btnDownloadFullJson" class="toolbarBtn btnPurple">
+          💾 Tam Sistem Yedeği İndir (JSON)
+        </button>
+        <button type="button" id="btnUploadFullJson" class="toolbarBtn btnYellow">
+          📁 JSON Yedeği Geri Yükle
+        </button>
+        <button type="button" id="btnDownloadCsv" class="toolbarBtn btnNavy">
+          ☁️ Talebe Listesini CSV İndir
+        </button>
+      </div>
+    </section>
+
     <section class="card" id="prayerTrackingCard">
   <h2>🕌 Namaz Takip</h2>
 
@@ -333,41 +624,46 @@
 
   <p id="prayerReportMsg"></p>
 </section>
-    <section class="card" id="dailyDutiesCard">
-  <h2>👥 Günün Görevlileri</h2>
+    <section class="card modernCard" id="dailyDutiesCard">
+      <div class="cardHeaderRow">
+        <div>
+          <h2>🎯 Günün Görevlileri Yönetimi</h2>
+          <p class="cardSubtitle">Yemekhane nöbetçileri, müezzin, kat sorumlusu ve temizlik görevlilerini atayın.</p>
+        </div>
+      </div>
 
-  <label>
-    Tarih
-    <input type="date" id="dailyDutyDate">
-  </label>
+      <div class="grid" style="align-items: flex-end;">
+        <label>Tarih
+          <input type="date" id="dailyDutyDate">
+        </label>
+        <label>Görev
+          <select id="dailyDutyType">
+            <option value="">Görev Seçin</option>
+            <option value="yemekhane">🍲 Yemekhane Nöbetçisi</option>
+            <option value="muezzin">🕌 Müezzin</option>
+            <option value="temizlik">🧹 Temizlik & Kat Nöbetçisi</option>
+            <option value="bulasik">🍽️ Bulaşıkhane</option>
+            <option value="cay">☕ Çay Ocağı</option>
+            <option value="nobet">🛡️ Gece / Yurt Nöbeti</option>
+          </select>
+        </label>
+        <label>Görevli Talebe / Personel
+          <select id="dailyDutyStudent">
+            <option value="">Seçin</option>
+          </select>
+        </label>
+        <label>Vakit / Not (İsteğe Bağlı)
+          <input type="text" id="dailyDutyNote" placeholder="Örn: Öğle ve İkindi, Akşam yemeği">
+        </label>
+      </div>
 
-  <label>
-    Görev
-    <select id="dailyDutyType">
-      <option value="">Görev Seçin</option>
-      <option value="yemekhane">Yemekhane</option>
-      <option value="temizlik">Temizlik</option>
-      <option value="bulasik">Bulaşık</option>
-      <option value="cay">Çay</option>
-      <option value="nobet">Nöbet</option>
-    </select>
-  </label>
+      <button type="button" id="addDailyDutyBtn" class="btnGreen" style="margin-top: 14px;">
+        ➕ Görevli Ata
+      </button>
 
-  <label>
-    Görevli Talebe
-    <select id="dailyDutyStudent">
-      <option value="">Talebe Seçin</option>
-    </select>
-  </label>
-
-  <button type="button" id="addDailyDutyBtn">
-    ➕ Görevli Ekle
-  </button>
-
-  <div id="dailyDutyList"></div>
-
-  <p id="dailyDutyMsg"></p>
-</section>
+      <div id="dailyDutyList" style="margin-top: 18px;"></div>
+      <p id="dailyDutyMsg"></p>
+    </section>
     <section class="card" id="excelCard">
       <h2>Excel'den Talebe Aktar</h2>
       <p>Excel dosyanızı seçin. Aynı Öğrenci No sistemde varsa tekrar eklenmez.</p>
@@ -601,27 +897,6 @@
     </div>
   </div>
 </section>
-    <section class="card" id="studentFormCard">
-      <h2>Talebe Ekle / Düzenle</h2>
-      <form id="studentForm">
-        <div class="grid">
-          <label>Ad Soyad<input id="name" required></label>
-          <label>Öğrenci No<input id="studentNo" required></label>
-          <label>Veli Adı<input id="parentName"></label>
-          <label>Veli Tel<input id="parentPhone" type="tel"></label>
-          <label>Sınıf<input id="className"></label>
-          <label>Yatakhane No<input id="dormNo"></label>
-          <label class="full">Notlar<textarea id="notes" rows="3"></textarea></label>
-        </div>
-        <button type="submit" id="saveBtn">Talebeyi Kaydet</button>
-        <button type="button" id="cancelBtn" class="secondary hidden">İptal</button>
-      </form>
-    </section>
-
-    <section class="card" id="studentListCard">
-      <div class="listHeader"><h2>Talebeler</h2><input id="search" placeholder="Ad, öğrenci no veya sınıf ara..."></div>
-      <div id="studentList"></div>
-    </section>
     <section class="card" id="attendanceCard">
   <h2>Günlük Yoklama</h2>
 
@@ -770,8 +1045,116 @@
         <tbody id="studentModalBody"></tbody>
       </table>
     </div>
+<!-- Talebe Ekle / Düzenle Modal -->
+<div id="studentEditModal" class="studentModal hidden">
+  <div class="studentModalContent" style="max-width: 650px;">
+    <div class="modalHeaderRow">
+      <h2 id="modalStudentTitle">➕ Yeni Öğrenci Ekle</h2>
+      <button type="button" id="closeStudentModalBtn" class="modalCloseBtn">&times;</button>
+    </div>
+    <form id="modalStudentForm">
+      <div class="grid">
+        <label>Ad Soyad *<input id="modalName" required placeholder="Ad Soyad"></label>
+        <label>Öğrenci No *<input id="modalStudentNo" required placeholder="Örn: 502"></label>
+        <label>Sınıf<input id="modalClassName" placeholder="Örn: 5-A"></label>
+        <label>Hoca (Etüt / Dahili)<input id="modalTeacherName" placeholder="Örn: YASİN EKİNCİ"></label>
+        <label>Oda (Yatakhane)<input id="modalDormNo" placeholder="Örn: Oda 101"></label>
+        <label>Şifre<input id="modalStudentPass" placeholder="Örn: 123"></label>
+        <label>Aile Kodu<input id="modalFamilyCode" placeholder="Örn: SAYGI2026"></label>
+        <label>Veli Adı<input id="modalParentName" placeholder="Veli Adı"></label>
+        <label>Veli Tel<input id="modalParentPhone" type="tel" placeholder="05xx xxx xx xx"></label>
+        <label class="full">Notlar<textarea id="modalNotes" rows="2" placeholder="Özel notlar..."></textarea></label>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 16px;">
+        <button type="submit" id="modalSaveStudentBtn" class="btnGreen">💾 Talebeyi Kaydet</button>
+        <button type="button" id="modalCancelStudentBtn" class="secondary">İptal</button>
+      </div>
+    </form>
   </div>
 </div>
+
+<!-- Personel Ekle / Düzenle Modal -->
+<div id="staffEditModal" class="studentModal hidden">
+  <div class="studentModalContent" style="max-width: 550px;">
+    <div class="modalHeaderRow">
+      <h2 id="modalStaffTitle">👨‍🏫 Personel / Hoca Ekle</h2>
+      <button type="button" id="closeStaffModalBtn" class="modalCloseBtn">&times;</button>
+    </div>
+    <form id="modalStaffForm">
+      <div class="grid">
+        <label>Ad Soyad *<input id="modalStaffName" required placeholder="Örn: Yasin Ekinci"></label>
+        <label>Görev / Branş *<input id="modalStaffRole" required placeholder="Örn: Belletmen Hoca, Kuran Hocası"></label>
+        <label>Telefon<input id="modalStaffPhone" type="tel" placeholder="05xx xxx xx xx"></label>
+        <label>E-posta / Kod<input id="modalStaffEmail" placeholder="yasin@irfaniye.com"></label>
+        <label>Şifre<input id="modalStaffPass" placeholder="Giriş şifresi"></label>
+        <label>Yetki
+          <select id="modalStaffAccess">
+            <option value="hoca">Hoca / Belletmen</option>
+            <option value="yonetici">Kurum Yöneticisi</option>
+            <option value="personel">Personel / Görevli</option>
+          </select>
+        </label>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 16px;">
+        <button type="submit" id="saveStaffBtn" class="btnGreen">💾 Personeli Kaydet</button>
+        <button type="button" id="cancelStaffBtn" class="secondary">İptal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Canlı TV / Dijital Pano Modal (Fullscreen Kiosk Mode) -->
+<div id="tvKioskModal" class="tvKioskModal hidden">
+  <div class="tvKioskContent">
+    <div class="tvKioskTopBar">
+      <div class="tvKioskBrand">
+        <span class="tvLogo">🏫</span>
+        <div>
+          <h1 id="tvInstitutionTitle">İRFANİYE TAKİP - CANLI DİJİTAL PANO</h1>
+          <p id="tvKioskDate">9 Ekim 2026 Cuma</p>
+        </div>
+      </div>
+      <div class="tvKioskRight">
+        <div id="tvKioskClock" class="tvKioskClock">12:00:00</div>
+        <button type="button" id="closeTvKioskBtn" class="tvCloseBtn">✕ Panodan Çık</button>
+      </div>
+    </div>
+
+    <div class="tvKioskGrid">
+      <!-- 1: Günün Görevlileri -->
+      <div class="tvCard">
+        <h2>🎯 Günün Görevlileri & Nöbetçiler</h2>
+        <div id="tvDutyList" class="tvList">
+          <p class="tvEmpty">Bugün için görevli atanmadı.</p>
+        </div>
+      </div>
+
+      <!-- 2: Namaz Vakitleri & Cemaat Özeti -->
+      <div class="tvCard">
+        <h2>🕌 Namaz Takibi & Cemaat</h2>
+        <div id="tvPrayerStats" class="tvPrayerGrid">
+          <div class="tvPrayerBox"><strong>Sabah</strong><span id="tvSabahCount">-</span></div>
+          <div class="tvPrayerBox"><strong>Öğle</strong><span id="tvOgleCount">-</span></div>
+          <div class="tvPrayerBox"><strong>İkindi</strong><span id="tvIkindiCount">-</span></div>
+          <div class="tvPrayerBox"><strong>Akşam</strong><span id="tvAksamCount">-</span></div>
+          <div class="tvPrayerBox"><strong>Yatsı</strong><span id="tvYatsiCount">-</span></div>
+        </div>
+      </div>
+
+      <!-- 3: Şampiyon Talebeler Podyumu -->
+      <div class="tvCard tvCardSpan">
+        <h2>🏆 Haftanın & Ayın Örnek Talebeleri</h2>
+        <div id="tvAwardList" class="tvAwardGrid">
+          <p class="tvEmpty">Seçilen talebeler yükleniyor...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gizli JSON Dosya Girişi -->
+<input type="file" id="jsonFileInput" accept=".json" class="hidden">
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>

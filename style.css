@@ -993,3 +993,697 @@ html {
   transition: outline 0.3s ease, box-shadow 0.3s ease !important;
 }
 
+/* ========================================================
+   YÖNETİCİ ARAYÜZÜ, ÜST BAR, DRAWER & TABLO STİLLERİ
+   ======================================================== */
+
+/* Üst Bar (Top Navbar) */
+.topNavBar {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  padding: 12px 18px !important;
+  border-radius: 16px !important;
+  margin-bottom: 20px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e2e8f0 !important;
+  position: sticky !important;
+  top: 10px !important;
+  z-index: 900 !important;
+}
+
+.topNavLeft, .topNavRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.menuPillBtn {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  padding: 7px 16px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  transition: transform 0.15s, background 0.15s !important;
+}
+
+.menuPillBtn:hover {
+  background: #1e293b !important;
+  transform: scale(1.03);
+}
+
+.institutionLogoThumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.headerPillBadge {
+  border-radius: 9999px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badgeGold {
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  color: #854d0e;
+}
+
+.badgeMint {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.headerPillActionBtn {
+  border: none;
+  border-radius: 9999px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s;
+  margin: 0;
+}
+
+.headerPillActionBtn:hover {
+  transform: scale(1.04);
+}
+
+.btnAmber {
+  background: #f59e0b !important;
+  color: #ffffff !important;
+}
+
+/* Sağ Alttaki Önbelleği Temizle Butonu (Floating Clear Cache) */
+.floatingClearCacheBtn {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  z-index: 9990;
+  background: #0f172a;
+  color: #fbbf24 !important;
+  border: 1px solid #d97706;
+  border-radius: 9999px !important;
+  padding: 10px 18px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer !important;
+  transition: transform 0.2s, background 0.2s !important;
+  margin: 0 !important;
+}
+
+.floatingClearCacheBtn:hover {
+  background: #1e293b;
+  transform: translateY(-2px);
+}
+
+/* Sol Kayar Menü (Drawer - Resim 1 Birebir Tasarımı) */
+.drawerBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawerLogoThumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.drawerBrandText {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawerAdminName {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.drawerAdminRole {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.drawerCardItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 11px 13px;
+  margin-bottom: 7px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.drawerCardItem:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateX(3px);
+}
+
+.dItemIcon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.dItemContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dItemContent strong {
+  font-size: 13.5px;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.dItemContent span {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dItemTitleWithBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badgeManager {
+  background: #8b5cf6;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.dItemArrow {
+  color: #cbd5e1;
+  font-size: 16px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.dItemAction {
+  color: #7c3aed;
+  font-size: 12.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Vurgulanmış Yeşil Kart (Öğrenci & Şifre Yönetimi) */
+.drawerItemActiveGreen {
+  background: #f0fdf4 !important;
+  border: 1.5px solid #86efac !important;
+}
+
+.drawerItemActiveGreen .dItemContent strong {
+  color: #15803d !important;
+}
+
+.drawerItemActiveGreen .dItemArrow {
+  color: #22c55e !important;
+}
+
+/* Drawer Alt Butonları */
+.drawerFooter {
+  padding: 14px 16px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawerBtnAction {
+  width: 100% !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  transition: transform 0.15s, background 0.15s !important;
+}
+
+.drawerBtnAction:hover {
+  transform: scale(1.02);
+}
+
+.btnActionRefresh {
+  background: #ffffff !important;
+  border: 1.5px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+
+.btnActionRefresh:hover {
+  background: #eff6ff !important;
+}
+
+.btnActionLogout {
+  background: #ffffff !important;
+  border: 1.5px solid #fca5a5 !important;
+  color: #b91c1c !important;
+}
+
+.btnActionLogout:hover {
+  background: #fef2f2 !important;
+}
+
+/* Modern Kartlar & Yönetici Tablosu (Resim 2 Tasarımı) */
+.modernCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 22px;
+}
+
+.cardHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cardHeaderRow h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.cardSubtitle {
+  color: #64748b;
+  font-size: 13px;
+  margin: 4px 0 0 0;
+}
+
+/* Toolbar Butonları */
+.studentToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  align-items: center;
+}
+
+.toolbarBtn {
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+  transition: transform 0.12s, box-shadow 0.12s !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+.toolbarBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btnPurple {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+}
+
+.btnNavy {
+  background: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.btnYellow {
+  background: #fef9c3 !important;
+  border: 1px solid #eab308 !important;
+  color: #854d0e !important;
+}
+
+.btnWhite {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+.btnGreen {
+  background: #059669 !important;
+  color: #ffffff !important;
+}
+
+/* Filtre ve Arama Çubuğu */
+.studentFilterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  background: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.filterGroup, .sortGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.filterGroup select, .sortGroup select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  background: #fff;
+  cursor: pointer;
+  margin: 0;
+}
+
+.searchGroup {
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchGroup input {
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+  margin: 0;
+}
+
+.studentCountBadge {
+  font-size: 12.5px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+/* Tablo Yapısı */
+.tableResponsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.modernTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.modernTable th {
+  background: #f8fafc;
+  padding: 12px 14px;
+  font-weight: 700;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.modernTable td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.modernTable tbody tr:hover {
+  background: #f8fafc;
+}
+
+.classBadge {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #1e293b;
+}
+
+.teacherBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  font-size: 12.5px;
+  color: #0369a1;
+}
+
+.roomBadge {
+  color: #475569;
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.passBadge {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: monospace;
+  font-size: 12.5px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.familyCodeBadge {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.actionBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 15px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  margin: 0 2px;
+}
+
+.actionBtn:hover {
+  background: #e2e8f0;
+}
+
+/* Modal Stilleri */
+.modalHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.modalCloseBtn {
+  border: none;
+  background: #f1f5f9;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+/* Tam Ekran TV Kiosk Modu */
+.tvKioskModal {
+  position: fixed;
+  inset: 0;
+  background: #090d16;
+  z-index: 999999;
+  overflow-y: auto;
+  color: #f8fafc;
+  padding: 30px;
+}
+
+.tvKioskTopBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 20px;
+  margin-bottom: 26px;
+}
+
+.tvKioskBrand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tvLogo {
+  font-size: 38px;
+}
+
+.tvKioskBrand h1 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 0.8px;
+  color: #ffffff;
+}
+
+.tvKioskBrand p {
+  margin: 4px 0 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.tvKioskRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.tvKioskClock {
+  font-size: 42px;
+  font-weight: 900;
+  font-family: monospace;
+  color: #38bdf8;
+  letter-spacing: 2px;
+}
+
+.tvCloseBtn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid #ef4444;
+  color: #fca5a5;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 0;
+}
+
+.tvKioskGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 24px;
+}
+
+.tvCard {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.tvCard h2 {
+  margin-top: 0;
+  font-size: 18px;
+  border-bottom: 1px solid #1f2937;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  color: #e2e8f0;
+}
+
+.tvPrayerGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.tvPrayerBox {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 12px 6px;
+  text-align: center;
+}
+
+.tvPrayerBox strong {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.tvPrayerBox span {
+  font-size: 16px;
+  font-weight: 800;
+  color: #38bdf8;
+}
+
+.tvCardSpan {
+  grid-column: 1 / -1;
+}
+
+.tvEmpty {
+  color: #64748b;
+  font-size: 14px;
+}
+
+

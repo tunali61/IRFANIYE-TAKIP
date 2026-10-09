@@ -54,15 +54,19 @@ document.addEventListener("change", e => {
     updateAttendanceSummary();
   }
 });
+let staff = {}, systemSettings = {}, currentStudentEditingId = null, currentStaffEditingId = null;
+
 onAuthStateChanged(auth, user => {
   $("loginCard").classList.toggle("hidden", !!user);
   $("appArea").classList.toggle("hidden", !user);
   $("logoutBtn").classList.toggle("hidden", !user);
   $("menuToggleBtn")?.classList.toggle("hidden", !user);
   $("floatingMenuBtn")?.classList.toggle("hidden", !user);
-  if ($("drawerUserBadge")) {
-    $("drawerUserBadge").textContent = user ? (user.email || "Yönetici") : "Giriş Yapılmadı";
-  }
+  $("headerManagerBadge")?.classList.toggle("hidden", !user);
+  $("headerStudentBadge")?.classList.toggle("hidden", !user);
+  $("headerRefreshBtn")?.classList.toggle("hidden", !user);
+  $("floatingClearCacheBtn")?.classList.toggle("hidden", !user);
+
   if (!user) {
     closeDrawer();
   }
@@ -71,6 +75,8 @@ onAuthStateChanged(auth, user => {
     currentAdminName = user.email || "Sistem Kaydı";
     unsubscribe = onValue(ref(db, "students"), snap => {
       students = snap.val() || {};
+      renderStudentTable();
+      render();
       fillLeaveStudents();
       renderPrayerStudents();
       renderBedStudents();
@@ -92,17 +98,31 @@ onAuthStateChanged(auth, user => {
       loadWeeklyLeaveSummary();
       loadTodayDutySummary();
       loadWeeklyDutySummary();
-setTimeout(() => {
-  loadBedAttendance();
-  loadSchoolReturnAttendance();
-}, 300);
-      render();
+      setTimeout(() => {
+        loadBedAttendance();
+        loadSchoolReturnAttendance();
+      }, 300);
       updateDashboard();
     });
+
+    onValue(ref(db, "staff"), snap => {
+      staff = snap.val() || {};
+      renderStaffTable();
+      fillDailyDutyStudents();
+    });
+
+    onValue(ref(db, "systemSettings"), snap => {
+      systemSettings = snap.val() || {};
+      applySystemSettings();
+    });
+
+    loadDailyDuties();
   } else {
     students = {};
+    staff = {};
+    systemSettings = {};
   }
-  });
+});
   const supportLessonDateInput = $("supportLessonDate");
 
 if (supportLessonDateInput && !supportLessonDateInput.value) {
@@ -2814,7 +2834,7 @@ $("drawerLogoutBtn")?.addEventListener("click", () => {
 });
 
 // Menü bağlantılarına tıklandığında ilgili karta yumuşakça kaydırma
-document.querySelectorAll(".drawerItem[href^='#']").forEach(link => {
+document.querySelectorAll(".drawerCardItem[href^='#'], .drawerItem[href^='#']").forEach(link => {
   link.addEventListener("click", e => {
     e.preventDefault();
     const targetId = link.getAttribute("href");
@@ -2829,3 +2849,659 @@ document.querySelectorAll(".drawerItem[href^='#']").forEach(link => {
     }
   });
 });
+
+/* ========================================================
+   1. ÖĞRENCİ YÖNETİMİ & VELİ ŞİFRELERİ (RESİM 2 TASARIMI)
+   ======================================================== */
+function generateFamilyCode(name = "") {
+  const parts = String(name).trim().split(/\s+/);
+  const surname = parts.length > 1 ? parts[parts.length - 1] : parts[0] || "TALEBE";
+  return surname.toLocaleUpperCase("tr-TR").replace(/[^A-ZÇĞİÖŞÜ0-9]/g, "") + "2026";
+}
+
+function renderStudentTable() {
+  const tableBody = $("studentTableBody");
+  if (!tableBody) return;
+
+  const searchQuery = ($("studentSearch")?.value || "").trim().toLocaleLowerCase("tr-TR");
+  const selectedClass = $("classFilter")?.value || "";
+  const sortMode = $("studentSort")?.value || "noAsc";
+
+  // Sınıf filtre listesini güncelle
+  const classSelect = $("classFilter");
+  if (classSelect) {
+    const existingClasses = new Set();
+    Object.values(students || {}).forEach(s => {
+      if (s.className && String(s.className).trim()) existingClasses.add(String(s.className).trim());
+    });
+    const currentVal = classSelect.value;
+    const sortedClasses = Array.from(existingClasses).sort((a,b) => a.localeCompare(b, "tr"));
+    classSelect.innerHTML = '<option value="">Tüm Sınıflar</option>' +
+      sortedClasses.map(c => `<option value="${esc(c)}" ${c === currentVal ? "selected" : ""}>${esc(c)}</option>`).join("");
+  }
+
+  let entries = Object.entries(students || {}).map(([id, s]) => {
+    return {
+      id,
+      ...s,
+      studentNo: String(s.studentNo || "").trim(),
+      name: String(s.name || "").trim(),
+      className: String(s.className || "").trim(),
+      teacherName: String(s.teacherName || "YASİN EKİNCİ").trim(),
+      roomNo: String(s.roomNo || (s.dormNo ? ("Oda " + s.dormNo) : "Oda 101")).trim(),
+      studentPass: String(s.studentPass || "123").trim(),
+      familyCode: String(s.familyCode || generateFamilyCode(s.name)).trim(),
+      parentPhone: String(s.parentPhone || "-").trim(),
+      parentName: String(s.parentName || "-").trim(),
+      notes: String(s.notes || "").trim()
+    };
+  });
+
+  // Filtreleme
+  entries = entries.filter(s => {
+    if (selectedClass && s.className !== selectedClass) return false;
+    if (searchQuery) {
+      const haystack = [s.studentNo, s.name, s.className, s.teacherName, s.roomNo, s.familyCode, s.parentPhone]
+        .join(" ").toLocaleLowerCase("tr-TR");
+      if (!haystack.includes(searchQuery)) return false;
+    }
+    return true;
+  });
+
+  // Sıralama
+  entries.sort((a, b) => {
+    if (sortMode === "noAsc") return (parseInt(a.studentNo) || 0) - (parseInt(b.studentNo) || 0);
+    if (sortMode === "noDesc") return (parseInt(b.studentNo) || 0) - (parseInt(a.studentNo) || 0);
+    if (sortMode === "nameAsc") return a.name.localeCompare(b.name, "tr");
+    if (sortMode === "roomAsc") return a.roomNo.localeCompare(b.roomNo, "tr");
+    return 0;
+  });
+
+  if ($("studentCountBadge")) {
+    $("studentCountBadge").textContent = `Listelenen: ${entries.length} Talebe`;
+  }
+
+  if (!entries.length) {
+    tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 26px; color: #94a3b8; font-weight:600;">Eşleşen talebe kaydı bulunamadı.</td></tr>`;
+    return;
+  }
+
+  tableBody.innerHTML = entries.map(s => `
+    <tr>
+      <td><strong>${esc(s.studentNo)}</strong></td>
+      <td><strong>${esc(s.name)}</strong></td>
+      <td><span class="classBadge">${esc(s.className || '-')}</span></td>
+      <td><span class="teacherBadge">👨‍🏫 ${esc(s.teacherName)}</span></td>
+      <td><span class="roomBadge">${esc(s.roomNo)}</span></td>
+      <td><span class="passBadge">${esc(s.studentPass)}</span></td>
+      <td><span class="familyCodeBadge">${esc(s.familyCode)}</span></td>
+      <td>${esc(s.parentPhone)}</td>
+      <td style="text-align: center;">
+        <button type="button" class="actionBtn" title="Düzenle" data-edit-student="${s.id}">✏️</button>
+        <button type="button" class="actionBtn" title="Sil" data-delete-student="${s.id}">🗑️</button>
+      </td>
+    </tr>
+  `).join("");
+
+  tableBody.querySelectorAll("[data-edit-student]").forEach(btn => {
+    btn.onclick = () => openStudentEditModal(btn.dataset.editStudent);
+  });
+  tableBody.querySelectorAll("[data-delete-student]").forEach(btn => {
+    btn.onclick = async () => {
+      const s = students[btn.dataset.deleteStudent];
+      if (confirm(`"${s?.name || 'Bu talebe'}" kaydını silmek istediğinize emin misiniz?`)) {
+        await remove(ref(db, "students/" + btn.dataset.deleteStudent));
+      }
+    };
+  });
+}
+
+// Filtre ve Sıralama Olayları
+$("studentSearch")?.addEventListener("input", renderStudentTable);
+$("classFilter")?.addEventListener("change", renderStudentTable);
+$("studentSort")?.addEventListener("change", renderStudentTable);
+
+// Öğrenci Ekle / Düzenle Modal Kontrolleri
+function openStudentEditModal(id = null) {
+  currentStudentEditingId = id;
+  const modal = $("studentEditModal");
+  if (!modal) return;
+
+  if (id && students[id]) {
+    const s = students[id];
+    $("modalStudentTitle").textContent = "✏️ Talebe Bilgilerini Düzenle";
+    $("modalName").value = s.name || "";
+    $("modalStudentNo").value = s.studentNo || "";
+    $("modalClassName").value = s.className || "";
+    $("modalTeacherName").value = s.teacherName || "YASİN EKİNCİ";
+    $("modalDormNo").value = s.roomNo || (s.dormNo ? ("Oda " + s.dormNo) : "Oda 101");
+    $("modalStudentPass").value = s.studentPass || "123";
+    $("modalFamilyCode").value = s.familyCode || generateFamilyCode(s.name);
+    $("modalParentName").value = s.parentName || "";
+    $("modalParentPhone").value = s.parentPhone || "";
+    $("modalNotes").value = s.notes || "";
+  } else {
+    $("modalStudentTitle").textContent = "➕ Yeni Öğrenci Ekle";
+    $("modalStudentForm").reset();
+    $("modalTeacherName").value = "YASİN EKİNCİ";
+    $("modalDormNo").value = "Oda 101";
+    $("modalStudentPass").value = "123";
+  }
+  modal.classList.remove("hidden");
+}
+
+function closeStudentEditModal() {
+  $("studentEditModal")?.classList.add("hidden");
+  currentStudentEditingId = null;
+}
+
+$("openAddStudentBtn")?.addEventListener("click", () => openStudentEditModal(null));
+$("closeStudentModalBtn")?.addEventListener("click", closeStudentEditModal);
+$("modalCancelStudentBtn")?.addEventListener("click", closeStudentEditModal);
+
+$("modalStudentForm")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const name = $("modalName").value.trim();
+  const studentNo = $("modalStudentNo").value.trim();
+  const className = $("modalClassName").value.trim();
+  const teacherName = $("modalTeacherName").value.trim() || "YASİN EKİNCİ";
+  const roomNo = $("modalDormNo").value.trim() || "Oda 101";
+  const studentPass = $("modalStudentPass").value.trim() || "123";
+  const familyCode = $("modalFamilyCode").value.trim() || generateFamilyCode(name);
+  const parentName = $("modalParentName").value.trim();
+  const parentPhone = $("modalParentPhone").value.trim();
+  const notes = $("modalNotes").value.trim();
+
+  const data = {
+    name, studentNo, className, teacherName, roomNo, dormNo: roomNo.replace(/[^0-9]/g, ""),
+    studentPass, familyCode, parentName, parentPhone, notes
+  };
+
+  try {
+    if (currentStudentEditingId) {
+      await update(ref(db, "students/" + currentStudentEditingId), data);
+    } else {
+      await set(push(ref(db, "students")), data);
+    }
+    closeStudentEditModal();
+  } catch (err) {
+    console.error(err);
+    alert("Kaydedilirken hata oluştu: " + err.message);
+  }
+});
+
+// CSV Dışa Aktarma
+function exportStudentsCSV() {
+  let csv = "\uFEFFNo;Giriş Yapılacak İsim;Sınıf;Hoca;Oda;Şifre;Aile Kodu;Veli Adı;Veli Tel;Notlar\r\n";
+  Object.values(students || {}).forEach(s => {
+    const row = [
+      s.studentNo || "",
+      s.name || "",
+      s.className || "",
+      s.teacherName || "YASİN EKİNCİ",
+      s.roomNo || (s.dormNo ? ("Oda " + s.dormNo) : "Oda 101"),
+      s.studentPass || "123",
+      s.familyCode || generateFamilyCode(s.name),
+      s.parentName || "",
+      s.parentPhone || "",
+      s.notes || ""
+    ].map(val => `"${String(val).replace(/"/g, '""')}"`);
+    csv += row.join(";") + "\r\n";
+  });
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `talebe_listesi_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+}
+
+$("exportCsvBtn")?.addEventListener("click", exportStudentsCSV);
+$("btnDownloadCsv")?.addEventListener("click", exportStudentsCSV);
+
+// JSON Tam Sistem Yedeği İndirme
+async function exportFullJSON() {
+  try {
+    const snap = await get(ref(db));
+    const fullData = snap.val() || {};
+    const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `irfaniye_tam_sistem_yedek_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+  } catch (err) {
+    console.error(err);
+    alert("Yedek indirilirken hata oluştu: " + err.message);
+  }
+}
+
+$("exportJsonBtn")?.addEventListener("click", exportFullJSON);
+$("btnDownloadFullJson")?.addEventListener("click", exportFullJSON);
+
+// JSON Yedekten Geri Yükleme
+function triggerJSONUpload() {
+  const input = $("jsonFileInput");
+  if (!input) return;
+  input.value = "";
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    if (!confirm("⚠️ DİKKAT: Yüklediğiniz JSON yedek dosyası mevcut veritabanını güncelleyecektir. Devam edilsin mi?")) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      await update(ref(db), parsed);
+      alert("✅ Yedek başarıyla geri yüklendi!");
+      window.location.reload();
+    } catch (e) {
+      alert("❌ Geçersiz JSON dosyası: " + e.message);
+    }
+  };
+  input.click();
+}
+
+$("importJsonBtn")?.addEventListener("click", triggerJSONUpload);
+$("restoreBackupBtn")?.addEventListener("click", triggerJSONUpload);
+$("btnUploadFullJson")?.addEventListener("click", triggerJSONUpload);
+
+$("bulkAddBtn")?.addEventListener("click", () => {
+  const el = $("excelCard");
+  if (el) el.scrollIntoView({ behavior: "smooth" });
+});
+$("excelModeBtn")?.addEventListener("click", () => {
+  const el = $("excelCard");
+  if (el) el.scrollIntoView({ behavior: "smooth" });
+});
+
+/* ========================================================
+   2. PERSONEL & ŞİFRE YÖNETİMİ
+   ======================================================== */
+function renderStaffTable() {
+  const tableBody = $("staffTableBody");
+  if (!tableBody) return;
+
+  const entries = Object.entries(staff || {});
+  if (!entries.length) {
+    tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 22px; color:#94a3b8; font-weight:600;">Henüz kayıtlı personel/hoca yok. "Yeni Personel Ekle" butonuna basarak ekleyebilirsiniz.</td></tr>`;
+    return;
+  }
+
+  tableBody.innerHTML = entries.map(([id, st], index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td><strong>👨‍🏫 ${esc(st.name || '')}</strong></td>
+      <td><span class="classBadge">${esc(st.role || 'Hoca')}</span></td>
+      <td>${esc(st.phone || '-')}</td>
+      <td>${esc(st.email || '-')}</td>
+      <td><span class="passBadge">${esc(st.password || '123')}</span></td>
+      <td><span class="classBadge">${esc(st.access || 'Hoca')}</span></td>
+      <td style="text-align: center;">
+        <button type="button" class="actionBtn" title="Düzenle" data-edit-staff="${id}">✏️</button>
+        <button type="button" class="actionBtn" title="Sil" data-delete-staff="${id}">🗑️</button>
+      </td>
+    </tr>
+  `).join("");
+
+  tableBody.querySelectorAll("[data-edit-staff]").forEach(b => {
+    b.onclick = () => openStaffEditModal(b.dataset.editStaff);
+  });
+  tableBody.querySelectorAll("[data-delete-staff]").forEach(b => {
+    b.onclick = async () => {
+      const st = staff[b.dataset.deleteStaff];
+      if (confirm(`"${st?.name || 'Bu personeli'}" silmek istediğinize emin misiniz?`)) {
+        await remove(ref(db, "staff/" + b.dataset.deleteStaff));
+      }
+    };
+  });
+}
+
+function openStaffEditModal(id = null) {
+  currentStaffEditingId = id;
+  const modal = $("staffEditModal");
+  if (!modal) return;
+  if (id && staff[id]) {
+    const st = staff[id];
+    $("modalStaffTitle").textContent = "✏️ Personel Düzenle";
+    $("modalStaffName").value = st.name || "";
+    $("modalStaffRole").value = st.role || "";
+    $("modalStaffPhone").value = st.phone || "";
+    $("modalStaffEmail").value = st.email || "";
+    $("modalStaffPass").value = st.password || "";
+    $("modalStaffAccess").value = st.access || "hoca";
+  } else {
+    $("modalStaffTitle").textContent = "👨‍🏫 Personel / Hoca Ekle";
+    $("modalStaffForm").reset();
+    $("modalStaffPass").value = "123456";
+  }
+  modal.classList.remove("hidden");
+}
+
+function closeStaffEditModal() {
+  $("staffEditModal")?.classList.add("hidden");
+  currentStaffEditingId = null;
+}
+
+$("openAddStaffBtn")?.addEventListener("click", () => openStaffEditModal(null));
+$("closeStaffModalBtn")?.addEventListener("click", closeStaffEditModal);
+$("cancelStaffBtn")?.addEventListener("click", closeStaffEditModal);
+
+$("modalStaffForm")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const data = {
+    name: $("modalStaffName").value.trim(),
+    role: $("modalStaffRole").value.trim(),
+    phone: $("modalStaffPhone").value.trim(),
+    email: $("modalStaffEmail").value.trim(),
+    password: $("modalStaffPass").value.trim(),
+    access: $("modalStaffAccess").value
+  };
+
+  try {
+    if (currentStaffEditingId) {
+      await update(ref(db, "staff/" + currentStaffEditingId), data);
+    } else {
+      await set(push(ref(db, "staff")), data);
+    }
+    closeStaffEditModal();
+  } catch (err) {
+    console.error(err);
+    alert("Personel kaydedilirken hata oluştu: " + err.message);
+  }
+});
+
+/* ========================================================
+   3. SİSTEM AYARLARI & E-POSTA
+   ======================================================== */
+function applySystemSettings() {
+  const adminName = systemSettings.adminName || "ÖMER AVNİYEL";
+  const adminRole = systemSettings.adminRole || "Kurum Yöneticisi";
+  const instName = systemSettings.institutionName || "Ömer Avniyel Akademi";
+
+  if ($("drawerAdminName")) $("drawerAdminName").textContent = adminName;
+  if ($("drawerAdminRole")) $("drawerAdminRole").textContent = adminRole;
+  if ($("headerManagerBadge")) $("headerManagerBadge").innerHTML = `👑 ${adminRole}`;
+  if ($("tvInstitutionTitle")) $("tvInstitutionTitle").textContent = `${instName.toUpperCase()} - CANLI DİJİTAL PANO`;
+
+  if ($("settingInstitutionName")) $("settingInstitutionName").value = instName;
+  if ($("settingAdminName")) $("settingAdminName").value = adminName;
+  if ($("settingAdminRole")) $("settingAdminRole").value = adminRole;
+  if ($("settingAdminEmail")) $("settingAdminEmail").value = systemSettings.adminEmail || "";
+  if ($("settingNotifyEmail")) $("settingNotifyEmail").value = systemSettings.notifyEmail || "";
+}
+
+$("systemSettingsForm")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const settings = {
+    institutionName: $("settingInstitutionName").value.trim(),
+    adminName: $("settingAdminName").value.trim(),
+    adminRole: $("settingAdminRole").value.trim(),
+    adminEmail: $("settingAdminEmail").value.trim(),
+    notifyEmail: $("settingNotifyEmail").value.trim()
+  };
+
+  try {
+    await set(ref(db, "systemSettings"), settings);
+    if ($("settingsMsg")) {
+      $("settingsMsg").textContent = "✅ Ayarlar kaydedildi.";
+      $("settingsMsg").style.color = "#059669";
+      setTimeout(() => $("settingsMsg").textContent = "", 3000);
+    }
+  } catch (err) {
+    console.error(err);
+    if ($("settingsMsg")) {
+      $("settingsMsg").textContent = "❌ Hata: " + err.message;
+      $("settingsMsg").style.color = "#dc2626";
+    }
+  }
+});
+
+/* ========================================================
+   4. GÜNÜN GÖREVLİLERİ YÖNETİMİ (MÜEZZİN, YEMEKHANE VB.)
+   ======================================================== */
+const dutyTitles = {
+  yemekhane: "🍲 Yemekhane Nöbetçisi",
+  muezzin: "🕌 Müezzin",
+  temizlik: "🧹 Temizlik & Kat Nöbetçisi",
+  bulasik: "🍽️ Bulaşıkhane",
+  cay: "☕ Çay Ocağı",
+  nobet: "🛡️ Gece / Yurt Nöbeti"
+};
+
+function fillDailyDutyOptions() {
+  const select = $("dailyDutyStudent");
+  if (!select) return;
+
+  let html = '<option value="">Seçin</option>';
+  html += '<optgroup label="👨‍🎓 Talebeler">';
+  Object.entries(students || {}).sort((a,b) => (a[1].name||'').localeCompare(b[1].name||'', 'tr')).forEach(([id, s]) => {
+    html += `<option value="student_${id}">${esc(s.name || 'İsimsiz')} (${esc(s.className || '-')})</option>`;
+  });
+  html += '</optgroup>';
+
+  if (Object.keys(staff || {}).length) {
+    html += '<optgroup label="👨‍🏫 Hocalar / Personel">';
+    Object.entries(staff || {}).forEach(([id, st]) => {
+      html += `<option value="staff_${id}">👨‍🏫 ${esc(st.name || '')} (${esc(st.role || 'Hoca')})</option>`;
+    });
+    html += '</optgroup>';
+  }
+
+  select.innerHTML = html;
+}
+
+// override fillDailyDutyStudents
+const originalFillDailyDutyStudents = fillDailyDutyStudents;
+fillDailyDutyStudents = function() {
+  fillDailyDutyOptions();
+};
+
+async function loadDailyDuties() {
+  const dateInput = $("dailyDutyDate");
+  if (!dateInput) return;
+  if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
+  const date = dateInput.value;
+
+  const listEl = $("dailyDutyList");
+  if (!listEl) return;
+
+  try {
+    const snap = await get(ref(db, "dailyDuties/" + date));
+    const duties = snap.val() || {};
+    const entries = Object.entries(duties);
+
+    if (!entries.length) {
+      listEl.innerHTML = '<div class="empty">Bu tarihte atanmış görevli bulunmuyor.</div>';
+      return;
+    }
+
+    listEl.innerHTML = `
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+        ${entries.map(([id, d]) => `
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #2563eb; margin-bottom: 2px;">
+                ${esc(dutyTitles[d.dutyType] || d.dutyType)}
+              </div>
+              <strong style="font-size: 15px; color: #1e293b;">${esc(d.personName)}</strong>
+              ${d.note ? `<div style="font-size: 12px; color: #64748b; margin-top: 3px;">📝 ${esc(d.note)}</div>` : ''}
+            </div>
+            <button type="button" class="actionBtn" title="Sil" data-delete-duty="${id}">🗑️</button>
+          </div>
+        `).join("")}
+      </div>
+    `;
+
+    listEl.querySelectorAll("[data-delete-duty]").forEach(b => {
+      b.onclick = async () => {
+        await remove(ref(db, `dailyDuties/${date}/${b.dataset.deleteDuty}`));
+        loadDailyDuties();
+      };
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+$("dailyDutyDate")?.addEventListener("change", loadDailyDuties);
+
+$("addDailyDutyBtn")?.addEventListener("click", async () => {
+  const date = $("dailyDutyDate")?.value;
+  const dutyType = $("dailyDutyType")?.value;
+  const personVal = $("dailyDutyStudent")?.value;
+  const note = $("dailyDutyNote")?.value.trim() || "";
+  const msg = $("dailyDutyMsg");
+
+  if (!date || !dutyType || !personVal) {
+    if (msg) msg.textContent = "Lütfen tarih, görev ve kişi seçin.";
+    return;
+  }
+
+  let personName = "Belirtilmedi";
+  if (personVal.startsWith("student_")) {
+    const sId = personVal.replace("student_", "");
+    personName = students[sId]?.name || "Talebe";
+  } else if (personVal.startsWith("staff_")) {
+    const stId = personVal.replace("staff_", "");
+    personName = staff[stId]?.name || "Personel";
+  }
+
+  try {
+    await push(ref(db, "dailyDuties/" + date), {
+      dutyType,
+      personName,
+      personId: personVal,
+      note,
+      createdAt: new Date().toISOString()
+    });
+    $("dailyDutyNote").value = "";
+    if (msg) {
+      msg.textContent = "✅ Görevli başarıyla atandı.";
+      setTimeout(() => msg.textContent = "", 2500);
+    }
+    loadDailyDuties();
+  } catch (err) {
+    console.error(err);
+    if (msg) msg.textContent = "❌ Hata oluştu: " + err.message;
+  }
+});
+
+/* ========================================================
+   5. CANLI TV / DİJİTAL PANO (KIOSK MODU)
+   ======================================================== */
+let tvClockInterval = null;
+
+function openTvKiosk() {
+  const modal = $("tvKioskModal");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+  closeDrawer();
+
+  updateTvKioskClock();
+  if (tvClockInterval) clearInterval(tvClockInterval);
+  tvClockInterval = setInterval(updateTvKioskClock, 1000);
+
+  loadTvKioskData();
+}
+
+function closeTvKiosk() {
+  $("tvKioskModal")?.classList.add("hidden");
+  if (tvClockInterval) clearInterval(tvClockInterval);
+}
+
+function updateTvKioskClock() {
+  const now = new Date();
+  if ($("tvKioskClock")) {
+    $("tvKioskClock").textContent = now.toLocaleTimeString("tr-TR");
+  }
+  if ($("tvKioskDate")) {
+    $("tvKioskDate").textContent = now.toLocaleDateString("tr-TR", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric"
+    });
+  }
+}
+
+async function loadTvKioskData() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Günün Görevlileri
+  const tvDutyList = $("tvDutyList");
+  if (tvDutyList) {
+    try {
+      const snap = await get(ref(db, "dailyDuties/" + today));
+      const duties = snap.val() || {};
+      const entries = Object.values(duties);
+      if (!entries.length) {
+        tvDutyList.innerHTML = '<p class="tvEmpty">Bugün için görevli atanmadı.</p>';
+      } else {
+        tvDutyList.innerHTML = entries.map(d => `
+          <div style="background:#1e293b; padding:12px 16px; border-radius:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <strong style="font-size:15px; color:#fff;">${esc(d.personName)}</strong>
+              ${d.note ? `<div style="font-size:11.5px; color:#94a3b8;">${esc(d.note)}</div>` : ''}
+            </div>
+            <span class="classBadge" style="background:#334155; color:#38bdf8;">${esc(dutyTitles[d.dutyType] || d.dutyType)}</span>
+          </div>
+        `).join("");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Namaz Durumu
+  try {
+    const snap = await get(ref(db, "prayers/" + today));
+    const pData = snap.val() || {};
+    const prayers = ["sabah", "ogle", "ikindi", "aksam", "yatsi"];
+    prayers.forEach(p => {
+      const records = pData[p] || {};
+      let varCount = 0;
+      Object.values(records).forEach(r => {
+        if (r && r.durum === "var") varCount++;
+      });
+      const el = $(`tv${p.charAt(0).toUpperCase() + p.slice(1)}Count`);
+      if (el) el.textContent = varCount ? `${varCount} Var` : "-";
+    });
+  } catch (err) {
+    console.error(err);
+  }
+
+  // Örnek Talebeler
+  const tvAwardList = $("tvAwardList");
+  if (tvAwardList) {
+    try {
+      const snap = await get(ref(db, "awards"));
+      const awards = snap.val() || {};
+      const entries = Object.values(awards).slice(-3).reverse();
+      if (!entries.length) {
+        tvAwardList.innerHTML = '<p class="tvEmpty">Kayıtlı talebe ödülü bulunmuyor.</p>';
+      } else {
+        tvAwardList.innerHTML = entries.map((a, i) => `
+          <div style="background:#1e293b; padding:16px; border-radius:12px; text-align:center;">
+            <div style="font-size:32px;">${i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</div>
+            <strong style="display:block; font-size:16px; color:#fff; margin:6px 0;">${esc(a.studentName || a.name || 'Talebe')}</strong>
+            <span style="color:#94a3b8; font-size:12px;">${esc(a.type === 'hafta' ? 'Haftanın Talebesi' : 'Ayın Talebesi')}</span>
+          </div>
+        `).join("");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+}
+
+$("drawerTvKioskLink")?.addEventListener("click", openTvKiosk);
+$("closeTvKioskBtn")?.addEventListener("click", closeTvKiosk);
+
+/* ========================================================
+   6. ÖNBELLEK YENİLEME BUTONLARI
+   ======================================================== */
+function reloadAppWithFreshCache() {
+  window.location.reload(true);
+}
+
+$("headerRefreshBtn")?.addEventListener("click", reloadAppWithFreshCache);
+$("refreshAppBtn")?.addEventListener("click", reloadAppWithFreshCache);
+$("floatingClearCacheBtn")?.addEventListener("click", reloadAppWithFreshCache);
