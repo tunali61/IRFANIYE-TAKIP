@@ -273,12 +273,43 @@ async handleUserLogin(event) {
       if (passInput) passInput.focus();
       return;
     }
-// Firebase oturumu varsa önce buluttaki güncel verileri al
-if (window.firebaseAuth?.currentUser && window.Store?.isCloudEnabled()) {
-  await window.Store.syncFromCloud();
-}
-    const session = window.Store.authenticateUser(name, pass);
 
+  let session = null;
+
+// E-posta ile giriş yapılıyorsa Firebase üzerinden doğrula
+if (name.includes('@')) {
+  try {
+    if (!window.firebaseAuth) {
+      this.showToast('Firebase bağlantısı hazır değil.', 'error');
+      return;
+    }
+
+    await window.firebaseAuth.signInWithEmailAndPassword(name, pass);
+
+    // Firebase girişi başarılı → güncel personel listesini buluttan al
+    if (window.Store?.isCloudEnabled()) {
+      await window.Store.syncFromCloud();
+    }
+
+    // Firebase e-postasını personel kaydıyla eşleştir
+    const staff = window.Store.getStaff().find(
+      s => (s.email || '').toLowerCase() === name.toLowerCase()
+    );
+
+    if (staff) {
+      session = {
+        role: 'staff',
+        staffId: staff.id,
+        name: staff.fullName,
+        staffRole: staff.role
+      };
+    }
+  } catch (error) {
+    console.error('Firebase personel giriş hatası:', error);
+  }
+} else {
+  session = window.Store.authenticateUser(name, pass);
+}
     if (!session) {
       this.showToast('Girdiğiniz bilgiler veya şifre hatalıdır. Lütfen kontrol edip tekrar deneyiniz.', 'error');
       if (passInput) passInput.select();
@@ -1331,10 +1362,10 @@ if (window.firebaseAuth?.currentUser && window.Store?.isCloudEnabled()) {
               <form onsubmit="window.App.handleUserLogin(event)" class="space-y-4 text-left">
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase">
-                    KULLANICI ADI / NO
+                    KULLANICI ADI / NO / E-POSTA
                   </label>
                   <input type="text" id="login-fullname" required autofocus 
-                    placeholder="Ad Soyad, Öğrenci No veya Eğitmen Adı" 
+                    placeholder="Ad Soyad, Öğrenci No veya E-posta" 
                     class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:border-emerald-600 focus:bg-white focus:outline-none transition">
                 </div>
 
