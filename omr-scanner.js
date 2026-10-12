@@ -1,5 +1,5 @@
 /**
- * omr-scanner.js - Ömer Avniyel Akademi QR Kodlu Optik Okuma Sistemi (OMR)
+ * omr-scanner.js - İrfaniye Akademi QR Kodlu Optik Okuma Sistemi (OMR)
  * 1. Talebeye ve Sınava Özel QR Kodlu A4 Optik Form Üretimi & Yazdırma
  * 2. A & B Kitapçığı Cevap Anahtarı Editörü & Toplu Metin Yapıştırma
  * 3. Telefon Kamerası / Web Kamerası ile Canlı QR + Baloncuk (Optik) Okuma
@@ -764,7 +764,7 @@ window.OMRScanner = {
       ? window.TestResultsModule.testMeta
       : { title: 'Haftalık Etüt Tarama Testi', subject: 'Matematik', date: new Date().toISOString().split('T')[0] };
 
-    const institutionName = (window.Store && window.Store.getSettings().institutionName) || 'Ömer Avniyel Akademi';
+    const institutionName = (window.Store && window.Store.getSettings().institutionName) || 'İrfaniye Akademi';
 
 
     // Form Kartları HTML Üretimi (A4 sayfasında 2'şer adet yerleşecek şekilde)
