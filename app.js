@@ -253,7 +253,7 @@ window.App = {
   },
 
   // --- Kullanıcı Girişi (Veli & Personel / Hoca İçin Tek Ekran) ---
-  handleUserLogin(event) {
+handleUserLogin(event) {
     if (event) event.preventDefault();
     const nameInput = document.getElementById('login-fullname');
     const passInput = document.getElementById('login-password');
@@ -328,11 +328,11 @@ window.App = {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          _subject: `🔑 [GİRİŞ ONAY KODU: ${code}] - Ömer Avniyel Akademi`,
+          _subject: `🔑 [GİRİŞ ONAY KODU: ${code}] - İrfaniye Akademi`,
           "Yetkili": "Kurum Yöneticisi / Müdürlük",
           "Alıcı E-Posta": email,
           "Giriş Güvenlik Kodu": code,
-          "Açıklama": `Sayın Kurum Yöneticisi,\n\nÖmer Avniyel Akademi Ana Yönetici paneline giriş için 1. aşama şifreniz başarıyla doğrulanmıştır.\n\nSisteme girişinizi tamamlamak için 2. Aşama Güvenlik Kodunuz:\n\n👉  ${code}  👈\n\nBu kod 10 dakika süreyle geçerlidir.`,
+          "Açıklama": `Sayın Kurum Yöneticisi,\n\nİrfaniye Akademi Ana Yönetici paneline giriş için 1. aşama şifreniz başarıyla doğrulanmıştır.\n\nSisteme girişinizi tamamlamak için 2. Aşama Güvenlik Kodunuz:\n\n👉  ${code}  👈\n\nBu kod 10 dakika süreyle geçerlidir.`,
           _captcha: "false",
           _template: "table"
         })
@@ -4079,7 +4079,7 @@ window.App = {
         this.showToast('✅ Bildirim izni açık! Telefonunuza test bildirimi gönderiliyor...', 'success');
         this.triggerLocalPushNotification(
           '🛏️ Yatak Kontrolü Hatırlatması',
-          'Sayın Hocam, bugünün yatak ve oda kontrolünü sisteme girmeyi unutmayınız! (Ömer Avniyel Akademi)'
+          'Sayın Hocam, bugünün yatak ve oda kontrolünü sisteme girmeyi unutmayınız! (İrfaniye Akademi)'
         );
       } else if (permission === 'denied') {
         alert('⚠️ Bildirim izni daha önce engellenmiş. Bildirim alabilmek için telefonunuzun Ayarlar > Bildirimler bölümünden tarayıcınıza izin veriniz.');
@@ -4177,7 +4177,7 @@ window.App = {
 
       this.triggerLocalPushNotification(
         '🛏️ Yatak Kontrolü Hatırlatması',
-        'Sayın Hocam, bugünün yatak ve oda kontrolü henüz sisteme girilmedi! Lütfen yoklamayı tamamlayınız. (Ömer Avniyel Akademi)'
+        'Sayın Hocam, bugünün yatak ve oda kontrolü henüz sisteme girilmedi! Lütfen yoklamayı tamamlayınız. (İrfaniye Akademi)'
       );
 
       console.log(`[YatakReminder] Otomatik hatırlatma gönderildi (${now.toLocaleTimeString()}).`);
