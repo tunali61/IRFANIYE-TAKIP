@@ -253,7 +253,7 @@ window.App = {
   },
 
   // --- Kullanıcı Girişi (Veli & Personel / Hoca İçin Tek Ekran) ---
-handleUserLogin(event) {
+async handleUserLogin(event) {
     if (event) event.preventDefault();
     const nameInput = document.getElementById('login-fullname');
     const passInput = document.getElementById('login-password');
@@ -273,7 +273,10 @@ handleUserLogin(event) {
       if (passInput) passInput.focus();
       return;
     }
-
+// Firebase oturumu varsa önce buluttaki güncel verileri al
+if (window.firebaseAuth?.currentUser && window.Store?.isCloudEnabled()) {
+  await window.Store.syncFromCloud();
+}
     const session = window.Store.authenticateUser(name, pass);
 
     if (!session) {
