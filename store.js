@@ -60,7 +60,7 @@ STATUS_CONFIG.OKUL = STATUS_CONFIG.OKULDA;
 STATUS_CONFIG.E = STATUS_CONFIG.VAR;
 
 const DEFAULT_SETTINGS = {
-  institutionName: 'Ömer Avniyel Akademi',
+  institutionName: 'İrfaniye Akademi',
   institutionLogo: 'kurs_logo.jpg', // Varsayılan kurs logosu dosya adı
   adminEmail: 'selimbozkurt111@gmail.com', // Ana yöneticinin doğrulama maili alacağı adres
   adminPassword: '123', // Ana Kurum Yöneticisi özel giriş şifresi (Personelden bağımsız)
@@ -727,9 +727,9 @@ class DataStore {
       const parsed = data ? JSON.parse(data) : {};
       const settings = { ...DEFAULT_SETTINGS, ...parsed };
 
-      // Eğer kayıtlı kurum adı eski varsayılan ise veya boşsa Ömer Avniyel Akademi yap
+      // Eğer kayıtlı kurum adı eski varsayılan ise veya boşsa İrfaniye Akademi yap
       if (!settings.institutionName || settings.institutionName === 'Kurs & Etüt Öğrenci Takip Sistemi') {
-        settings.institutionName = 'Ömer Avniyel Akademi';
+        settings.institutionName = 'İrfaniye Akademi';
       }
 
       // Eğer kayıtlı logo boş ise varsayılan kurs_logo.jpg kullan
@@ -5474,7 +5474,7 @@ this._eventSource = new EventSource(
       : `• Kaldığı Sayfa: ${stats.currentPage} / 604 (${stats.cuzNo}. Cüz)\n`;
 
     const message = 
-      `*ÖMER AVNİYEL AKADEMİ • KUR'AN-I KERİM HATİM BİLGİLENDİRMESİ*\n\n` +
+      `*İrfaniye AKADEMİ • KUR'AN-I KERİM HATİM BİLGİLENDİRMESİ*\n\n` +
       `Sayın Velimiz,\n` +
       `Talebeniz *${student.firstName} ${student.lastName}* (${student.className}) Kur'an-ı Kerim tilavet ve hatim takibinde gayretle ilerlemektedir:\n\n` +
       `${hatimText}` +
@@ -5482,7 +5482,7 @@ this._eventSource = new EventSource(
       `• Hatmin Bitmesine Kalan: ${stats.pagesLeftInHatim} Sayfa (%${stats.percentLeft})\n` +
       `• Dini Ders Grubu: ${rec.diniGrup || student.dahiliHoca || '-'}\n\n` +
       `"Sizin en hayırlınız, Kur'an'ı öğrenen ve öğretendir." (Hadis-i Şerif - Buhârî)\n\n` +
-      `Talebemizi azminden ötürü tebrik eder, muvaffakiyetlerinin devamını dileriz. — Ömer Avniyel Akademi`;
+      `Talebemizi azminden ötürü tebrik eder, muvaffakiyetlerinin devamını dileriz. — İrfaniye Akademi`;
 
     return this.sendWhatsAppMessage(phone, message);
   }
