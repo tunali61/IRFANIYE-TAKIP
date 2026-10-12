@@ -84,7 +84,7 @@ const DEFAULT_STAFF = [
   { id: 'stf_5', fullName: 'EMİR TALHA TARIM', role: '7-A Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 05', password: '123' },
   { id: 'stf_6', fullName: 'BURAK BODUR', role: '7-B Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 06', password: '123' },
   { id: 'stf_7', fullName: 'TUNAHAN TAŞKIN', role: '8-B Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 07', password: '123' },
-  { id: 'stf_8', fullName: 'YAVUZ SELİM SEVEN', role: '8-A Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 08', password: '123' }
+  { id: 'stf_8', fullName: 'YAVUZ SELİM SEVEN', role: '8-A Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 08', email: 'hisarustu2015@gmail.com', password: '123' }
 ];
 
 // Sistemden kalıcı olarak çıkarılan öğrenciler sicili (Hiçbir cihazda veya bulutta asla hortlamaz)
