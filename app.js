@@ -292,14 +292,11 @@ if (name.includes('@')) {
     }
 
     // Firebase e-postasını personel kaydıyla eşleştir
-    const staff = window.Store.getStaff().find(
-  s => (s.email || '').trim().toLowerCase() === name.trim().toLowerCase()
-) || {
-  id: window.firebaseAuth.currentUser.uid,
-  fullName: name,
-  email: name,
-  role: 'Personel'
-};
+    const firebaseUser = window.firebaseAuth.currentUser;
+
+const staff = window.Store.getStaff().find(
+  s => s.firebaseUid === firebaseUser.uid
+);
 
     if (staff) {
       session = {
