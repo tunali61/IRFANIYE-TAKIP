@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>İrfaniye Takip Sistemi</title>
-  <link rel="stylesheet" href="style.css?v=2.0.4">
+  <link rel="stylesheet" href="style.css?v=2.0.5">
 </head>
 <body>
 <!-- Sol Kayar Pencere Menüsü Arka Plan Karartması -->
@@ -217,20 +217,68 @@
     </div>
   </header>
 
-  <section id="loginCard" class="card login">
-    <h2>Yönetici Girişi</h2>
+  <section id="loginCard" class="card login modernLoginCard">
+    <div class="loginBrandHeader">
+      <div class="loginLogoIcon">🏫</div>
+      <h2 id="loginTitle">İrfaniye Takip Sistemi</h2>
+      <p id="loginSubtitle" class="loginSubtitle">Lütfen giriş türünüzü seçip bilgilerinizi giriniz</p>
+    </div>
+
+    <!-- Giriş Türü Seçimi: Yönetici & Personel Sekmeleri -->
+    <div class="loginRoleTabs">
+      <button type="button" id="roleTabAdmin" class="loginRoleTab active" data-role="admin">
+        👑 Yönetici Girişi
+      </button>
+      <button type="button" id="roleTabStaff" class="loginRoleTab" data-role="staff">
+        👨‍🏫 Personel / Hoca Girişi
+      </button>
+    </div>
+
     <form id="loginForm">
-      <label>E-posta veya Kullanıcı Adı
-        <input id="email" type="text" required placeholder="admin@irfaniye.com veya kullanıcı adı">
+      <label id="loginInputLabel">Yönetici Kullanıcı Adı veya E-posta
+        <input id="email" type="text" required placeholder="admin veya admin@irfaniye.com" autocomplete="username">
       </label>
+      
       <label>Şifre
-        <input id="password" type="password" required placeholder="Şifreniz">
+        <div class="passwordInputWrapper">
+          <input id="password" type="password" required placeholder="Şifreniz" autocomplete="current-password">
+          <button type="button" id="togglePasswordBtn" class="togglePasswordBtn" title="Şifreyi Göster/Gizle" aria-label="Şifreyi Göster/Gizle">👁️</button>
+        </div>
       </label>
-      <button type="submit" id="submitLoginBtn">Giriş Yap</button>
+
+      <button type="submit" id="submitLoginBtn" class="btnLoginSubmit">
+        👑 Yönetici Olarak Giriş Yap
+      </button>
+
       <p id="loginMsg"></p>
     </form>
+
+    <!-- Hızlı Giriş Bilgileri & Otomatik Doldurma Butonları -->
+    <div class="loginQuickBox">
+      <div class="loginQuickTitle">⚡ Tek Tıkla Hızlı Doldur:</div>
+      <div class="loginQuickGrid">
+        <button type="button" id="quickAdminBtn" class="quickFillBtn quickAdmin">
+          <span class="quickIcon">👑</span>
+          <div class="quickInfo">
+            <strong>Yönetici Hesabı</strong>
+            <small>Kullanıcı: <b>admin</b> | Şifre: <b>admin123</b></small>
+          </div>
+        </button>
+        <button type="button" id="quickStaffBtn" class="quickFillBtn quickStaff">
+          <span class="quickIcon">👨‍🏫</span>
+          <div class="quickInfo">
+            <strong>Personel / Hoca</strong>
+            <small>Kullanıcı: <b>personel</b> | Şifre: <b>123456</b></small>
+          </div>
+        </button>
+      </div>
+      <div class="loginStaffNote">
+        💡 <i>Not: Kurumdaki tüm hocalar ve personel de sisteme kayıtlı kendi isim/telefon ve şifreleriyle buradan doğrudan giriş yapabilir.</i>
+      </div>
+    </div>
+
     <div style="margin-top: 18px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 14px;">
-      <button type="button" id="loginTvBtn" class="toolbarBtn btnPurple" style="width: 100%; justify-content: center; padding: 10px 14px !important; font-size: 14px !important;">
+      <button type="button" id="loginTvBtn" class="toolbarBtn btnPurple" style="width: 100%; justify-content: center; padding: 11px 16px !important; font-size: 14px !important;">
         📺 Canlı Pano / TV Ekranını Aç (Kiosk Modu)
       </button>
     </div>
@@ -1277,6 +1325,6 @@
 <input type="file" id="jsonFileInput" accept=".json" class="hidden">
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script type="module" src="app.js?v=2.0.4"></script>
+<script type="module" src="app.js?v=2.0.5"></script>
 </body>
 </html>
