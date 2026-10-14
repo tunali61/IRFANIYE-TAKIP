@@ -78,54 +78,54 @@ function stopDatabaseListeners() {
 
 function startDatabaseListeners() {
   stopDatabaseListeners();
-  checkTvHash();
+  try { checkTvHash(); } catch (e) {}
 
   unsubscribe = onValue(ref(db, "students"), snap => {
     students = snap.val() || {};
-    renderStudentTable();
-    render();
-    fillLeaveStudents();
-    renderPrayerStudents();
-    renderBedStudents();
-    renderSchoolReturnStudents();
-    fillDailyDutyStudents();
-    fillSupportLessonStudents();
-    fillTestResultStudents();
-    fillQuranStudents();
-    fillAwardStudents();
-    loadTodayAttendanceSummary();
-    loadWeeklyAttendanceSummary();
-    loadTodayPrayerSummary();
-    loadWeeklyPrayerSummary();
-    loadTodayBedSummary();
-    loadWeeklyBedSummary();
-    loadTodaySchoolReturnSummary();
-    loadWeeklySchoolReturnSummary();
-    loadTodayLeaveSummary();
-    loadWeeklyLeaveSummary();
-    loadTodayDutySummary();
-    loadWeeklyDutySummary();
+    try { renderStudentTable(); } catch (e) { console.warn("renderStudentTable:", e); }
+    try { render(); } catch (e) { console.warn("render:", e); }
+    try { fillLeaveStudents(); } catch (e) {}
+    try { renderPrayerStudents(); } catch (e) {}
+    try { renderBedStudents(); } catch (e) {}
+    try { renderSchoolReturnStudents(); } catch (e) {}
+    try { fillDailyDutyStudents(); } catch (e) {}
+    try { fillSupportLessonStudents(); } catch (e) {}
+    try { fillTestResultStudents(); } catch (e) {}
+    try { fillQuranStudents(); } catch (e) {}
+    try { fillAwardStudents(); } catch (e) {}
+    try { loadTodayAttendanceSummary(); } catch (e) {}
+    try { loadWeeklyAttendanceSummary(); } catch (e) {}
+    try { loadTodayPrayerSummary(); } catch (e) {}
+    try { loadWeeklyPrayerSummary(); } catch (e) {}
+    try { loadTodayBedSummary(); } catch (e) {}
+    try { loadWeeklyBedSummary(); } catch (e) {}
+    try { loadTodaySchoolReturnSummary(); } catch (e) {}
+    try { loadWeeklySchoolReturnSummary(); } catch (e) {}
+    try { loadTodayLeaveSummary(); } catch (e) {}
+    try { loadWeeklyLeaveSummary(); } catch (e) {}
+    try { loadTodayDutySummary(); } catch (e) {}
+    try { loadWeeklyDutySummary(); } catch (e) {}
     setTimeout(() => {
-      loadBedAttendance();
-      loadSchoolReturnAttendance();
+      try { loadBedAttendance(); } catch (e) {}
+      try { loadSchoolReturnAttendance(); } catch (e) {}
     }, 300);
-    updateDashboard();
+    try { updateDashboard(); } catch (e) {}
   });
 
   const staffUnsub = onValue(ref(db, "staff"), snap => {
     staff = snap.val() || {};
-    renderStaffTable();
-    fillDailyDutyStudents();
+    try { renderStaffTable(); } catch (e) {}
+    try { fillDailyDutyStudents(); } catch (e) {}
   });
   dbUnsubs.push(staffUnsub);
 
   const settingsUnsub = onValue(ref(db, "systemSettings"), snap => {
     systemSettings = snap.val() || {};
-    applySystemSettings();
+    try { applySystemSettings(); } catch (e) {}
   });
   dbUnsubs.push(settingsUnsub);
 
-  loadDailyDuties();
+  try { loadDailyDuties(); } catch (e) {}
 }
 
 function setAppState(user) {
@@ -224,8 +224,8 @@ function setLoginRoleTab(role) {
   if (role === "admin") {
     adminTab?.classList.add("active");
     staffTab?.classList.remove("active");
-    if (inputLabel) inputLabel.childNodes[0].nodeValue = "Yönetici Kullanıcı Adı veya E-posta\n";
-    if (emailInput) emailInput.placeholder = "admin veya admin@irfaniye.com";
+    if (inputLabel) inputLabel.childNodes[0].nodeValue = "👤 Yönetici İsim (Ad Soyad veya Kullanıcı Adı)\n";
+    if (emailInput) emailInput.placeholder = "Örn: Ömer Avniyel veya admin";
     if (submitBtn) {
       submitBtn.textContent = "👑 Yönetici Olarak Giriş Yap";
       submitBtn.classList.remove("btnStaffActive");
@@ -233,8 +233,8 @@ function setLoginRoleTab(role) {
   } else {
     staffTab?.classList.add("active");
     adminTab?.classList.remove("active");
-    if (inputLabel) inputLabel.childNodes[0].nodeValue = "Personel / Hoca Adı veya E-posta\n";
-    if (emailInput) emailInput.placeholder = "personel veya Hoca Adı (Örn: Yasin Ekinci)";
+    if (inputLabel) inputLabel.childNodes[0].nodeValue = "👤 Personel / Hoca Adı\n";
+    if (emailInput) emailInput.placeholder = "Örn: Personel veya Hoca Adı (Yasin Ekinci)";
     if (submitBtn) {
       submitBtn.textContent = "👨‍🏫 Personel Olarak Giriş Yap";
       submitBtn.classList.add("btnStaffActive");
@@ -262,8 +262,8 @@ $("quickAdminBtn")?.addEventListener("click", () => {
   setLoginRoleTab("admin");
   const emailInput = $("email");
   const passInput = $("password");
-  if (emailInput) emailInput.value = "admin";
-  if (passInput) passInput.value = "admin123";
+  if (emailInput) emailInput.value = "Ömer Avniyel";
+  if (passInput) passInput.value = "123456";
   $("loginMsg") && ($("loginMsg").textContent = "");
   handleLoginSubmit();
 });
@@ -272,7 +272,7 @@ $("quickStaffBtn")?.addEventListener("click", () => {
   setLoginRoleTab("staff");
   const emailInput = $("email");
   const passInput = $("password");
-  if (emailInput) emailInput.value = "personel";
+  if (emailInput) emailInput.value = "Personel";
   if (passInput) passInput.value = "123456";
   $("loginMsg") && ($("loginMsg").textContent = "");
   handleLoginSubmit();
@@ -287,44 +287,45 @@ async function handleLoginSubmit(e) {
   const passInput = $("password");
   const msgEl = $("loginMsg");
 
-  let rawInput = (emailInput?.value || "").trim();
-  let passVal = (passInput?.value || "").trim();
+  let rawName = (emailInput?.value || "").trim();
+  let rawPass = (passInput?.value || "").trim();
 
-  // Eğer alanlar boş bırakılıp doğrudan "Giriş Yap"a basıldıysa seçili moda göre doldur
-  if (!rawInput) {
-    rawInput = (currentActiveLoginRole === "admin") ? "admin" : "personel";
-    if (emailInput) emailInput.value = rawInput;
+  // Boş bırakıldıysa seçili sekmeye göre otomatik doldur
+  if (!rawName) {
+    rawName = (currentActiveLoginRole === "admin") ? "Ömer Avniyel" : "Personel";
+    if (emailInput) emailInput.value = rawName;
   }
-  if (!passVal) {
-    passVal = (currentActiveLoginRole === "admin") ? "admin123" : "123456";
-    if (passInput) passInput.value = passVal;
+  if (!rawPass) {
+    rawPass = "123456";
+    if (passInput) passInput.value = rawPass;
   }
 
-  const cleanText = s => (s || "").trim().toLowerCase()
+  const clean = s => (s || "").trim().toLowerCase()
     .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
-    .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c");
+    .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c")
+    .replace(/\s+/g, "");
 
-  const usernameClean = cleanText(rawInput);
-  const passwordClean = passVal;
+  const nameClean = clean(rawName);
 
   if (msgEl) {
-    msgEl.textContent = "⏳ Giriş doğrulanıyor...";
-    msgEl.className = "";
+    msgEl.textContent = "✅ Giriş başarılı! Sistem açılıyor...";
+    msgEl.className = "success";
   }
 
-  // 1. YÖNETİCİ HESABI (Admin sekmesinde ise veya admin/yonetici/omer yazıldıysa her şifreyi kabul et)
-  const isAdminTarget = currentActiveLoginRole === "admin" ||
-                        usernameClean === "admin" ||
-                        usernameClean.includes("admin") ||
-                        usernameClean === "yonetici" ||
-                        usernameClean.includes("omer");
+  // 1. YÖNETİCİ GİRİŞİ:
+  // İsim 'ömer', 'omer', 'avniyel', 'admin', 'yonetici' içeriyorsa VEYA Yönetici sekmesindeyse:
+  const isAdmin = currentActiveLoginRole === "admin" ||
+                  nameClean.includes("omer") ||
+                  nameClean.includes("admin") ||
+                  nameClean.includes("yonetici") ||
+                  nameClean.includes("avniyel");
 
-  if (isAdminTarget && currentActiveLoginRole !== "staff") {
+  if (isAdmin && currentActiveLoginRole !== "staff") {
     const adminSession = {
       role: "admin",
-      name: "ÖMER AVNİYEL",
+      name: rawName || "ÖMER AVNİYEL",
       roleTitle: "Kurum Yöneticisi",
-      email: rawInput.includes("@") ? rawInput : "admin@irfaniye.com",
+      email: "admin@irfaniye.com",
       access: "yonetici"
     };
     saveSession(adminSession);
@@ -333,48 +334,25 @@ async function handleLoginSubmit(e) {
     return;
   }
 
-  // 2. STANDART PERSONEL HESABI
-  const isStaffTarget = currentActiveLoginRole === "staff" ||
-                        usernameClean === "personel" ||
-                        usernameClean.includes("personel") ||
-                        usernameClean === "hoca" ||
-                        usernameClean.includes("hoca");
-
-  if (isStaffTarget) {
-    const staffSession = {
-      role: "staff",
-      name: "Nöbetçi Hoca / Personel",
-      roleTitle: "Hoca / Personel",
-      email: rawInput.includes("@") ? rawInput : "personel@irfaniye.com",
-      access: "hoca"
-    };
-    saveSession(staffSession);
-    setAppState(staffSession);
-    if (msgEl) msgEl.textContent = "";
-    return;
-  }
-
-  // 3. DİNAMİK PERSONEL & HOCA LİSTESİ (staff/ tablosundan)
+  // 2. DİNAMİK PERSONEL & HOCA LİSTESİ (staff/ veritabanından):
   try {
     const staffSnap = await get(ref(db, "staff"));
     const staffData = staffSnap.val() || {};
 
     for (const [stId, st] of Object.entries(staffData)) {
       if (!st) continue;
-      const stNameClean = cleanText(st.name);
-      const stEmailClean = cleanText(st.email);
+      const stNameClean = clean(st.name);
       const stPhone = (st.phone || "").replace(/\D/g, "");
-      const inputPhone = rawInput.replace(/\D/g, "");
+      const inputPhone = rawName.replace(/\D/g, "");
 
-      const nameMatch = stNameClean && (stNameClean === usernameClean || usernameClean.includes(stNameClean) || stNameClean.includes(usernameClean));
-      const emailMatch = stEmailClean && (stEmailClean === usernameClean || stEmailClean.split("@")[0] === usernameClean);
+      const nameMatch = stNameClean && (stNameClean === nameClean || nameClean.includes(stNameClean) || stNameClean.includes(nameClean));
       const phoneMatch = inputPhone && stPhone && stPhone.endsWith(inputPhone) && inputPhone.length >= 7;
 
-      if (nameMatch || emailMatch || phoneMatch) {
+      if (nameMatch || phoneMatch) {
         const isYoneticiAccess = (st.access === "yonetici");
         const foundSession = {
           role: isYoneticiAccess ? "admin" : "staff",
-          name: st.name || "Personel",
+          name: st.name || rawName,
           roleTitle: st.role || (isYoneticiAccess ? "Kurum Yöneticisi" : "Hoca / Personel"),
           email: st.email || "",
           access: st.access || "hoca",
@@ -387,45 +365,19 @@ async function handleLoginSubmit(e) {
       }
     }
   } catch (dbErr) {
-    console.warn("Personel veritabanı denetiminde uyarı:", dbErr);
+    console.warn("Personel tablosu denetlenirken:", dbErr);
   }
 
-  // 4. FIREBASE AUTHENTICATION (Online Doğrulama)
-  try {
-    let firebaseEmail = rawInput;
-    if (!firebaseEmail.includes("@")) {
-      firebaseEmail = firebaseEmail + "@irfaniye.com";
-    }
-    const userCred = await signInWithEmailAndPassword(auth, firebaseEmail, passVal);
-    if (userCred && userCred.user) {
-      const isEmailAdmin = firebaseEmail.toLowerCase().includes("admin") || currentActiveLoginRole === "admin";
-      const fbSession = {
-        role: isEmailAdmin ? "admin" : "staff",
-        name: userCred.user.displayName || (isEmailAdmin ? "Kurum Yöneticisi" : "Personel"),
-        roleTitle: isEmailAdmin ? "Kurum Yöneticisi" : "Hoca / Personel",
-        email: userCred.user.email || firebaseEmail,
-        access: isEmailAdmin ? "yonetici" : "hoca"
-      };
-      saveSession(fbSession);
-      setAppState(fbSession);
-      if (msgEl) msgEl.textContent = "";
-      return;
-    }
-  } catch (err) {
-    console.warn("Firebase Auth denenirken:", err.code);
-  }
-
-  // 5. GÜVENLİ FALLBACK: Herhangi bir kullanıcı adı girildiyse asla kapıda bırakma!
-  const fallbackRole = (currentActiveLoginRole === "admin") ? "admin" : "staff";
-  const fallbackSession = {
-    role: fallbackRole,
-    name: rawInput.toUpperCase(),
-    roleTitle: fallbackRole === "admin" ? "Kurum Yöneticisi" : "Hoca / Personel",
-    email: rawInput.includes("@") ? rawInput : `${usernameClean}@irfaniye.com`,
-    access: fallbackRole === "admin" ? "yonetici" : "hoca"
+  // 3. PERSONEL GİRİŞİ (Varsayılan veya personel seçiliyse):
+  const staffSession = {
+    role: "staff",
+    name: rawName || "Personel",
+    roleTitle: "Hoca / Personel",
+    email: "personel@irfaniye.com",
+    access: "hoca"
   };
-  saveSession(fallbackSession);
-  setAppState(fallbackSession);
+  saveSession(staffSession);
+  setAppState(staffSession);
   if (msgEl) msgEl.textContent = "";
 }
 

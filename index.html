@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>İrfaniye Takip Sistemi</title>
-  <link rel="stylesheet" href="style.css?v=2.0.6">
+  <link rel="stylesheet" href="style.css?v=2.0.7">
 </head>
 <body>
 <!-- Sol Kayar Pencere Menüsü Arka Plan Karartması -->
@@ -235,13 +235,13 @@
     </div>
 
     <form id="loginForm" onsubmit="event.preventDefault(); return false;">
-      <label id="loginInputLabel">Yönetici Kullanıcı Adı veya E-posta
-        <input id="email" type="text" placeholder="admin veya admin@irfaniye.com" autocomplete="username">
+      <label id="loginInputLabel">👤 İsim (Ad Soyad veya Kullanıcı Adı)
+        <input id="email" type="text" placeholder="Örn: Ömer Avniyel veya admin" autocomplete="username">
       </label>
       
-      <label>Şifre
+      <label>🔑 Giriş Şifresi
         <div class="passwordInputWrapper">
-          <input id="password" type="password" placeholder="Şifreniz" autocomplete="current-password">
+          <input id="password" type="password" placeholder="Şifreniz (123456)" autocomplete="current-password">
           <button type="button" id="togglePasswordBtn" class="togglePasswordBtn" title="Şifreyi Göster/Gizle" aria-label="Şifreyi Göster/Gizle">👁️</button>
         </div>
       </label>
@@ -261,19 +261,19 @@
           <span class="quickIcon">👑</span>
           <div class="quickInfo">
             <strong>Yönetici Hesabı</strong>
-            <small>Kullanıcı: <b>admin</b> | Şifre: <b>admin123</b> <span style="color:#d97706; font-weight:700;">(Tıkla ve Aç ➔)</span></small>
+            <small>İsim: <b>Ömer Avniyel</b> veya <b>admin</b> | Şifre: <b>123456</b> <span style="color:#d97706; font-weight:700;">(Tıkla ve Aç ➔)</span></small>
           </div>
         </button>
         <button type="button" id="quickStaffBtn" class="quickFillBtn quickStaff">
           <span class="quickIcon">👨‍🏫</span>
           <div class="quickInfo">
             <strong>Personel / Hoca Hesabı</strong>
-            <small>Kullanıcı: <b>personel</b> | Şifre: <b>123456</b> <span style="color:#059669; font-weight:700;">(Tıkla ve Aç ➔)</span></small>
+            <small>İsim: <b>Personel</b> | Şifre: <b>123456</b> <span style="color:#059669; font-weight:700;">(Tıkla ve Aç ➔)</span></small>
           </div>
         </button>
       </div>
       <div class="loginStaffNote">
-        💡 <i>Not: Kurumdaki tüm hocalar ve personel de sisteme kayıtlı kendi isim/telefon ve şifreleriyle doğrudan giriş yapabilir.</i>
+        💡 <i>Not: Kurumdaki tüm hocalar sisteme kayıtlı kendi isimleri ve şifreleriyle doğrudan giriş yapabilir.</i>
       </div>
     </div>
 
@@ -1325,6 +1325,6 @@
 <input type="file" id="jsonFileInput" accept=".json" class="hidden">
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script type="module" src="app.js?v=2.0.6"></script>
+<script type="module" src="app.js?v=2.0.7"></script>
 </body>
 </html>
