@@ -265,7 +265,7 @@ class DataStore {
             this._lastStudentEditTime = Date.now();
             this._lastStudentPushTime = Date.now();
             if (this.isCloudEnabled()) {
-              this.syncToCloud('kurs_data/students', cleaned);
+              this.syncToCloud('students', cleaned);
               this.syncToCloud('kurs_data/deleted_student_ids', deletedMap);
             }
           }
@@ -421,7 +421,7 @@ class DataStore {
         this._lastStudentEditTime = Date.now();
         this._lastStudentPushTime = Date.now();
         this.syncToCloud('kurs_data/passive_student_ids', {});
-        this.syncToCloud('kurs_data/students', students);
+        this.syncToCloud('students', students);
       }
       try {
         window.dispatchEvent(new CustomEvent('students-updated', { detail: students }));
