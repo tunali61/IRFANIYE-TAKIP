@@ -344,7 +344,7 @@ const staff = window.Store.getStaff().find(
       this.activeTab = 'ogrenciler';
       this.showToast(`👑 Hoş geldiniz Sayın ${session.name}! Öğrenci Yönetim Paneli açıldı.`, 'success');
     } else if (session.role === 'staff') {
-      this.activeTab = 'yoklama';
+     this.activeTab = 'ogrenciler';
       this.showToast(`Hoş geldiniz Sayın ${session.name}`, 'success');
     } else if (session.role === 'parent') {
       this.showToast(`Hoş geldiniz Sayın Veli`, 'success');
