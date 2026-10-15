@@ -513,11 +513,11 @@ $("studentForm")?.addEventListener("submit", async e => {
 if ($("cancelBtn")) $("cancelBtn").onclick = resetForm;
 $("search")?.addEventListener("input", render);
 
-$("importExcelBtn").addEventListener("click", async () => {
-  const file = $("excelFile").files[0];
+$("importExcelBtn")?.addEventListener("click", async () => {
+  const file = $("excelFile")?.files?.[0];
   const msg = $("importMsg");
   if (!file) {
-    msg.textContent = "Önce Excel dosyasını seçin.";
+    if (msg) msg.textContent = "Önce Excel dosyasını seçin.";
     return;
   }
 
@@ -648,16 +648,18 @@ const attendanceDate = $("attendanceDate");
 const attendanceList = $("attendanceList");
 const attendanceMsg = $("attendanceMsg");
 
-attendanceDate.value = new Date().toISOString().slice(0, 10);
+if (attendanceDate && !attendanceDate.value) {
+  attendanceDate.value = new Date().toISOString().slice(0, 10);
+}
 
-$("loadAttendanceBtn").addEventListener("click", loadAttendance);
-$("saveAttendanceBtn").addEventListener("click", saveAttendance);
+$("loadAttendanceBtn")?.addEventListener("click", loadAttendance);
+$("saveAttendanceBtn")?.addEventListener("click", saveAttendance);
 
 async function loadAttendance() {
-  const date = attendanceDate.value;
+  const date = attendanceDate?.value;
 
   if (!date) {
-    attendanceMsg.textContent = "Lütfen tarih seçin.";
+    if (attendanceMsg) attendanceMsg.textContent = "Lütfen tarih seçin.";
     return;
   }
 
@@ -746,15 +748,17 @@ const reportMonth = $("reportMonth");
 const reportSummary = $("reportSummary");
 const reportList = $("reportList");
 
-reportMonth.value = new Date().toISOString().slice(0, 7);
+if (reportMonth && !reportMonth.value) {
+  reportMonth.value = new Date().toISOString().slice(0, 7);
+}
 
-$("loadReportBtn").addEventListener("click", loadMonthlyReport);
+$("loadReportBtn")?.addEventListener("click", loadMonthlyReport);
 
 async function loadMonthlyReport() {
-  const month = reportMonth.value;
+  const month = reportMonth?.value;
 
   if (!month) {
-    reportSummary.textContent = "Lütfen bir ay seçin.";
+    if (reportSummary) reportSummary.textContent = "Lütfen bir ay seçin.";
     return;
   }
 
@@ -819,17 +823,19 @@ const studyList = $("studyList");
 const studySummary = $("studySummary");
 const studyMsg = $("studyMsg");
 
-studyDate.value = new Date().toISOString().slice(0, 10);
+if (studyDate && !studyDate.value) {
+  studyDate.value = new Date().toISOString().slice(0, 10);
+}
 
-$("loadStudyBtn").addEventListener("click", loadStudy);
-$("saveStudyBtn").addEventListener("click", saveStudy);
+$("loadStudyBtn")?.addEventListener("click", loadStudy);
+$("saveStudyBtn")?.addEventListener("click", saveStudy);
 
 async function loadStudy() {
-  const date = studyDate.value;
-  const session = studySession.value;
+  const date = studyDate?.value;
+  const session = studySession?.value;
 
   if (!date) {
-    studyMsg.textContent = "Lütfen tarih seçin.";
+    if (studyMsg) studyMsg.textContent = "Lütfen tarih seçin.";
     return;
   }
 
@@ -950,15 +956,17 @@ const studyReportMonth = $("studyReportMonth");
 const studyReportSummary = $("studyReportSummary");
 const studyReportList = $("studyReportList");
 
-studyReportMonth.value = new Date().toISOString().slice(0, 7);
+if (studyReportMonth && !studyReportMonth.value) {
+  studyReportMonth.value = new Date().toISOString().slice(0, 7);
+}
 
-$("loadStudyReportBtn").addEventListener("click", loadStudyReport);
+$("loadStudyReportBtn")?.addEventListener("click", loadStudyReport);
 
 async function loadStudyReport() {
-  const month = studyReportMonth.value;
+  const month = studyReportMonth?.value;
 
   if (!month) {
-    studyReportSummary.textContent = "Lütfen bir ay seçin.";
+    if (studyReportSummary) studyReportSummary.textContent = "Lütfen bir ay seçin.";
     return;
   }
 
@@ -1047,6 +1055,7 @@ const leaveMsg = $("leaveMsg");
 const leaveList = $("leaveList");
 
 function fillLeaveStudents() {
+  if (!leaveStudent) return;
   leaveStudent.innerHTML = '<option value="">Talebe seçin</option>';
 
   Object.entries(students)
@@ -1062,18 +1071,18 @@ function fillLeaveStudents() {
     });
 }
 
-$("saveLeaveBtn").addEventListener("click", saveLeave);
+$("saveLeaveBtn")?.addEventListener("click", saveLeave);
 
 async function saveLeave() {
-  const studentId = leaveStudent.value;
+  const studentId = leaveStudent?.value;
 
   if (!studentId) {
-    leaveMsg.textContent = "Lütfen talebe seçin.";
+    if (leaveMsg) leaveMsg.textContent = "Lütfen talebe seçin.";
     return;
   }
 
-  if (!leaveStart.value) {
-    leaveMsg.textContent = "Lütfen çıkış tarihini ve saatini seçin.";
+  if (!leaveStart?.value) {
+    if (leaveMsg) leaveMsg.textContent = "Lütfen çıkış tarihini ve saatini seçin.";
     return;
   }
 
@@ -1177,14 +1186,16 @@ async function updateDashboard() {
     if (!record.returned) disarida++;
   });
 
-  $("dashTotal").textContent = total;
-  $("dashPresent").textContent = geldi;
-  $("dashAbsent").textContent = gelmedi;
-  $("dashExcused").textContent = izinli;
-  $("dashOutside").textContent = disarida;
+  if ($("dashTotal")) $("dashTotal").textContent = total;
+  if ($("dashPresent")) $("dashPresent").textContent = geldi;
+  if ($("dashAbsent")) $("dashAbsent").textContent = gelmedi;
+  if ($("dashExcused")) $("dashExcused").textContent = izinli;
+  if ($("dashOutside")) $("dashOutside").textContent = disarida;
 
-  $("dashboardDate").textContent =
-    "Son güncelleme: " + new Date().toLocaleString("tr-TR");
+  if ($("dashboardDate")) {
+    $("dashboardDate").textContent =
+      "Son güncelleme: " + new Date().toLocaleString("tr-TR");
+  }
 }
 $("boxAbsent")?.addEventListener("click", async () => {
   const today = new Date().toISOString().slice(0, 10);
@@ -1288,27 +1299,29 @@ const studentModalBody = $("studentModalBody");
 const studentModalClose = $("studentModalClose");
 
 function openStudentModal(title, studentList) {
-  studentModalTitle.textContent = title;
-  studentModalBody.innerHTML = "";
+  if (studentModalTitle) studentModalTitle.textContent = title;
+  if (studentModalBody) {
+    studentModalBody.innerHTML = "";
 
-  if (studentList.length === 0) {
-    studentModalBody.innerHTML =
-      `<tr><td colspan="3">Bu durumda talebe yok.</td></tr>`;
-  } else {
-    studentList.forEach(student => {
-      const row = document.createElement("tr");
+    if (studentList.length === 0) {
+      studentModalBody.innerHTML =
+        `<tr><td colspan="3">Bu durumda talebe yok.</td></tr>`;
+    } else {
+      studentList.forEach(student => {
+        const row = document.createElement("tr");
 
-      row.innerHTML = `
-        <td>${student.name || "İsimsiz"}</td>
-        <td>${student.className || "-"}</td>
-        <td>${student.studentNo || "-"}</td>
-      `;
+        row.innerHTML = `
+          <td>${student.name || "İsimsiz"}</td>
+          <td>${student.className || "-"}</td>
+          <td>${student.studentNo || "-"}</td>
+        `;
 
-      studentModalBody.appendChild(row);
-    });
+        studentModalBody.appendChild(row);
+      });
+    }
   }
 
-  studentModal.classList.remove("hidden");
+  studentModal?.classList.remove("hidden");
 }
 
 studentModalClose?.addEventListener("click", () => {
@@ -3002,13 +3015,21 @@ Object.entries(students || {}).forEach(([studentId, student]) => {
    ======================================================== */
 function openDrawer() {
   $("sideDrawer")?.classList.add("open");
-  $("drawerBackdrop")?.classList.add("open");
+  const bd = $("drawerBackdrop");
+  if (bd) {
+    bd.classList.remove("hidden");
+    bd.classList.add("open");
+  }
   document.body.style.overflow = "hidden";
 }
 
 function closeDrawer() {
   $("sideDrawer")?.classList.remove("open");
-  $("drawerBackdrop")?.classList.remove("open");
+  const bd = $("drawerBackdrop");
+  if (bd) {
+    bd.classList.remove("open");
+    bd.classList.add("hidden");
+  }
   document.body.style.overflow = "";
 }
 

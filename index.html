@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>İrfaniye Takip Sistemi</title>
-  <link rel="stylesheet" href="style.css?v=2.0.7">
+  <link rel="stylesheet" href="style.css?v=2.0.8">
 </head>
 <body>
 <!-- Sol Kayar Pencere Menüsü Arka Plan Karartması -->
-<div id="drawerBackdrop" class="drawerBackdrop"></div>
+<div id="drawerBackdrop" class="drawerBackdrop hidden"></div>
 
 <!-- Sol Kayar Pencere Menüsü (Drawer) -->
 <aside id="sideDrawer" class="sideDrawer">
@@ -1194,6 +1194,9 @@
         <tbody id="studentModalBody"></tbody>
       </table>
     </div>
+  </div>
+</div>
+
 <!-- Talebe Ekle / Düzenle Modal -->
 <div id="studentEditModal" class="studentModal hidden">
   <div class="studentModalContent" style="max-width: 650px;">
@@ -1325,6 +1328,107 @@
 <input type="file" id="jsonFileInput" accept=".json" class="hidden">
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script type="module" src="app.js?v=2.0.7"></script>
+
+<script>
+// Savunmacı Yerel Başlatma ve file:/// Protokolü Tespiti
+(function() {
+  // 1. Ekran karartmasının tıklamaları engellemesini kesin olarak önle
+  var bd = document.getElementById("drawerBackdrop");
+  if (bd) {
+    bd.style.pointerEvents = "none";
+    bd.style.display = "none";
+  }
+
+  // 2. Eğer sayfa doğrudan bilgisayardan çift tıklanarak (file:///) açılmışsa kullanıcıyı uyar
+  if (window.location.protocol === "file:") {
+    window.addEventListener("DOMContentLoaded", function() {
+      var card = document.getElementById("loginCard");
+      if (card && !document.getElementById("localProtocolWarning")) {
+        var warn = document.createElement("div");
+        warn.id = "localProtocolWarning";
+        warn.style.cssText = "background:#fef2f2; border:2px solid #ef4444; color:#991b1b; padding:12px 14px; border-radius:12px; margin-bottom:16px; font-size:13px; line-height:1.5; text-align:left;";
+        warn.innerHTML = "<strong>⚠️ DİKKAT: Sayfa klasörden çift tıklanarak (file:///) açıldı!</strong><br>" +
+          "Google Chrome ve Edge tarayıcıları, güvenlik nedeniyle klasörden açılan dosyalarda Firebase veritabanı modüllerini engeller.<br><br>" +
+          "👉 <b>Sistemi anında çalıştırmak için:</b><br>" +
+          "1. <a href='https://irfaniye.vercel.app' target='_blank' style='color:#2563eb; font-weight:800; text-decoration:underline;'>https://irfaniye.vercel.app</a> adresini tarayıcınızda açın VEYA<br>" +
+          "2. Proje klasöründeki <b>BAŞLAT.bat</b> dosyasına çift tıklayın.";
+        card.insertBefore(warn, card.firstChild);
+      }
+    });
+  }
+
+  // 3. Giriş sekmeleri ve hızlı butonlar için anında çalışan savunmacı dinleyiciler
+  document.addEventListener("DOMContentLoaded", function() {
+    var adminTab = document.getElementById("roleTabAdmin");
+    var staffTab = document.getElementById("roleTabStaff");
+    var emailInput = document.getElementById("email");
+    var passInput = document.getElementById("password");
+    var toggleBtn = document.getElementById("togglePasswordBtn");
+    var quickAdmin = document.getElementById("quickAdminBtn");
+    var quickStaff = document.getElementById("quickStaffBtn");
+    var submitBtn = document.getElementById("submitLoginBtn");
+    var inputLabel = document.getElementById("loginInputLabel");
+
+    if (toggleBtn && passInput) {
+      toggleBtn.onclick = function() {
+        if (passInput.type === "password") {
+          passInput.type = "text";
+          toggleBtn.textContent = "🙈";
+        } else {
+          passInput.type = "password";
+          toggleBtn.textContent = "👁️";
+        }
+      };
+    }
+
+    if (adminTab && staffTab) {
+      adminTab.onclick = function() {
+        adminTab.classList.add("active");
+        staffTab.classList.remove("active");
+        if (inputLabel && inputLabel.childNodes[0]) {
+          inputLabel.childNodes[0].nodeValue = "👤 Yönetici İsim (Ad Soyad veya Kullanıcı Adı)\n";
+        }
+        if (emailInput) emailInput.placeholder = "Örn: Ömer Avniyel veya admin";
+        if (submitBtn) {
+          submitBtn.textContent = "👑 Yönetici Olarak Giriş Yap";
+          submitBtn.classList.remove("btnStaffActive");
+        }
+      };
+      staffTab.onclick = function() {
+        staffTab.classList.add("active");
+        adminTab.classList.remove("active");
+        if (inputLabel && inputLabel.childNodes[0]) {
+          inputLabel.childNodes[0].nodeValue = "👤 Personel / Hoca Adı\n";
+        }
+        if (emailInput) emailInput.placeholder = "Örn: Personel veya Hoca Adı (Yasin Ekinci)";
+        if (submitBtn) {
+          submitBtn.textContent = "👨‍🏫 Personel Olarak Giriş Yap";
+          submitBtn.classList.add("btnStaffActive");
+        }
+      };
+    }
+
+    if (quickAdmin && emailInput && passInput) {
+      quickAdmin.onclick = function() {
+        if (adminTab) adminTab.click();
+        emailInput.value = "Ömer Avniyel";
+        passInput.value = "123456";
+        if (submitBtn) submitBtn.click();
+      };
+    }
+
+    if (quickStaff && emailInput && passInput) {
+      quickStaff.onclick = function() {
+        if (staffTab) staffTab.click();
+        emailInput.value = "Personel";
+        passInput.value = "123456";
+        if (submitBtn) submitBtn.click();
+      };
+    }
+  });
+})();
+</script>
+
+<script type="module" src="app.js?v=2.0.8"></script>
 </body>
 </html>

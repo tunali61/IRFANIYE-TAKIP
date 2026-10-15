@@ -793,12 +793,16 @@ html {
   z-index: 99998;
   opacity: 0;
   visibility: hidden;
+  pointer-events: none !important;
+  display: none !important;
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .drawerBackdrop.open {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto !important;
+  display: block !important;
 }
 
 /* Sol Kayar Menü Penceresi (Drawer) */
@@ -818,10 +822,14 @@ html {
   transform: translateX(-100%);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .sideDrawer.open {
   transform: translateX(0);
+  pointer-events: auto;
+  visibility: visible;
 }
 
 /* Menü Başlığı */
@@ -2176,6 +2184,9 @@ html {
    MODERN GİRİŞ EKRANI (YÖNETİCİ & PERSONEL GİRİŞİ)
    ======================================================== */
 .modernLoginCard {
+  position: relative !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
   max-width: 480px !important;
   margin: 40px auto !important;
   padding: 30px !important;
