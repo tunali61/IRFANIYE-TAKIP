@@ -132,6 +132,10 @@ function setAppState(user) {
   currentSessionUser = user;
   const isLoggedIn = !!user;
 
+  if (typeof window.applyAppStateUI === "function") {
+    try { window.applyAppStateUI(user); } catch(e) {}
+  }
+
   $("loginCard")?.classList.toggle("hidden", isLoggedIn);
   $("appArea")?.classList.toggle("hidden", !isLoggedIn);
   $("logoutBtn")?.classList.toggle("hidden", !isLoggedIn);
@@ -443,6 +447,15 @@ if (storedSession) {
 } else {
   setAppState(null);
 }
+
+// Bağımsız Giriş Motoru ile Köprü (Standalone Login Bridge)
+window.triggerAppDatabase = function(session) {
+  setAppState(session);
+};
+
+window.triggerAppLogout = function() {
+  handleLogout();
+};
 
 onAuthStateChanged(auth, user => {
   if (user) {

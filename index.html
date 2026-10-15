@@ -1330,35 +1330,164 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
-// Savunmacı Yerel Başlatma ve file:/// Protokolü Tespiti
+// ========================================================
+// KESİNTİSİZ & BAĞIMSIZ DOĞRUDAN GİRİŞ MOTORU (STANDALONE LOGIN)
+// Modül veya sunucu gecikmelerine takılmadan anında giriş sağlar
+// ========================================================
 (function() {
-  // 1. Ekran karartmasının tıklamaları engellemesini kesin olarak önle
+  var SESSION_KEY = "irfaniye_auth_session_v2";
+  window.currentActiveLoginRole = "admin";
+
+  // 1. Ekran karartmasını derhal etkisiz hale getir (tıklama engellerini önle)
   var bd = document.getElementById("drawerBackdrop");
   if (bd) {
     bd.style.pointerEvents = "none";
     bd.style.display = "none";
   }
 
-  // 2. Eğer sayfa doğrudan bilgisayardan çift tıklanarak (file:///) açılmışsa kullanıcıyı uyar
-  if (window.location.protocol === "file:") {
-    window.addEventListener("DOMContentLoaded", function() {
-      var card = document.getElementById("loginCard");
-      if (card && !document.getElementById("localProtocolWarning")) {
-        var warn = document.createElement("div");
-        warn.id = "localProtocolWarning";
-        warn.style.cssText = "background:#fef2f2; border:2px solid #ef4444; color:#991b1b; padding:12px 14px; border-radius:12px; margin-bottom:16px; font-size:13px; line-height:1.5; text-align:left;";
-        warn.innerHTML = "<strong>⚠️ DİKKAT: Sayfa klasörden çift tıklanarak (file:///) açıldı!</strong><br>" +
-          "Google Chrome ve Edge tarayıcıları, güvenlik nedeniyle klasörden açılan dosyalarda Firebase veritabanı modüllerini engeller.<br><br>" +
-          "👉 <b>Sistemi anında çalıştırmak için:</b><br>" +
-          "1. <a href='https://irfaniye.vercel.app' target='_blank' style='color:#2563eb; font-weight:800; text-decoration:underline;'>https://irfaniye.vercel.app</a> adresini tarayıcınızda açın VEYA<br>" +
-          "2. Proje klasöründeki <b>BAŞLAT.bat</b> dosyasına çift tıklayın.";
-        card.insertBefore(warn, card.firstChild);
+  // 2. Arayüzü Giriş Yapılmış / Yapılmamış Olarak Güncelle
+  function applyAppStateUI(user) {
+    var isLoggedIn = !!user;
+    var loginCard = document.getElementById("loginCard");
+    var appArea = document.getElementById("appArea");
+
+    if (loginCard) {
+      if (isLoggedIn) {
+        loginCard.classList.add("hidden");
+        loginCard.style.display = "none";
+      } else {
+        loginCard.classList.remove("hidden");
+        loginCard.style.display = "";
+      }
+    }
+
+    if (appArea) {
+      if (isLoggedIn) {
+        appArea.classList.remove("hidden");
+        appArea.style.display = "";
+      } else {
+        appArea.classList.add("hidden");
+        appArea.style.display = "none";
+      }
+    }
+
+    var navIds = ["logoutBtn", "menuToggleBtn", "floatingMenuBtn", "headerRefreshBtn", "headerTvBtn", "floatingClearCacheBtn"];
+    navIds.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) {
+        if (isLoggedIn) el.classList.remove("hidden");
+        else el.classList.add("hidden");
       }
     });
+
+    if (isLoggedIn) {
+      var isStaff = user.role === "staff" || user.access === "hoca" || user.access === "personel";
+      var mgrBadge = document.getElementById("headerManagerBadge");
+      var stuBadge = document.getElementById("headerStudentBadge");
+      var drwName = document.getElementById("drawerAdminName");
+      var drwRole = document.getElementById("drawerAdminRole");
+
+      if (mgrBadge) {
+        mgrBadge.classList.remove("hidden");
+        mgrBadge.className = isStaff ? "headerPillBadge badgeMint" : "headerPillBadge badgeGold";
+        mgrBadge.innerHTML = isStaff ? ("👨‍🏫 " + (user.name || "Personel")) : "👑 Kurum Yöneticisi";
+      }
+      if (stuBadge) stuBadge.classList.remove("hidden");
+      if (drwName) drwName.textContent = user.name || (isStaff ? "Personel" : "ÖMER AVNİYEL");
+      if (drwRole) drwRole.textContent = user.roleTitle || (isStaff ? "Hoca / Personel" : "Kurum Yöneticisi");
+
+      if (isStaff) {
+        var staffCard = document.getElementById("staffManagementCard");
+        var sysCard = document.getElementById("systemSettingsCard");
+        if (staffCard) staffCard.classList.add("hidden");
+        if (sysCard) sysCard.classList.add("hidden");
+        document.querySelectorAll('a[href="#staffManagementCard"], a[href="#systemSettingsCard"]').forEach(function(a) {
+          a.style.display = "none";
+        });
+      } else {
+        var staffCard2 = document.getElementById("staffManagementCard");
+        var sysCard2 = document.getElementById("systemSettingsCard");
+        if (staffCard2) staffCard2.classList.remove("hidden");
+        if (sysCard2) sysCard2.classList.remove("hidden");
+        document.querySelectorAll('a[href="#staffManagementCard"], a[href="#systemSettingsCard"]').forEach(function(a) {
+          a.style.display = "";
+        });
+      }
+    }
   }
 
-  // 3. Giriş sekmeleri ve hızlı butonlar için anında çalışan savunmacı dinleyiciler
-  document.addEventListener("DOMContentLoaded", function() {
+  // 3. Doğrudan ve Kesin Giriş Yap
+  function performDirectLogin(role, customName) {
+    var emailInput = document.getElementById("email");
+    var passInput = document.getElementById("password");
+    var activeRole = role || window.currentActiveLoginRole || "admin";
+
+    var rawName = customName || (emailInput ? emailInput.value : "").trim();
+    var rawPass = (passInput ? passInput.value : "").trim();
+
+    if (!rawName) {
+      rawName = (activeRole === "admin") ? "Ömer Avniyel" : "Personel";
+      if (emailInput) emailInput.value = rawName;
+    }
+    if (!rawPass) {
+      rawPass = "123456";
+      if (passInput) passInput.value = rawPass;
+    }
+
+    var cleanName = rawName.toLowerCase()
+      .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
+      .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c")
+      .replace(/\s+/g, "");
+
+    var isStaff = (activeRole === "staff") && !cleanName.includes("omer") && !cleanName.includes("admin") && !cleanName.includes("yonetici");
+
+    var session = {
+      role: isStaff ? "staff" : "admin",
+      name: rawName,
+      roleTitle: isStaff ? "Hoca / Personel" : "Kurum Yöneticisi",
+      email: isStaff ? "personel@irfaniye.com" : "admin@irfaniye.com",
+      access: isStaff ? "hoca" : "yonetici"
+    };
+
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    } catch(e) {}
+
+    // Arayüzü ANINDA Giriş Yapılmış Duruma Getir (Kullanıcı Beklemez)
+    applyAppStateUI(session);
+
+    // Eğer app.js modülü yüklendiyse veritabanı dinleyicilerini başlat
+    if (typeof window.triggerAppDatabase === "function") {
+      window.triggerAppDatabase(session);
+    }
+  }
+
+  // 4. Çıkış Butonu
+  function doLogout() {
+    try {
+      localStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch(e) {}
+    applyAppStateUI(null);
+    if (typeof window.triggerAppLogout === "function") {
+      window.triggerAppLogout();
+    }
+  }
+
+  // 5. Sayfa açılışında kayıtlı oturum kontrolü
+  try {
+    var raw = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.name) {
+        applyAppStateUI(parsed);
+      }
+    }
+  } catch(e) {}
+
+  // 6. Butonları ve Sekmeleri Anında Bağla
+  function initLoginUI() {
     var adminTab = document.getElementById("roleTabAdmin");
     var staffTab = document.getElementById("roleTabStaff");
     var emailInput = document.getElementById("email");
@@ -1368,9 +1497,53 @@
     var quickStaff = document.getElementById("quickStaffBtn");
     var submitBtn = document.getElementById("submitLoginBtn");
     var inputLabel = document.getElementById("loginInputLabel");
+    var logoutBtn = document.getElementById("logoutBtn");
+    var drawerLogoutBtn = document.getElementById("drawerLogoutBtn");
+    var loginForm = document.getElementById("loginForm");
+
+    if (adminTab) {
+      adminTab.onclick = function(e) {
+        if (e) e.preventDefault();
+        window.currentActiveLoginRole = "admin";
+        adminTab.classList.add("active");
+        if (staffTab) staffTab.classList.remove("active");
+        if (inputLabel && inputLabel.childNodes[0]) {
+          inputLabel.childNodes[0].nodeValue = "👤 Yönetici İsim (Ad Soyad veya Kullanıcı Adı)\n";
+        }
+        if (emailInput) {
+          emailInput.placeholder = "Örn: Ömer Avniyel veya admin";
+          if (emailInput.value === "Personel") emailInput.value = "Ömer Avniyel";
+        }
+        if (submitBtn) {
+          submitBtn.textContent = "👑 Yönetici Olarak Giriş Yap";
+          submitBtn.classList.remove("btnStaffActive");
+        }
+      };
+    }
+
+    if (staffTab) {
+      staffTab.onclick = function(e) {
+        if (e) e.preventDefault();
+        window.currentActiveLoginRole = "staff";
+        staffTab.classList.add("active");
+        if (adminTab) adminTab.classList.remove("active");
+        if (inputLabel && inputLabel.childNodes[0]) {
+          inputLabel.childNodes[0].nodeValue = "👤 Personel / Hoca Adı\n";
+        }
+        if (emailInput) {
+          emailInput.placeholder = "Örn: Personel veya Hoca Adı (Yasin Ekinci)";
+          if (emailInput.value === "Ömer Avniyel" || emailInput.value === "admin") emailInput.value = "Personel";
+        }
+        if (submitBtn) {
+          submitBtn.textContent = "👨‍🏫 Personel Olarak Giriş Yap";
+          submitBtn.classList.add("btnStaffActive");
+        }
+      };
+    }
 
     if (toggleBtn && passInput) {
-      toggleBtn.onclick = function() {
+      toggleBtn.onclick = function(e) {
+        if (e) e.preventDefault();
         if (passInput.type === "password") {
           passInput.type = "text";
           toggleBtn.textContent = "🙈";
@@ -1381,51 +1554,77 @@
       };
     }
 
-    if (adminTab && staffTab) {
-      adminTab.onclick = function() {
-        adminTab.classList.add("active");
-        staffTab.classList.remove("active");
-        if (inputLabel && inputLabel.childNodes[0]) {
-          inputLabel.childNodes[0].nodeValue = "👤 Yönetici İsim (Ad Soyad veya Kullanıcı Adı)\n";
-        }
-        if (emailInput) emailInput.placeholder = "Örn: Ömer Avniyel veya admin";
-        if (submitBtn) {
-          submitBtn.textContent = "👑 Yönetici Olarak Giriş Yap";
-          submitBtn.classList.remove("btnStaffActive");
-        }
-      };
-      staffTab.onclick = function() {
-        staffTab.classList.add("active");
-        adminTab.classList.remove("active");
-        if (inputLabel && inputLabel.childNodes[0]) {
-          inputLabel.childNodes[0].nodeValue = "👤 Personel / Hoca Adı\n";
-        }
-        if (emailInput) emailInput.placeholder = "Örn: Personel veya Hoca Adı (Yasin Ekinci)";
-        if (submitBtn) {
-          submitBtn.textContent = "👨‍🏫 Personel Olarak Giriş Yap";
-          submitBtn.classList.add("btnStaffActive");
-        }
-      };
-    }
-
-    if (quickAdmin && emailInput && passInput) {
-      quickAdmin.onclick = function() {
+    // ⚡ Tek Tıkla Yönetici Girişi
+    if (quickAdmin) {
+      quickAdmin.onclick = function(e) {
+        if (e) e.preventDefault();
         if (adminTab) adminTab.click();
-        emailInput.value = "Ömer Avniyel";
-        passInput.value = "123456";
-        if (submitBtn) submitBtn.click();
+        if (emailInput) emailInput.value = "Ömer Avniyel";
+        if (passInput) passInput.value = "123456";
+        performDirectLogin("admin", "Ömer Avniyel");
       };
     }
 
-    if (quickStaff && emailInput && passInput) {
-      quickStaff.onclick = function() {
+    // ⚡ Tek Tıkla Personel Girişi
+    if (quickStaff) {
+      quickStaff.onclick = function(e) {
+        if (e) e.preventDefault();
         if (staffTab) staffTab.click();
-        emailInput.value = "Personel";
-        passInput.value = "123456";
-        if (submitBtn) submitBtn.click();
+        if (emailInput) emailInput.value = "Personel";
+        if (passInput) passInput.value = "123456";
+        performDirectLogin("staff", "Personel");
       };
     }
-  });
+
+    // Giriş Butonu Tıklaması
+    if (submitBtn) {
+      submitBtn.onclick = function(e) {
+        if (e) e.preventDefault();
+        performDirectLogin(window.currentActiveLoginRole);
+      };
+    }
+
+    if (loginForm) {
+      loginForm.onsubmit = function(e) {
+        if (e) e.preventDefault();
+        performDirectLogin(window.currentActiveLoginRole);
+        return false;
+      };
+    }
+
+    // Enter Tuşları
+    if (emailInput) {
+      emailInput.onkeydown = function(e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (passInput && !passInput.value) passInput.focus();
+          else performDirectLogin(window.currentActiveLoginRole);
+        }
+      };
+    }
+
+    if (passInput) {
+      passInput.onkeydown = function(e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          performDirectLogin(window.currentActiveLoginRole);
+        }
+      };
+    }
+
+    if (logoutBtn) logoutBtn.onclick = doLogout;
+    if (drawerLogoutBtn) drawerLogoutBtn.onclick = doLogout;
+  }
+
+  initLoginUI();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initLoginUI);
+  }
+
+  // Dışa aktar (app.js ile iki yönlü haberleşme)
+  window.performDirectLogin = performDirectLogin;
+  window.applyAppStateUI = applyAppStateUI;
+  window.doLogout = doLogout;
 })();
 </script>
 
