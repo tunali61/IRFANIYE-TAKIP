@@ -1,0 +1,150 @@
+/* Özel Uygulama Stilleri ve Yazdırma (Print) Kuralları */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Durum Rozetleri ve Renkleri */
+.badge-status-V {
+  background-color: #10b981 !important;
+  color: #ffffff !important;
+  border-color: #059669 !important;
+}
+
+.badge-status-T {
+  background-color: #9333ea !important;
+  color: #ffffff !important;
+  border-color: #7e22ce !important;
+}
+
+.badge-status-Y {
+  background-color: #881337 !important;
+  color: #ffe4e6 !important;
+  border-color: #4c0519 !important;
+}
+
+.badge-status-G {
+  background-color: #f59e0b !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
+}
+
+.badge-status-E {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0369a1 !important;
+}
+
+.badge-status-K {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+
+.badge-status-I {
+  background-color: #0d9488 !important;
+  color: #ffffff !important;
+  border-color: #0f766e !important;
+}
+
+/* Tablo Satırı Hover Efekti */
+.table-row-hover:hover {
+  background-color: rgba(243, 244, 246, 0.6);
+}
+
+/* Modal Geçişleri */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+}
+
+.print-only {
+  display: none !important;
+}
+
+/* Yazdırma (Print / Karne) Modu */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print,
+  #header-nav,
+  #role-bar,
+  #toast-container,
+  button,
+  .btn-action,
+  .nav-tabs,
+  .filter-bar {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Yazdırma esnasında hücre not kutularını temiz metin olarak göster */
+  input[type="number"] {
+    border: none !important;
+    box-shadow: none !important;
+    font-weight: 800 !important;
+    text-align: center !important;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+  }
+
+  .card-box {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .badge-status-V,
+  .badge-status-T,
+  .badge-status-Y,
+  .badge-status-G,
+  .badge-status-E,
+  .badge-status-K,
+  .badge-status-I {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Tek Karne / Öğrenci Fişi Yazdırma Modu */
+  body.print-single-card-mode * {
+    visibility: hidden !important;
+  }
+  body.print-single-card-mode #takviye-share-card,
+  body.print-single-card-mode #takviye-share-card * {
+    visibility: visible !important;
+  }
+  body.print-single-card-mode #takviye-share-card {
+    position: fixed !important;
+    left: 50% !important;
+    top: 20px !important;
+    transform: translateX(-50%) !important;
+    width: 650px !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+  }
+}
+
+/* Yatay kaydırma çubuğunu gizleme */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

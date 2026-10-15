@@ -342,8 +342,7 @@ window.AttendanceModule = {
     window.Store.saveAttendanceBatch(records, activeUser);
     this.renderView();
 
-    const defaultStatus = this.getDefaultStatus(allStudents[0]);
-const statusLabel = defaultStatus === 'VAR' ? 'Var' : (defaultStatus === 'IYI' ? 'İyi' : 'Geç');
+    const statusLabel = defaultStatus === 'VAR' ? 'Var' : (defaultStatus === 'IYI' ? 'İyi' : 'Geldi');
     if (window.App && typeof window.App.showToast === 'function') {
       window.App.showToast(`✅ Tüm talebeler "${statusLabel}" olarak kaydedildi! (${records.length} Talebe • Alan: ${activeUser})`, 'success');
     }

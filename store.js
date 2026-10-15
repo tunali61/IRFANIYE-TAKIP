@@ -60,12 +60,12 @@ STATUS_CONFIG.OKUL = STATUS_CONFIG.OKULDA;
 STATUS_CONFIG.E = STATUS_CONFIG.VAR;
 
 const DEFAULT_SETTINGS = {
-  institutionName: 'İrfaniye Akademi',
+  institutionName: 'Ömer Avniyel Akademi',
   institutionLogo: 'kurs_logo.jpg', // Varsayılan kurs logosu dosya adı
   adminEmail: 'selimbozkurt111@gmail.com', // Ana yöneticinin doğrulama maili alacağı adres
   adminPassword: '123', // Ana Kurum Yöneticisi özel giriş şifresi (Personelden bağımsız)
   academicYear: '2026-2027',
-  firebaseUrl: 'https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app', // Canlı Bulut Veritabanı URL
+  firebaseUrl: 'https://oay-takip-default-rtdb.firebaseio.com', // Canlı Bulut Veritabanı URL
   yatakReminderEnabled: true, // Otomatik yatak kontrolü hatırlatıcısı
   yatakReminderStartTime: '08:30', // Başlangıç saati (sabah 08:30)
   yatakReminderIntervalMins: 30, // Kontrol edilmedikçe her 30 dakikada bir tekrar
@@ -84,7 +84,7 @@ const DEFAULT_STAFF = [
   { id: 'stf_5', fullName: 'EMİR TALHA TARIM', role: '7-A Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 05', password: '123' },
   { id: 'stf_6', fullName: 'BURAK BODUR', role: '7-B Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 06', password: '123' },
   { id: 'stf_7', fullName: 'TUNAHAN TAŞKIN', role: '8-B Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 07', password: '123' },
-  { id: 'stf_8', fullName: 'YAVUZ SELİM SEVEN', role: '8-A Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 08', email: 'hisarustu2015@gmail.com', password: '123' }
+  { id: 'stf_8', fullName: 'YAVUZ SELİM SEVEN', role: '8-A Sınıfı Etüt & Dahili Hocası', phone: '0555 000 00 08', password: '123' }
 ];
 
 // Sistemden kalıcı olarak çıkarılan öğrenciler sicili (Hiçbir cihazda veya bulutta asla hortlamaz)
@@ -265,7 +265,7 @@ class DataStore {
             this._lastStudentEditTime = Date.now();
             this._lastStudentPushTime = Date.now();
             if (this.isCloudEnabled()) {
-              this.syncToCloud('students', cleaned);
+              this.syncToCloud('kurs_data/students', cleaned);
               this.syncToCloud('kurs_data/deleted_student_ids', deletedMap);
             }
           }
@@ -421,7 +421,7 @@ class DataStore {
         this._lastStudentEditTime = Date.now();
         this._lastStudentPushTime = Date.now();
         this.syncToCloud('kurs_data/passive_student_ids', {});
-        this.syncToCloud('students', students);
+        this.syncToCloud('kurs_data/students', students);
       }
       try {
         window.dispatchEvent(new CustomEvent('students-updated', { detail: students }));
@@ -727,9 +727,9 @@ class DataStore {
       const parsed = data ? JSON.parse(data) : {};
       const settings = { ...DEFAULT_SETTINGS, ...parsed };
 
-      // Eğer kayıtlı kurum adı eski varsayılan ise veya boşsa İrfaniye Akademi yap
+      // Eğer kayıtlı kurum adı eski varsayılan ise veya boşsa Ömer Avniyel Akademi yap
       if (!settings.institutionName || settings.institutionName === 'Kurs & Etüt Öğrenci Takip Sistemi') {
-        settings.institutionName = 'İrfaniye Akademi';
+        settings.institutionName = 'Ömer Avniyel Akademi';
       }
 
       // Eğer kayıtlı logo boş ise varsayılan kurs_logo.jpg kullan
@@ -792,38 +792,20 @@ class DataStore {
 
   // Buluta Asenkron Arka Plan Gönderimi
   async syncToCloud(endpoint, data) {
-  const baseUrl = this.getFirebaseUrl();
-  if (!baseUrl) return false;
-
-  try {
-    const user = window.firebaseAuth?.currentUser;
-
-    if (!user) {
-      console.warn(`[CloudSync] Firebase kullanıcısı oturum açmamış.`);
-      return false;
-    }
-
-    const token = await user.getIdToken();
-
-    const res = await fetch(
-      `${baseUrl}/${endpoint}.json?auth=${encodeURIComponent(token)}`,
-      {
+    const baseUrl = this.getFirebaseUrl();
+    if (!baseUrl) return false;
+    try {
+      const res = await fetch(`${baseUrl}/${endpoint}.json`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      }
-    );
-
-    if (!res.ok) {
-      console.warn(`[CloudSync] ${endpoint} HTTP ${res.status}`);
+      });
+      return res.ok;
+    } catch (err) {
+      console.warn(`[CloudSync] ${endpoint} gönderilemedi (çevrimdışı):`, err);
+      return false;
     }
-
-    return res.ok;
-  } catch (err) {
-    console.warn(`[CloudSync] ${endpoint} gönderilemedi:`, err);
-    return false;
   }
-}
 
   // Tüm Veritabanını Tek Tıkla Buluta İlk Yükleme
   async pushAllToCloud() {
@@ -897,21 +879,10 @@ class DataStore {
     if (!baseUrl) return { success: false, message: 'Bulut bağlantısı tanımlı değil.' };
 
     try {
-      const user = window.firebaseAuth?.currentUser;
+      const res = await fetch(`${baseUrl}/kurs_data.json`, {
+        headers: { 'Accept': 'application/json' }
+      });
 
-if (!user) {
-  console.warn('[CloudSync] Firebase kullanıcısı oturum açmamış.');
-  return { success: false, message: 'Firebase oturumu bulunamadı.' };
-}
-
-const token = await user.getIdToken();
-
-const res = await fetch(
-  `${baseUrl}/kurs_data.json?auth=${encodeURIComponent(token)}`,
-  {
-    headers: { 'Accept': 'application/json' }
-  }
-);
       if (!res.ok) {
         return { success: false, message: `Bulut veri hatası: ${res.status}` };
       }
@@ -1484,7 +1455,7 @@ const res = await fetch(
   }
 
   // Gerçek Zamanlı (Realtime SSE) Bulut Dinleyicisi - Anında Değişim
-  async initRealtimeListener() {
+  initRealtimeListener() {
     const baseUrl = this.getFirebaseUrl();
     if (!baseUrl || typeof EventSource === 'undefined') return;
 
@@ -1494,17 +1465,7 @@ const res = await fetch(
     }
 
     try {
-      const user = window.firebaseAuth?.currentUser;
-if (!user) {
-  console.warn('[Realtime] Firebase kullanıcısı oturum açmamış.');
-  return;
-}
-
-const token = await user.getIdToken();
-
-this._eventSource = new EventSource(
-  `${baseUrl}/kurs_data.json?auth=${encodeURIComponent(token)}`
-);
+      this._eventSource = new EventSource(`${baseUrl}/kurs_data.json`);
 
       this._eventSource.addEventListener('put', (e) => {
         if (!e || !e.data) return;
@@ -5474,7 +5435,7 @@ this._eventSource = new EventSource(
       : `• Kaldığı Sayfa: ${stats.currentPage} / 604 (${stats.cuzNo}. Cüz)\n`;
 
     const message = 
-      `*İrfaniye AKADEMİ • KUR'AN-I KERİM HATİM BİLGİLENDİRMESİ*\n\n` +
+      `*ÖMER AVNİYEL AKADEMİ • KUR'AN-I KERİM HATİM BİLGİLENDİRMESİ*\n\n` +
       `Sayın Velimiz,\n` +
       `Talebeniz *${student.firstName} ${student.lastName}* (${student.className}) Kur'an-ı Kerim tilavet ve hatim takibinde gayretle ilerlemektedir:\n\n` +
       `${hatimText}` +
@@ -5482,7 +5443,7 @@ this._eventSource = new EventSource(
       `• Hatmin Bitmesine Kalan: ${stats.pagesLeftInHatim} Sayfa (%${stats.percentLeft})\n` +
       `• Dini Ders Grubu: ${rec.diniGrup || student.dahiliHoca || '-'}\n\n` +
       `"Sizin en hayırlınız, Kur'an'ı öğrenen ve öğretendir." (Hadis-i Şerif - Buhârî)\n\n` +
-      `Talebemizi azminden ötürü tebrik eder, muvaffakiyetlerinin devamını dileriz. — İrfaniye Akademi`;
+      `Talebemizi azminden ötürü tebrik eder, muvaffakiyetlerinin devamını dileriz. — Ömer Avniyel Akademi`;
 
     return this.sendWhatsAppMessage(phone, message);
   }

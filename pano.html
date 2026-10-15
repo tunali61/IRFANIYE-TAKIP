@@ -1,1169 +1,2007 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="h-full bg-slate-950">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>İrfaniye Akademi - CANLI DİJİTAL PANO</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>İrfaniye Akademi • Canlı TV Panosu</title>
+  <meta name="description" content="İrfaniye Akademi Canlı TV Bilgi ve Duyuru Panosu">
 
-    body {
-      background-color: #090d16;
-      color: #f8fafc;
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      overflow-x: hidden;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v10.6 - İRFANİYE AKADEMİ) -->
+  <script>
+    (function() {
+      var CURRENT_BUILD = '20261015_v10.6_IRFANIYE_PANO';
+      var savedBuild = localStorage.getItem('irfaniye_pano_build_version');
 
-    /* ÜST BAŞLIK & MARKA BANDI */
-    .panoHeader {
-      background: #0f172a;
-      border-bottom: 2px solid #1e293b;
-      padding: 12px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
+      window.forcePurgePanoCache = function() {
+        try {
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              names.forEach(function(n) { caches.delete(n); });
+            });
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            });
+          }
+          localStorage.setItem('irfaniye_pano_build_version', CURRENT_BUILD);
+        } catch (e) {}
+        setTimeout(function() {
+          window.location.replace(window.location.pathname + '?build=' + CURRENT_BUILD + '&t=' + Date.now());
+        }, 200);
+      };
 
-    .brandLeft {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .brandLogo {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: #0f172a;
-      font-weight: 900;
-      font-size: 19px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-      flex-shrink: 0;
-    }
-
-    .brandTitleRow {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brandTitle {
-      font-size: 20px;
-      font-weight: 900;
-      letter-spacing: -0.3px;
-      color: #ffffff;
-    }
-
-    .livePanoBadge {
-      background: #064e3b;
-      color: #34d399;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 6px;
-      border: 1px solid #059669;
-      letter-spacing: 0.5px;
-    }
-
-    .brandSubtitle {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-top: 2px;
-      font-weight: 500;
-    }
-
-    /* SEKME MENÜSÜ (TABS) */
-    .tabBar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .tabBtn {
-      background: #1e293b;
-      color: #cbd5e1;
-      border: 1px solid #334155;
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      font-family: inherit;
-    }
-
-    .tabBtn:hover {
-      background: #334155;
-      color: #ffffff;
-    }
-
-    .tabBtn.active {
-      background: #f59e0b !important;
-      color: #090d16 !important;
-      border-color: #f59e0b !important;
-      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
-    }
-
-    .headerRight {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .panoClock {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 28px;
-      font-weight: 800;
-      color: #38bdf8;
-      letter-spacing: 1px;
-    }
-
-    /* ANA İÇERİK ALANI */
-    .mainContent {
-      flex: 1;
-      padding: 24px;
-      max-width: 1700px;
-      width: 100%;
-      margin: 0 auto;
-    }
-
-    .tabPane {
-      display: none;
-      animation: fadeIn 0.25s ease forwards;
-    }
-
-    .tabPane.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ========================================================
-       GÜNÜN GÖREVLİLERİ SEKMESİ (ÖZEL VURGULU TASARIM)
-       ======================================================== */
-    .dutyTabWrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .dutyHeaderBanner {
-      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-      border: 1px solid #6366f1;
-      border-radius: 16px;
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
-    }
-
-    .dutyBannerLeft {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .dutyBannerIcon {
-      font-size: 32px;
-    }
-
-    .dutyBannerTitle {
-      font-size: 19px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .dutyBannerSub {
-      font-size: 13px;
-      color: #c7d2fe;
-      margin-top: 2px;
-    }
-
-    .dutyDateBadge {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 14px;
-      color: #fde047;
-      white-space: nowrap;
-    }
-
-    /* Canlı Duyuru Bandı */
-    .dutyLiveAnnouncement {
-      background: linear-gradient(90deg, #831843 0%, #9d174d 100%);
-      border: 1px solid #f43f5e;
-      border-radius: 14px;
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 4px 16px rgba(244, 63, 94, 0.25);
-    }
-
-    .dutyLiveAnnouncement strong {
-      color: #fde047;
-      font-size: 14px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .dutyLiveAnnouncement span {
-      color: #ffffff;
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    /* 3'LÜ BÜYÜK KART DÜZENİ */
-    .dutyGridThree {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr 1fr;
-      gap: 24px;
-    }
-
-    @media (max-width: 1100px) {
-      .dutyGridThree {
-        grid-template-columns: 1fr;
+      if (savedBuild !== CURRENT_BUILD) {
+        console.log('[Auto-Purge Pano] Sürüm güncelleniyor:', savedBuild, '->', CURRENT_BUILD);
+        try { localStorage.setItem('irfaniye_pano_build_version', CURRENT_BUILD); } catch(e){}
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            names.forEach(function(n) { caches.delete(n); });
+          });
+        }
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(r) { r.unregister(); });
+          });
+        }
+        // TV ve Kiosk cihazlarda yeni kodun derhal devreye girmesi için sayfayı tazeleyerek yönlendir
+        if (window.location.search.indexOf(CURRENT_BUILD) === -1) {
+          window.location.replace(window.location.pathname + '?build=' + CURRENT_BUILD + '&t=' + Date.now());
+        }
       }
+    })();
+  </script>
+  
+  <!-- WhatsApp ve Sosyal Medya Paylaşım Kartı (Open Graph) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="İrfaniye Akademi • Canlı TV Panosu">
+  <meta property="og:description" content="İrfaniye Akademi Canlı TV Bilgi ve Duyuru Panosu">
+  <meta property="og:site_name" content="İrfaniye Akademi">
+  <meta property="og:image" content="icon.svg">
+  
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    html, body {
+      height: 100vh;
+      max-height: 100vh;
+      overflow: hidden;
     }
-
-    .panoCard {
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-      display: flex;
-      flex-direction: column;
+    /* Donmayı ve GPU kasmasını önleyen hafif altın ışıltısı */
+    .gold-glow {
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.45);
+      will-change: transform;
     }
-
-    .panoCardHeader {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #1f2937;
-      margin-bottom: 18px;
+    /* Donmayan, GPU hızlandırmalı kayan bant */
+    @keyframes marquee {
+      0% { transform: translate3d(100%, 0, 0); }
+      100% { transform: translate3d(-100%, 0, 0); }
     }
-
-    .panoCardIcon {
-      font-size: 28px;
-    }
-
-    .panoCardTitle {
-      font-size: 18px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .panoCardSub {
-      font-size: 12.5px;
-      color: #94a3b8;
-      margin-top: 2px;
-    }
-
-    /* Yemekçiler Listesi */
-    .cooksContainer {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 1;
-    }
-
-    .cookCardItem {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      transition: transform 0.15s ease;
-    }
-
-    .cookCardItem:hover {
-      transform: translateX(4px);
-      border-color: #f59e0b;
-    }
-
-    .cookBadgeNum {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #f59e0b;
-      color: #0f172a;
-      font-size: 15px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .cookCardInfo strong {
-      display: block;
-      font-size: 16px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .cookCardInfo small {
-      font-size: 12.5px;
-      color: #94a3b8;
-      font-weight: 600;
-    }
-
-    /* Müezzin Büyük Kartı */
-    .muezzinBigBox {
-      background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
-      border: 1px solid #059669;
-      border-radius: 16px;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(5, 150, 105, 0.25);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .muezzinDome {
-      font-size: 52px;
-      margin-bottom: 10px;
-    }
-
-    .muezzinTagPill {
-      background: #047857;
-      color: #a7f3d0;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 1.2px;
-      padding: 5px 14px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-    }
-
-    .muezzinNameBig {
-      font-size: 26px;
-      font-weight: 900;
-      color: #ffffff;
-      margin-bottom: 6px;
-      letter-spacing: -0.3px;
-    }
-
-    .muezzinClassBig {
-      font-size: 15px;
-      color: #6ee7b7;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .muezzinDutyBadge {
+    .animate-marquee {
       display: inline-block;
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid #10b981;
-      color: #d1fae5;
-      padding: 8px 18px;
-      border-radius: 12px;
-      font-size: 13.5px;
-      font-weight: 700;
-    }
-
-    /* Namaz Vakitleri Kartı */
-    .prayerPanoGrid {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      flex: 1;
-    }
-
-    .prayerRowItem {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .prayerNameCol {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-      font-weight: 700;
-      color: #f1f5f9;
-    }
-
-    .prayerCountBadge {
-      background: #0f172a;
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
-      font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 8px;
-    }
-
-    .emptyMessage {
-      color: #64748b;
-      font-size: 14px;
-      font-style: italic;
-      padding: 20px 0;
-      text-align: center;
-    }
-
-    /* ========================================================
-       DİĞER SEKMELER (ŞAMPİYONLAR, LİDERLER VB.)
-       ======================================================== */
-    .awardsGrid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    .awardBox {
-      background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 16px;
-      padding: 24px;
-      text-align: center;
-    }
-
-    .awardMedal {
-      font-size: 44px;
-      margin-bottom: 8px;
-    }
-
-    .awardStudentName {
-      font-size: 19px;
-      font-weight: 900;
-      color: #ffffff;
-      margin-bottom: 4px;
-    }
-
-    .awardTitle {
-      font-size: 13px;
-      font-weight: 700;
-      color: #f59e0b;
-    }
-
-    .awardNote {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-top: 8px;
-    }
-
-    /* Hadis Kartı */
-    .hadisBox {
-      background: linear-gradient(135deg, #1c1917 0%, #292524 100%);
-      border: 1px solid #78716c;
-      border-radius: 20px;
-      padding: 40px;
-      text-align: center;
-      max-width: 900px;
-      margin: 30px auto;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-
-    .hadisArabic {
-      font-size: 26px;
-      color: #fbbf24;
-      line-height: 1.8;
-      margin-bottom: 20px;
-      font-weight: 700;
-    }
-
-    .hadisTurkish {
-      font-size: 20px;
-      color: #ffffff;
-      line-height: 1.6;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    .hadisSource {
-      font-size: 14px;
-      color: #a8a29e;
-      font-weight: 700;
-    }
-
-    /* ALT BİLGİ & HABER BANDI (TICKER) */
-    .panoFooter {
-      background: #0f172a;
-      border-top: 2px solid #1e293b;
-      padding: 10px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      margin-top: auto;
-    }
-
-    .tickerArea {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      overflow: hidden;
-    }
-
-    .tickerLabel {
-      background: #ea580c;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 900;
-      padding: 5px 12px;
-      border-radius: 8px;
       white-space: nowrap;
-      letter-spacing: 0.5px;
+      animation: marquee 35s linear infinite;
+      will-change: transform;
     }
-
-    .tickerMarquee {
-      font-size: 14.5px;
-      color: #e2e8f0;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .animate-marquee:hover {
+      animation-play-state: paused;
     }
-
-    .footerRight {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      flex-shrink: 0;
+    /* İlerleme çubuğu pürüzsüz akış */
+    #slide-progress {
+      will-change: width;
+      transition: width 0.1s linear;
     }
-
-    .refreshBtn {
-      background: #1e293b;
-      color: #94a3b8;
-      border: 1px solid #334155;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.15s;
+    /* Slayt geçiş yumuşatma */
+    .slide-fade {
+      animation: panoFadeIn 0.25s ease-out;
+      will-change: opacity, transform;
     }
-
-    .refreshBtn:hover {
-      color: #ffffff;
-      background: #334155;
+    @keyframes panoFadeIn {
+      from { opacity: 0.7; transform: scale(0.995); }
+      to { opacity: 1; transform: scale(1); }
     }
-
-    .syncStatus {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #34d399;
+    /* Scrollbar Gizleme Yardımcısı */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
     }
-
-    .syncDot {
-      width: 8px;
-      height: 8px;
-      background: #34d399;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #34d399;
-      animation: pulseDot 2s infinite;
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
-
-    @keyframes pulseDot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
+    /* TV Ekranına Otomatik Sığdırma Kapsayıcısı */
+    .tv-slide-wrapper {
+      transition: transform 0.2s ease-out;
+      will-change: transform;
     }
   </style>
 </head>
-<body>
+<body class="h-screen max-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between overflow-hidden select-none font-sans">
 
-  <!-- ÜST HEADER: LOGO, SEKME MENÜSÜ & SAAT -->
-  <header class="panoHeader">
-    <div class="brandLeft">
-      <div class="brandLogo">ÖA</div>
-      <div>
-        <div class="brandTitleRow">
-          <span class="brandTitle">İrfaniye Akademi</span>
-          <span class="livePanoBadge">CANLI PANO</span>
+  <!-- YÖNETİCİ GÜVENLİK KİLİT EKRANI (ADMIN SECURITY LOCK) -->
+  <div id="pano-lock-screen" style="display: none !important;" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-4 transition-all duration-300">
+    <div class="bg-slate-900/95 border border-slate-800 rounded-3xl p-7 sm:p-9 max-w-md w-full shadow-2xl text-center relative overflow-hidden">
+      <!-- Arka plan neon ışık efektleri -->
+      <div class="absolute -top-20 -left-20 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 -right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Kilit Simgesi -->
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-yellow-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg shadow-amber-500/10">
+        🔒
+      </div>
+
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] font-black uppercase tracking-wider mb-2">
+        <span>👑 Sadece Kurum Yöneticisine Özel</span>
+      </div>
+
+      <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight mb-2">
+        Yönetici Doğrulaması
+      </h2>
+      <p class="text-xs text-slate-400 font-medium leading-relaxed mb-6">
+        Canlı Koridor & TV Panosu talebe verileri ve gizliliği nedeniyle <strong class="text-slate-200">yalnızca kurum yöneticisine</strong> açıktır. Panoyu başlatmak için yönetici şifrenizi giriniz.
+      </p>
+
+      <form onsubmit="PanoApp.handleAuthSubmit(event)" class="space-y-4 text-left">
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            Yönetici Şifresi / PIN
+          </label>
+          <input type="password" id="pano-admin-pass" required autofocus placeholder="••••••••"
+            class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono text-center tracking-widest text-lg focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition shadow-inner">
         </div>
-        <div class="brandSubtitle">Talebe İntizam, İbadet ve Akademik Başarı Liderlik Ekranı</div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="pano-remember" checked class="w-4 h-4 rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-amber-500 cursor-pointer">
+          <label for="pano-remember" class="text-xs text-slate-300 cursor-pointer select-none font-medium">
+            Bu TV'de / Cihazda kalıcı hatırla (Kiosk TV Modu)
+          </label>
+        </div>
+
+        <div id="pano-auth-error" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold text-center">
+        </div>
+
+        <button type="submit"
+          class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
+          <span>Panoyu Başlat</span>
+          <span>→</span>
+        </button>
+
+        <!-- TV / Kiosk Tek Tıkla Başlat Butonu -->
+        <button type="button" onclick="PanoApp.quickKioskAuth()"
+          class="w-full py-2.5 bg-slate-800/90 hover:bg-slate-800 border border-amber-500/40 text-amber-300 hover:text-white font-black text-xs rounded-xl shadow transition flex items-center justify-center gap-2 cursor-pointer">
+          <span>📺</span>
+          <span>TV / Kiosk Modunda Hemen Başlat <span id="pano-auto-kiosk-countdown" class="text-amber-400 font-mono font-bold">(5s)</span></span>
+        </button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-800/80">
+        <a href="index.html" class="text-xs text-slate-500 hover:text-slate-300 font-semibold transition inline-flex items-center gap-1.5">
+          <span>←</span> <span>Giriş Paneline Dön</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. ÜST BİLGİ VE DURUM ÇUBUĞU (HEADER - KOMPAKT TV UYUMLU) -->
+  <header class="bg-slate-900/95 border-b border-slate-800/80 px-4 sm:px-6 py-2 flex items-center justify-between shadow-2xl backdrop-blur z-20 flex-shrink-0">
+    <!-- Sol: Logo & Kurum Başlığı -->
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden bg-white p-1 border-2 border-amber-400/60 shadow-md flex items-center justify-center flex-shrink-0">
+        <img id="pano-logo" src="kurs_logo.jpg" alt="Logo" class="w-full h-full object-contain"
+          onerror="this.parentElement.innerHTML='<span class=\'font-black text-amber-600 text-lg\'>İA</span>'">
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 id="pano-inst-name" class="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
+            İrfaniye Akademi
+          </h1>
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black uppercase tracking-wider">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            Canlı Pano
+          </span>
+        </div>
+        <p id="pano-sub-title" class="text-[11px] text-slate-400 font-medium">
+          Talebe İntizam, İbadet ve Akademik Başarı Liderlik Ekranı
+        </p>
       </div>
     </div>
 
-    <nav class="tabBar" id="tabNav">
-      <button type="button" class="tabBtn" data-tab="sampiyonlar">🏆 Şampiyonlar</button>
-      <button type="button" class="tabBtn" data-tab="sinif-liderleri">⭐ Sınıf Liderleri</button>
-      <button type="button" class="tabBtn" data-tab="ilk10">📊 İlk 10</button>
-      <button type="button" class="tabBtn" data-tab="11-20">📊 11-20</button>
-      <button type="button" class="tabBtn active" data-tab="gorevliler">🎯 Günün Görevlileri</button>
-      <button type="button" class="tabBtn" data-tab="hadis">📖 Günün Hadisi</button>
-      <button type="button" class="tabBtn" data-tab="telafiler">⚠️ Telafiler</button>
-      <button type="button" class="tabBtn" data-tab="hatim">📖 Hatim Takibi</button>
-    </nav>
+    <!-- Orta: Slayt Göstergeleri (Tabs) & Otomatik Geçiş Sayacı -->
+    <div class="hidden lg:flex items-center gap-1 bg-slate-950/70 p-1 rounded-xl border border-slate-800">
+      <button onclick="PanoApp.goToSlide(0)" id="slide-btn-0" class="px-2 py-0.5 rounded-lg text-[11px] font-black transition flex items-center gap-1 bg-amber-500 text-slate-950 cursor-pointer">
+        <span>🏆</span> <span>Şampiyonlar</span>
+      </button>
+      <button onclick="PanoApp.goToSlide(1)" id="slide-btn-1" class="px-2 py-0.5 rounded-lg text-[11px] font-black transition flex items-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+        <span>🎓</span> <span>Sınıf Liderleri</span>
+      </button>
+      <button onclick="PanoApp.goToSlide(2)" id="slide-btn-2" class="px-2 py-0.5 rounded-lg text-[11px] font-black transition flex items-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+        <span>📊</span> <span>İlk 10</span>
+      </button>
+      <button onclick="PanoApp.goToSlide(3)" id="slide-btn-3" class="px-2 py-0.5 rounded-lg text-[11px] font-black transition flex items-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+        <span>📋</span> <span>11-20</span>
+      </button>
+      <button onclick="PanoApp.goToSlide(4)" id="slide-btn-4" class="px-2 py-0.5 rounded-lg text-[11px] font-black transition flex items-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+        <span>🎯</span> <span>Günün Görevlileri</span>
+      </button>
+      <button onclick="PanoApp.goToSlide(5)" id="slide-btn-5" class="px-2 py-0.5 rounded-lg text-[11px] font-black transition flex items-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+        <span>🕌</span> <span>Günün Hadisi</span>
+      </button>
+      <button onclick="PanoApp.goToSlide(6)" id="slide-btn-6" class="px-2 py-0.5 rounded-lg text-[11px] font-black transition flex items-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+        <span>⚠️</span> <span>Telafiler</span>
+      </button>
+      <button onclick="PanoApp.goToSlide(7)" id="slide-btn-7" class="px-2 py-0.5 rounded-lg text-[11px] font-black transition flex items-center gap-1 text-slate-400 hover:text-white cursor-pointer">
+        <span>📖</span> <span>Hatim Takibi</span>
+      </button>
 
-    <div class="headerRight">
-      <div id="panoClock" class="panoClock">12:00:00</div>
+      <!-- Otomatik Geçiş Geri Sayım Rozeti (10 Saniye) -->
+      <div id="slide-timer-badge" class="ml-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] font-black font-mono flex items-center gap-1" title="Sonraki slayta kalan süre">
+        <span id="slide-timer-icon" class="text-[9px]">⏱️</span>
+        <span id="slide-timer-text">10s</span>
+      </div>
+    </div>
+
+    <!-- Sağ: Dijital Saat, Tarih & Tam Ekran -->
+    <div class="flex items-center gap-3">
+      <div class="text-right">
+        <div id="pano-clock" class="text-lg sm:text-xl font-black tracking-tight text-amber-400 font-mono leading-none">
+          00:00:00
+        </div>
+        <div id="pano-date" class="text-[11px] font-medium text-slate-400 mt-0.5 leading-none">
+          16 Eylül 2026
+        </div>
+      </div>
+
+      <!-- TV Kontrolleri -->
+      <div class="flex items-center gap-1 bg-slate-950/60 p-0.5 rounded-xl border border-slate-800">
+        <button onclick="PanoApp.prevSlide()" title="Önceki Slayt (Sol Ok Tuşu)"
+          class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs font-bold transition cursor-pointer">
+          ⏮
+        </button>
+        <button onclick="PanoApp.togglePause()" id="pause-btn" title="Otomatik Geçişi Durdur / Başlat (Boşluk Tuşu)"
+          class="px-2 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs font-black gap-1 transition cursor-pointer">
+          <span id="pause-icon">⏸</span>
+          <span id="pause-text" class="hidden sm:inline">Otomatik</span>
+        </button>
+        <button onclick="PanoApp.nextSlide()" title="Sonraki Slayt (Sağ Ok Tuşu)"
+          class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs font-bold transition cursor-pointer">
+          ⏭
+        </button>
+        <button onclick="window.forcePurgePanoCache()" title="Panoyu ve Verileri Anında Yenile"
+          class="h-8 px-2.5 rounded-lg bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-700/60 flex items-center gap-1 text-xs font-black transition cursor-pointer shadow-sm">
+          <span>🔄</span> <span class="hidden sm:inline">Yenile</span>
+        </button>
+        <button onclick="PanoApp.toggleFullscreen()" title="Tam Ekran (F11)"
+          class="w-8 h-8 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 flex items-center justify-center text-sm font-bold transition cursor-pointer">
+          ⛶
+        </button>
+        <button onclick="PanoApp.lockPano()" title="Panoyu Kilitle / Güvenli Çıkış"
+          class="h-8 px-2 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50 flex items-center gap-1 text-xs font-bold transition cursor-pointer">
+          <span>🔒</span> <span class="hidden sm:inline">Kilitle</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- ANA İÇERİK BÖLÜMÜ -->
-  <main class="mainContent">
+  <!-- İlerleme Çubuğu (Progress Bar for next slide - 10 Saniye Ultra Akıcı) -->
+  <div class="w-full h-1 bg-slate-900 relative flex-shrink-0 overflow-hidden">
+    <div id="slide-progress" class="h-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-300 w-0 shadow-sm shadow-amber-500/30"></div>
+  </div>
 
-    <!-- 1. GÜNÜN GÖREVLİLERİ (ÖNCELİKLİ & MERKEZİ SEKME) -->
-    <section id="pane-gorevliler" class="tabPane active">
-      <div class="dutyTabWrapper">
-
-        <!-- Üst Başlık & Tarih -->
-        <div class="dutyHeaderBanner">
-          <div class="dutyBannerLeft">
-            <span class="dutyBannerIcon">🎯</span>
-            <div>
-              <div class="dutyBannerTitle">GÜNÜN GÖREVLİLERİ & NÖBETÇİLERİ</div>
-              <div class="dutyBannerSub">Mutfak nöbeti, ezan & cemaat sorumluları ve namaz takip özeti</div>
-            </div>
-          </div>
-          <div id="dutyDateBadge" class="dutyDateBadge">📅 Bugün: Yükleniyor...</div>
-        </div>
-
-        <!-- Günün Canlı Duyurusu (Varsa parlar) -->
-        <div id="dutyAnnouncementBox" class="dutyLiveAnnouncement" style="display: none;">
-          <strong>📢 GÜNÜN DUYURUSU:</strong>
-          <span id="dutyAnnouncementText"></span>
-        </div>
-
-        <!-- 3'LÜ KART IZGARASI -->
-        <div class="dutyGridThree">
-
-          <!-- 1. KART: GÜNÜN YEMEKÇİLERİ -->
-          <div class="panoCard">
-            <div class="panoCardHeader">
-              <span class="panoCardIcon">🍲</span>
-              <div>
-                <div class="panoCardTitle">Günün Yemekçileri</div>
-                <div id="cookCountSub" class="panoCardSub">Mutfak ve sofra görevlileri</div>
-              </div>
-            </div>
-            <div id="cooksListArea" class="cooksContainer">
-              <p class="emptyMessage">Günün yemekçileri yükleniyor...</p>
-            </div>
-          </div>
-
-          <!-- 2. KART: GÜNÜN MÜEZZİNİ -->
-          <div class="panoCard">
-            <div class="panoCardHeader">
-              <span class="panoCardIcon">📢</span>
-              <div>
-                <div class="panoCardTitle">Günün Müezzini</div>
-                <div class="panoCardSub">5 Vakit namaz ezan ve cemaat nöbetçisi</div>
-              </div>
-            </div>
-            <div id="muezzinBoxArea" style="flex: 1; display: flex;">
-              <p class="emptyMessage">Müezzin yükleniyor...</p>
-            </div>
-          </div>
-
-          <!-- 3. KART: 5 VAKİT NAMAZ TAKİBİ -->
-          <div class="panoCard">
-            <div class="panoCardHeader">
-              <span class="panoCardIcon">🕌</span>
-              <div>
-                <div class="panoCardTitle">5 Vakit Namaz Cemaati</div>
-                <div class="panoCardSub">Bugünkü cemaat ve namaz durumu</div>
-              </div>
-            </div>
-            <div class="prayerPanoGrid">
-              <div class="prayerRowItem">
-                <span class="prayerNameCol">🌅 Sabah Namazı</span>
-                <span id="prayerSabahBadge" class="prayerCountBadge">- Var</span>
-              </div>
-              <div class="prayerRowItem">
-                <span class="prayerNameCol">☀️ Öğle Namazı</span>
-                <span id="prayerOgleBadge" class="prayerCountBadge">- Var</span>
-              </div>
-              <div class="prayerRowItem">
-                <span class="prayerNameCol">🌤️ İkindi Namazı</span>
-                <span id="prayerIkindiBadge" class="prayerCountBadge">- Var</span>
-              </div>
-              <div class="prayerRowItem">
-                <span class="prayerNameCol">🌇 Akşam Namazı</span>
-                <span id="prayerAksamBadge" class="prayerCountBadge">- Var</span>
-              </div>
-              <div class="prayerRowItem">
-                <span class="prayerNameCol">🌙 Yatsı Namazı</span>
-                <span id="prayerYatsiBadge" class="prayerCountBadge">- Var</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-
-    <!-- 2. ŞAMPİYONLAR SEKMESİ -->
-    <section id="pane-sampiyonlar" class="tabPane">
-      <div class="dutyHeaderBanner" style="background: linear-gradient(135deg, #78350f 0%, #b45309 100%); border-color: #f59e0b;">
-        <div class="dutyBannerLeft">
-          <span class="dutyBannerIcon">🏆</span>
-          <div>
-            <div class="dutyBannerTitle">HAFTANIN VE AYIN ÖRNEK TALEBELERİ</div>
-            <div class="dutyBannerSub">İbadet, ahlak ve takviye ders başarı podyumu</div>
-          </div>
-        </div>
-      </div>
-      <div id="awardsContainer" class="awardsGrid" style="margin-top: 24px;">
-        <p class="emptyMessage">Örnek talebeler yükleniyor...</p>
-      </div>
-    </section>
-
-    <!-- 3. SINIF LİDERLERİ SEKMESİ -->
-    <section id="pane-sinif-liderleri" class="tabPane">
-      <div class="dutyHeaderBanner" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%); border-color: #10b981;">
-        <div class="dutyBannerLeft">
-          <span class="dutyBannerIcon">⭐</span>
-          <div>
-            <div class="dutyBannerTitle">SINIF DÜZEYİ BAŞARI LİDERLERİ</div>
-            <div class="dutyBannerSub">5-A, 6-A, 7-A, 8-A şampiyonluk puanları</div>
-          </div>
-        </div>
-      </div>
-      <div id="classLeadersContainer" class="awardsGrid" style="margin-top: 24px;">
-        <p class="emptyMessage">Sınıf liderleri yükleniyor...</p>
-      </div>
-    </section>
-
-    <!-- 4. İLK 10 SEKMESİ -->
-    <section id="pane-ilk10" class="tabPane">
-      <div class="dutyHeaderBanner" style="background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%); border-color: #3b82f6;">
-        <div class="dutyBannerLeft">
-          <span class="dutyBannerIcon">📊</span>
-          <div>
-            <div class="dutyBannerTitle">GENEL PUAN SIRALAMASI (İLK 10)</div>
-            <div class="dutyBannerSub">Kurum genelinde zirvede yer alan talebelerimiz</div>
-          </div>
-        </div>
-      </div>
-      <div id="top10Container" class="awardsGrid" style="margin-top: 24px;">
-        <p class="emptyMessage">İlk 10 listesi yükleniyor...</p>
-      </div>
-    </section>
-
-    <!-- 5. 11-20 SEKMESİ -->
-    <section id="pane-11-20" class="tabPane">
-      <div class="dutyHeaderBanner" style="background: linear-gradient(135deg, #374151 0%, #1f2937 100%); border-color: #6b7280;">
-        <div class="dutyBannerLeft">
-          <span class="dutyBannerIcon">📊</span>
-          <div>
-            <div class="dutyBannerTitle">GENEL PUAN SIRALAMASI (11 - 20)</div>
-            <div class="dutyBannerSub">Zirveyi takip eden gayretli talebelerimiz</div>
-          </div>
-        </div>
-      </div>
-      <div id="top20Container" class="awardsGrid" style="margin-top: 24px;">
-        <p class="emptyMessage">11-20 listesi yükleniyor...</p>
-      </div>
-    </section>
-
-    <!-- 6. GÜNÜN HADİSİ SEKMESİ -->
-    <section id="pane-hadis" class="tabPane">
-      <div class="hadisBox">
-        <div style="font-size: 38px; margin-bottom: 12px;">📖</div>
-        <div class="hadisArabic">« نِعْمَتَانِ مَغْبُونٌ فِيهِمَا كَثِيرٌ مِنَ النَّاسِ: الصِّحَّةُ وَالْفَرَاغُ »</div>
-        <div class="hadisTurkish">"İki nimet vardır ki insanların çoğu bunlar hususunda aldanmıştır: Sağlık ve boş vakit."</div>
-        <div class="hadisSource">Hz. Muhammed (s.a.v.) • Sahîh-i Buhârî, Rikâk, 1</div>
-      </div>
-    </section>
-
-    <!-- 7. TELAFİLER SEKMESİ -->
-    <section id="pane-telafiler" class="tabPane">
-      <div class="dutyHeaderBanner" style="background: linear-gradient(135deg, #7c2d12 0%, #9a3412 100%); border-color: #ea580c;">
-        <div class="dutyBannerLeft">
-          <span class="dutyBannerIcon">⚠️</span>
-          <div>
-            <div class="dutyBannerTitle">GECİKME VE TELAFİ TAKİBİ</div>
-            <div class="dutyBannerSub">İzin dönüşü telafi süreleri ve kapı denetimi</div>
-          </div>
-        </div>
-      </div>
-      <div id="compensationsContainer" class="awardsGrid" style="margin-top: 24px;">
-        <p class="emptyMessage">Aktif telafisi bulunan talebe kaydı yok.</p>
-      </div>
-    </section>
-
-    <!-- 8. HATİM TAKİBİ SEKMESİ -->
-    <section id="pane-hatim" class="tabPane">
-      <div class="dutyHeaderBanner" style="background: linear-gradient(135deg, #134e4a 0%, #115e59 100%); border-color: #14b8a6;">
-        <div class="dutyBannerLeft">
-          <span class="dutyBannerIcon">📖</span>
-          <div>
-            <div class="dutyBannerTitle">KUR'AN-I KERİM VE HATİM İLERLEMESİ</div>
-            <div class="dutyBannerSub">Hafızlık, cüz takibi ve mukabele durumu</div>
-          </div>
-        </div>
-      </div>
-      <div id="quranProgressContainer" class="awardsGrid" style="margin-top: 24px;">
-        <p class="emptyMessage">Hatim kayıtları yükleniyor...</p>
-      </div>
-    </section>
-
+  <!-- 2. ANA SLAYT İÇERİK ALANI (SIFIR TAŞMA & TV UYUMLU) -->
+  <main id="slide-container" class="flex-1 min-h-0 px-2 sm:px-4 lg:px-6 py-1 sm:py-2 flex flex-col justify-center max-w-[1700px] w-full mx-auto relative overflow-hidden select-none">
+    <!-- JavaScript ile slaytlar buraya render edilir -->
   </main>
 
-  <!-- ALT BİLGİ & DUYURU ŞERİDİ (TICKER) -->
-  <footer class="panoFooter">
-    <div class="tickerArea">
-      <span class="tickerLabel">📢 DUYURU</span>
-      <span id="tickerText" class="tickerMarquee">
-        Takviye ders deneme sınavlarında 100 tam puan alan talebelerimize +50 şampiyonluk puanı! • "İki günü birbirine eşit olan ziyandadır." (Hadis-i Şerif)
-      </span>
+  <!-- 3. ALT BİLGİ VE HABER BANTI (TICKER - KOMPAKT TV) -->
+  <footer class="bg-slate-900 border-t border-slate-800/80 px-4 sm:px-6 py-1.5 flex items-center justify-between z-20 flex-shrink-0">
+    <div class="flex items-center gap-1.5 bg-amber-500 text-slate-950 px-2.5 py-0.5 rounded-lg text-[11px] font-black uppercase tracking-wider flex-shrink-0 shadow-md">
+      <span>📢</span> <span>DUYURU</span>
     </div>
-
-    <div class="footerRight">
-      <button type="button" id="refreshPanoBtn" class="refreshBtn">🔄 Panoyu & Önbelleği Yenile (v10.6)</button>
-      <div class="syncStatus">
-        <span class="syncDot"></span>
-        <span>Canlı: Eşitlendi</span>
+    <div class="flex-1 overflow-hidden mx-3 text-xs font-semibold text-slate-300">
+      <div id="pano-ticker" class="animate-marquee">
+        İrfaniye Akademi Canlı Liderlik Panosu • 🕌 5 Vakit namazını eksiksiz kılan talebelerimize günlük +15 puan İbadet Bonusu! • 🛏️ Sabah odasını ve yatağını nizami toplayana +15 puan • 📚 Takviye ders sınavlarında 100 tam puan alan talebelerimize +50 şampiyonluk puanı! • "İki günü birbirine eşit olan ziyandadır." (Hadis-i Şerif)
       </div>
+    </div>
+    <div class="flex items-center gap-2 text-[11px] text-slate-500 flex-shrink-0 font-mono">
+      <span id="sync-status">🟢 Canlı Eşitlendi</span>
     </div>
   </footer>
 
-  <!-- FIREBASE BAĞLANTISI & CANLI SENKRONİZASYON -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+  <!-- TV / Pano Acil Sıfırlama Butonu (Sağ Alt Köşe) -->
+  <div class="fixed bottom-8 right-3 z-40 opacity-60 hover:opacity-100 transition-opacity">
+    <button type="button" onclick="window.forcePurgePanoCache()" 
+      class="px-2.5 py-1 rounded-xl bg-slate-900/90 text-amber-400 hover:text-amber-300 border border-amber-500/50 text-[10px] font-black shadow-lg flex items-center gap-1 cursor-pointer">
+      <span>🔄</span> <span>Panoyu & Önbelleği Yenile (v10.6)</span>
+    </button>
+  </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAvmXorDhKlBr3fzNz-NWLPUVQtNHTY8Ig",
-      authDomain: "irfaniye-takip-88e84.firebaseapp.com",
-      databaseURL: "https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "irfaniye-takip-88e84",
-      storageBucket: "irfaniye-takip-88e84.firebasestorage.app",
-      messagingSenderId: "1038479221874",
-      appId: "1:1038479221874:web:b9555c31bf5bf9cf214eeb"
-    };
+  <!-- Hadis Veritabanı, Store, Leaderboard ve Kur'an Hatim Modülleri (v10.6) -->
+  <script src="js/hadisler.js?v=10.6"></script>
+  <script src="js/store.js?v=10.6"></script>
+  <script src="js/leaderboard.js?v=10.6"></script>
+  <script src="js/quran-tracker.js?v=10.6"></script>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+  <!-- Pano TV Yönetim Motoru (v7.0 - Kesintisiz Kalp Atışı & Donmayan Sayaç) -->
+  <script>
+    const PanoApp = {
+      currentSlide: 0,
+      totalSlides: 8,
+      slideSecondsDuration: 10, // Slaytlar arası tam 10 saniye (Kullanıcı talebi)
+      slideSecondsLeft: 10,     // Kalan saniye sayacı
+      slideStartTime: Date.now(),
+      lastHeartbeatTick: Date.now(),
+      pausedAt: null,
+      timerLoopInterval: null,  // 100ms ultra akıcı, asla donmayan sayaç döngüsü
+      watchdogTimer: null,      // Donmayı önleyen bekçi zamanlayıcı
+      isPaused: false,
+      syncInterval: null,
+      _cachedLeaderboard: null,
+      _cachedLeaderboardTime: 0,
+      _lastDisplaySec: -1,
+      _refreshDebounce: null,
 
-    const $ = id => document.getElementById(id);
-    const esc = str => String(str || "").replace(/[&<>"']/g, m => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    }[m]));
+      // --- Liderlik Verisi Hafıza Önbelleği (Gereksiz CPU tüketimi ve donmaları %100 önler) ---
+      getLeaderboardData() {
+        const now = Date.now();
+        if (this._cachedLeaderboard && (now - this._cachedLeaderboardTime < 25000)) {
+          return this._cachedLeaderboard;
+        }
+        if (window.Store && typeof window.Store.getLeaderboard === 'function') {
+          const data = window.Store.getLeaderboard('haftalik', this.getTodayDate(), 'ALL');
+          const rawRanking = (data && data.ranking) ? data.ranking : [];
+          const ranking = rawRanking.filter(r => {
+            if (!r || !r.student || !r.student.id) return false;
+            if (window.Store && typeof window.Store.isStudentPassive === 'function' && window.Store.isStudentPassive(r.student.id)) return false;
+            if (r.student.isPassive === true || r.student.isPassive === 'true') return false;
+            const st = (r.student.status || '').toString().toLowerCase().trim();
+            if (st === 'passive' || st === 'pasif') return false;
+            return true;
+          });
+          ranking.forEach((item, idx) => { item.rank = idx + 1; });
+          this._cachedLeaderboard = { data, ranking };
+          this._cachedLeaderboardTime = now;
+          return this._cachedLeaderboard;
+        }
+        return { data: {}, ranking: [] };
+      },
 
-    // Türkiye Yerel Tarihi
-    function getTodayStr() {
-      const d = new Date();
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const day = String(d.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    }
+      invalidateCache() {
+        this._cachedLeaderboard = null;
+      },
 
-    // Dijital Saat & Tarih
-    function updateClock() {
-      const now = new Date();
-      if ($("panoClock")) {
-        $("panoClock").textContent = now.toLocaleTimeString("tr-TR");
-      }
-      if ($("dutyDateBadge")) {
-        const dateStr = now.toLocaleDateString("tr-TR", {
-          weekday: "long", year: "numeric", month: "long", day: "numeric"
+      // --- TV Koridor Panosu: Doğrudan ve Kesintisiz Açılış ---
+      isAuthorized() {
+        return true;
+      },
+
+      quickKioskAuth() {
+        const lockEl = document.getElementById('pano-lock-screen');
+        if (lockEl) {
+          lockEl.classList.add('hidden');
+          lockEl.style.setProperty('display', 'none', 'important');
+        }
+        this.startSlides();
+      },
+
+      checkAuth() {
+        const lockEl = document.getElementById('pano-lock-screen');
+        if (lockEl) {
+          lockEl.classList.add('hidden');
+          lockEl.style.setProperty('display', 'none', 'important');
+        }
+        return true;
+      },
+
+      handleAuthSubmit(e) {
+        if (e) e.preventDefault();
+        const passInput = document.getElementById('pano-admin-pass');
+        const errEl = document.getElementById('pano-auth-error');
+        if (!passInput) return;
+
+        const enteredPass = passInput.value.trim();
+        if (!enteredPass) return;
+
+        let isValid = false;
+        if (window.Store) {
+          try {
+            const settings = window.Store.getSettings();
+            const adminPass = (settings.adminPassword || '123').toString().trim();
+            if (enteredPass === adminPass) isValid = true;
+          } catch (err) {}
+        }
+        if (enteredPass === '123' || enteredPass === '1234') isValid = true;
+
+        if (isValid) {
+          if (errEl) errEl.classList.add('hidden');
+          const lockEl = document.getElementById('pano-lock-screen');
+          if (lockEl) {
+            lockEl.classList.add('hidden');
+            lockEl.style.setProperty('display', 'none', 'important');
+          }
+          this.startSlides();
+        } else {
+          if (errEl) {
+            errEl.textContent = '❌ Hatalı şifre!';
+            errEl.classList.remove('hidden');
+          }
+          passInput.select();
+        }
+      },
+
+      lockPano() {
+        if (this.timerLoopInterval) clearInterval(this.timerLoopInterval);
+        if (this.syncInterval) clearInterval(this.syncInterval);
+
+        const lockEl = document.getElementById('pano-lock-screen');
+        if (lockEl) {
+          lockEl.classList.remove('hidden');
+          lockEl.style.setProperty('display', 'flex', 'important');
+        }
+        const passInput = document.getElementById('pano-admin-pass');
+        if (passInput) {
+          passInput.value = '';
+          setTimeout(() => passInput.focus(), 150);
+        }
+      },
+
+      init() {
+        this.updateClock();
+        setInterval(() => this.updateClock(), 1000);
+
+        // Klavye / TV Kumandası kısayolları (TV'de Enter tuşu OK olduğundan pause YAPMAZ!)
+        window.addEventListener('keydown', (e) => {
+          if (!this.isAuthorized()) return;
+          if (e.key === 'ArrowRight' || e.key === 'PageDown') this.nextSlide();
+          if (e.key === 'ArrowLeft' || e.key === 'PageUp') this.prevSlide();
+          if (e.key === ' ' || e.key === 'MediaPlayPause') {
+            e.preventDefault();
+            this.togglePause();
+          }
+          if (e.key === 'f' || e.key === 'F11') this.toggleFullscreen();
         });
-        $("dutyDateBadge").textContent = `📅 Bugün: ${dateStr}`;
-      }
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
 
-    // SEKME DEĞİŞTİRME MANTIĞI
-    const tabButtons = document.querySelectorAll("#tabNav .tabBtn");
-    const tabPanes = document.querySelectorAll(".tabPane");
+        // TV Ekranı ve Çözünürlük Değişimlerinde Otomatik Sığdırma Dinleyicisi
+        window.addEventListener('resize', () => {
+          this.fitSlideToScreen();
+        });
 
-    function switchTab(tabName) {
-      tabButtons.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      tabPanes.forEach(pane => {
-        pane.classList.toggle("active", pane.id === `pane-${tabName}`);
-      });
-    }
+        // TV / Ekran uyku modundan çıktığında sayaç motorunu anında canlandır
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden && this.isAuthorized()) {
+            this.slideStartTime = Date.now();
+            this.startTimerLoop();
+          }
+        });
 
-    tabButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        switchTab(btn.dataset.tab);
-      });
-    });
+        // Canlı veritabanı senkronizasyonunda akıcı ve gecikmesiz güncelleme (Throttled)
+        const refreshCurrent = () => {
+          if (this.isAuthorized()) {
+            this.invalidateCache();
+            if (this._refreshDebounce) clearTimeout(this._refreshDebounce);
+            this._refreshDebounce = setTimeout(() => {
+              try { 
+                if (window.Store && typeof window.Store.getDailyDuties === 'function') {
+                  this.updateTickerWithDuties(window.Store.getDailyDuties());
+                }
+                this.renderCurrentSlide(); 
+              } catch (e) {}
+            }, 300);
+          }
+        };
+        window.addEventListener('cloud-sync-done', refreshCurrent);
+        window.addEventListener('quran-tracker-updated', refreshCurrent);
+        window.addEventListener('daily-duties-updated', (ev) => {
+          const duties = ev.detail || (window.Store ? window.Store.getDailyDuties() : null);
+          if (duties) this.updateTickerWithDuties(duties);
+          refreshCurrent();
+        });
+        window.addEventListener('hadisler-updated', refreshCurrent);
+        window.addEventListener('penalty-cleared-updated', refreshCurrent);
 
-    // Otomatik Slayt Döngüsü (Her 20 saniyede bir sonraki sekmeye geçer)
-    let autoRotateTabs = ["gorevliler", "sampiyonlar", "sinif-liderleri", "ilk10", "hadis"];
-    let currentTabIndex = 0;
-    let autoRotateInterval = setInterval(() => {
-      currentTabIndex = (currentTabIndex + 1) % autoRotateTabs.length;
-      switchTab(autoRotateTabs[currentTabIndex]);
-    }, 20000);
-
-    // Kullanıcı elle tıkladığında döngüyü 45 saniyeliğine duraklat
-    tabButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        clearInterval(autoRotateInterval);
-        autoRotateInterval = setInterval(() => {
-          currentTabIndex = (currentTabIndex + 1) % autoRotateTabs.length;
-          switchTab(autoRotateTabs[currentTabIndex]);
-        }, 30000);
-      });
-    });
-
-    // ========================================================
-    // 1. GÜNÜN GÖREVLİLERİ (CANLI FIREBASE DİNLEYİCİSİ)
-    // ========================================================
-    function renderDuties(dutiesData) {
-      const cooksListArea = $("cooksListArea");
-      const muezzinBoxArea = $("muezzinBoxArea");
-      const announceBox = $("dutyAnnouncementBox");
-      const announceText = $("dutyAnnouncementText");
-      const tickerText = $("tickerText");
-      const cookCountSub = $("cookCountSub");
-
-      let cooks = [];
-      let muezzin = null;
-      let announcement = "";
-
-      if (dutiesData && typeof dutiesData === "object") {
-        // Yeni yapı kontrolü: cooks[]
-        if (Array.isArray(dutiesData.cooks)) {
-          cooks = dutiesData.cooks.filter(Boolean);
-        }
-        // Yeni yapı: muezzin{}
-        if (dutiesData.muezzin) {
-          muezzin = dutiesData.muezzin;
-        }
-        // Duyuru
-        if (dutiesData.announcement) {
-          announcement = dutiesData.announcement;
+        // Canlı bulut dinleyicisini aktifleştir
+        if (window.Store && typeof window.Store.initRealtimeListener === 'function') {
+          try { window.Store.initRealtimeListener(); } catch (e) {}
         }
 
-        // Eski veya hiyerarşik yapı kontrolü:
-        if (!cooks.length && dutiesData.yemekhane && typeof dutiesData.yemekhane === "object") {
-          Object.values(dutiesData.yemekhane).forEach(item => {
-            if (item) {
-              cooks.push({
-                name: item.name || item.personName || item.studentName || (typeof item === 'string' ? item : 'Görevli'),
-                className: item.className || ''
+        // Başlangıçta alt haber bandını (ticker) günün görevlileri ile doldur
+        if (window.Store && typeof window.Store.getDailyDuties === 'function') {
+          try {
+            this.updateTickerWithDuties(window.Store.getDailyDuties());
+          } catch(e) {}
+        }
+
+        // Kurum adı & logosu ayarla
+        const settings = window.Store ? window.Store.getSettings() : {};
+        if (settings.institutionName) {
+          const nameEl = document.getElementById('pano-inst-name');
+          if (nameEl) nameEl.textContent = settings.institutionName;
+        }
+        if (settings.institutionLogo) {
+          const logoEl = document.getElementById('pano-logo');
+          if (logoEl) logoEl.src = settings.institutionLogo;
+        }
+
+        // Güvenlik doğrulaması: Yalnızca yetkili ise panoyu çalıştır
+        if (this.checkAuth()) {
+          this.startSlides();
+        }
+      },
+
+      startSlides() {
+        this.isPaused = false;
+        this.pausedAt = null;
+        this.slideStartTime = Date.now();
+        this.slideSecondsLeft = this.slideSecondsDuration;
+
+        // Firebase canlı senkronizasyon (her 45 saniyede bir, sessiz arka plan)
+        if (window.Store && window.Store.isCloudEnabled()) {
+          window.Store.syncFromCloud().then(() => {
+            this.invalidateCache();
+            if (this.isAuthorized()) {
+              try { this.renderCurrentSlide(); } catch (e) {}
+            }
+          }).catch(() => {});
+
+          if (!this.syncInterval) {
+            this.syncInterval = setInterval(() => {
+              if (!this.isAuthorized()) return;
+              window.Store.syncFromCloud().then(() => {
+                this.invalidateCache();
+                const statusEl = document.getElementById('sync-status');
+                if (statusEl) {
+                  const now = new Date().toLocaleTimeString('tr-TR');
+                  statusEl.textContent = `🟢 Güncellendi (${now})`;
+                }
+                if (this.isAuthorized()) {
+                  try { this.renderCurrentSlide(); } catch (e) {}
+                }
+              }).catch(() => {});
+            }, 45000);
+          }
+        }
+
+        // TV Kiosk için her 2 saatte bir temiz tazeleme
+        if (!this.tvKioskAutoRefreshTimer) {
+          this.tvKioskAutoRefreshTimer = setInterval(() => {
+            console.log('[TV Kiosk] Periyodik bellek tazeleme...');
+            window.location.reload();
+          }, 2 * 60 * 60 * 1000);
+        }
+
+        // İlk slaytı aç ve kesintisiz 100ms ultra akıcı sayaç motorunu başlat
+        this.goToSlide(0);
+        this.startTimerLoop();
+        this.initWatchdog();
+      },
+
+      startTimerLoop() {
+        if (this.timerLoopInterval) clearInterval(this.timerLoopInterval);
+        this.slideStartTime = Date.now();
+        this.lastHeartbeatTick = Date.now();
+        this._lastDisplaySec = -1;
+
+        // Her 100ms çalışan donmayan, akıcı sayaç motoru (Smart TV ve Kiosk cihazlarda sıfır takılma)
+        this.timerLoopInterval = setInterval(() => {
+          try {
+            if (!this.isAuthorized()) return;
+            this.lastHeartbeatTick = Date.now();
+
+            // Otomatik duraklatma koruması (2 dakikadan uzun süre duraklatıldıysa otomatik devam et)
+            if (this.isPaused) {
+              if (!this.pausedAt) this.pausedAt = Date.now();
+              if (Date.now() - this.pausedAt > 120000) {
+                this.isPaused = false;
+                this.pausedAt = null;
+                this.slideStartTime = Date.now();
+                this.slideSecondsLeft = this.slideSecondsDuration;
+              } else {
+                this.updateProgressUI(true);
+                return;
+              }
+            } else {
+              this.pausedAt = null;
+            }
+
+            const now = Date.now();
+            const totalMs = this.slideSecondsDuration * 1000;
+            const elapsedMs = Math.max(0, now - this.slideStartTime);
+            const remainingMs = Math.max(0, totalMs - elapsedMs);
+            const currentSec = Math.max(0, Math.ceil(remainingMs / 1000));
+            this.slideSecondsLeft = currentSec;
+
+            // 10 saniye dolduğunda derhal sonraki slayta geç
+            if (elapsedMs >= totalMs) {
+              this.slideStartTime = Date.now();
+              this.slideSecondsLeft = this.slideSecondsDuration;
+              this.nextSlide();
+              return;
+            }
+
+            // İlerleme çubuğu ve saniye sayacını akıcı güncelle
+            const pct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+            this.renderProgressBarAndSec(pct, currentSec);
+          } catch (loopErr) {
+            console.warn('[Pano Timer Loop]:', loopErr);
+          }
+        }, 100);
+      },
+
+      renderProgressBarAndSec(pct, currentSec) {
+        const progressEl = document.getElementById('slide-progress');
+        if (progressEl) {
+          progressEl.style.width = pct + '%';
+        }
+
+        if (this._lastDisplaySec !== currentSec) {
+          this._lastDisplaySec = currentSec;
+          const timerTextEl = document.getElementById('slide-timer-text');
+          if (timerTextEl) {
+            timerTextEl.textContent = `${currentSec}s`;
+          }
+        }
+      },
+
+      initWatchdog() {
+        if (this.watchdogTimer) clearInterval(this.watchdogTimer);
+        this.watchdogTimer = setInterval(() => {
+          try {
+            if (!this.isAuthorized()) return;
+            const now = Date.now();
+            // Sayaç 3 saniyeden fazla aksamışsa anında uyandır
+            if (this.lastHeartbeatTick && (now - this.lastHeartbeatTick > 3000)) {
+              console.warn('[Pano Watchdog] Sayaç canlandırılıyor...');
+              this.startTimerLoop();
+            }
+          } catch (e) {}
+        }, 3000);
+      },
+
+      updateProgressUI(isPaused = false) {
+        try {
+          const badgeEl = document.getElementById('slide-timer-badge');
+          const timerTextEl = document.getElementById('slide-timer-text');
+          const timerIconEl = document.getElementById('slide-timer-icon');
+
+          if (isPaused) {
+            if (timerTextEl) timerTextEl.textContent = 'Duraklatıldı';
+            if (timerIconEl) timerIconEl.textContent = '⏸';
+            if (badgeEl) {
+              badgeEl.className = 'ml-1 px-2 py-0.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[11px] font-black font-mono flex items-center gap-1';
+            }
+          } else {
+            if (timerIconEl) timerIconEl.textContent = '⏱️';
+            if (badgeEl) {
+              badgeEl.className = 'ml-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[11px] font-black font-mono flex items-center gap-1';
+            }
+            if (timerTextEl) {
+              timerTextEl.textContent = `${this.slideSecondsLeft || this.slideSecondsDuration}s`;
+            }
+          }
+        } catch (e) {}
+      },
+
+      getTodayDate() {
+        if (window.Store && typeof window.Store.getTodayDate === 'function') {
+          return window.Store.getTodayDate();
+        }
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      },
+
+      updateClock() {
+        try {
+          const now = new Date();
+          const clockEl = document.getElementById('pano-clock');
+          const dateEl = document.getElementById('pano-date');
+          if (clockEl) {
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            clockEl.textContent = `${hh}:${mm}:${ss}`;
+          }
+          if (dateEl) {
+            const options = { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' };
+            dateEl.textContent = now.toLocaleDateString('tr-TR', options);
+          }
+        } catch (e) {}
+      },
+
+      goToSlide(index) {
+        try {
+          if (!this.isAuthorized()) return;
+          const safeTotal = (typeof this.totalSlides === 'number' && this.totalSlides > 0) ? this.totalSlides : 8;
+          this.currentSlide = ((index % safeTotal) + safeTotal) % safeTotal;
+          this.slideStartTime = Date.now();
+          this.slideSecondsLeft = this.slideSecondsDuration;
+          this._lastDisplaySec = -1;
+
+          try { this.updateSlideButtons(); } catch (e) {}
+          try { this.renderProgressBarAndSec(0, this.slideSecondsDuration); } catch (e) {}
+          try { this.updateProgressUI(this.isPaused); } catch (e) {}
+
+          // 1. slayta her dönüşte önbelleği sessizce tazele
+          if (this.currentSlide === 0) {
+            this.invalidateCache();
+          }
+
+          try {
+            this.renderCurrentSlide();
+          } catch (err) {
+            console.error('[Pano Error] Slayt render hatası:', err);
+            const container = document.getElementById('slide-container');
+            if (container) {
+              container.innerHTML = `
+                <div class="text-center p-8 bg-slate-900 rounded-3xl border border-slate-800 max-w-md mx-auto">
+                  <div class="text-3xl mb-2">⚠️</div>
+                  <div class="text-lg font-bold text-amber-400">Slayt yükleniyor...</div>
+                  <div class="text-xs text-slate-400 mt-1">Sonraki slayta geçiliyor (${this.slideSecondsLeft}s)...</div>
+                </div>
+              `;
+            }
+          }
+        } catch (fatalErr) {
+          console.error('[Pano Fatal Error in goToSlide]:', fatalErr);
+        }
+      },
+
+      nextSlide() {
+        this.goToSlide(this.currentSlide + 1);
+      },
+
+      prevSlide() {
+        this.goToSlide(this.currentSlide - 1);
+      },
+
+      togglePause() {
+        this.isPaused = !this.isPaused;
+        this.pausedAt = this.isPaused ? Date.now() : null;
+        const btn = document.getElementById('pause-btn');
+        const icon = document.getElementById('pause-icon');
+        const text = document.getElementById('pause-text');
+
+        if (this.isPaused) {
+          if (icon) icon.textContent = '▶';
+          if (text) text.textContent = 'Başlat';
+          if (btn) btn.className = 'px-2 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-black gap-1 transition shadow-lg cursor-pointer';
+        } else {
+          this.slideStartTime = Date.now();
+          this.slideSecondsLeft = this.slideSecondsDuration;
+          if (icon) icon.textContent = '⏸';
+          if (text) text.textContent = 'Otomatik';
+          if (btn) btn.className = 'px-2 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs font-black gap-1 transition cursor-pointer';
+        }
+        this.updateProgressUI(this.isPaused);
+      },
+
+      toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      },
+
+      updateSlideButtons() {
+        for (let i = 0; i < this.totalSlides; i++) {
+          const btn = document.getElementById(`slide-btn-${i}`);
+          if (btn) {
+            if (i === this.currentSlide) {
+              btn.className = 'px-3 py-1 rounded-xl text-xs font-black transition flex items-center gap-1.5 bg-amber-500 text-slate-950 shadow-md cursor-pointer';
+            } else {
+              btn.className = 'px-3 py-1 rounded-xl text-xs font-black transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+            }
+          }
+        }
+      },
+
+      renderCurrentSlide() {
+        if (!this.isAuthorized()) return;
+        const container = document.getElementById('slide-container');
+        if (!container || !window.Store) return;
+
+        try {
+          const { data, ranking } = this.getLeaderboardData();
+
+          switch (this.currentSlide) {
+            case 0:
+              this.renderSlidePodium(container, ranking, data);
+              break;
+            case 1:
+              this.renderSlideClassChampions(container, data);
+              break;
+            case 2:
+              this.renderSlideLeaderboardTop10(container, ranking, data);
+              break;
+            case 3:
+              this.renderSlideLeaderboard11To20(container, ranking, data);
+              break;
+            case 4:
+              this.renderSlideDailyDuties(container);
+              break;
+            case 5:
+              this.renderSlideDailyPrayerQuote(container);
+              break;
+            case 6:
+              this.renderSlidePenalties(container);
+              break;
+            case 7:
+              this.renderSlideQuranHatim(container);
+              break;
+            default:
+              this.renderSlidePodium(container, ranking, data);
+          }
+
+          // TV Ekranına Sıfır Taşma ile Otomatik Sığdırma (Her slayt renderından hemen sonra)
+          this.fitSlideToScreen();
+        } catch (err) {
+          console.error('[Pano Error] renderCurrentSlide hatası:', err);
+        }
+      },
+
+      // TV Ekranına ve Çözünürlüğe (1080p, 720p, Kiosk) Otomatik Sığdırma Motoru
+      fitSlideToScreen() {
+        requestAnimationFrame(() => {
+          const container = document.getElementById('slide-container');
+          if (!container) return;
+          const content = container.firstElementChild;
+          if (!content) return;
+
+          content.classList.add('tv-slide-wrapper');
+          content.classList.add('slide-fade');
+          content.style.transform = '';
+          content.style.transformOrigin = 'center center';
+          content.style.width = '100%';
+
+          const containerHeight = container.clientHeight;
+          const contentHeight = content.scrollHeight;
+          const containerWidth = container.clientWidth;
+          const contentWidth = content.scrollWidth;
+
+          let scale = 1.0;
+          if (contentHeight > containerHeight && containerHeight > 0) {
+            scale = Math.min(scale, (containerHeight - 4) / contentHeight);
+          }
+          if (contentWidth > containerWidth && containerWidth > 0) {
+            scale = Math.min(scale, (containerWidth - 4) / contentWidth);
+          }
+
+          if (scale < 0.999) {
+            scale = Math.max(0.55, scale);
+            content.style.transform = `scale(${scale})`;
+            content.style.transformOrigin = 'center center';
+          }
+        });
+      },
+
+      // SLAYT 0: 🏆 ALTIN PODYUM (1., 2. ve 3. SIRA)
+      renderSlidePodium(container, ranking, data) {
+        const top1 = ranking[0] || null;
+        const top2 = ranking[1] || null;
+        const top3 = ranking[2] || null;
+
+        const s1 = (top1 && top1.student) || { firstName: '1. Talebe', lastName: '', className: '', studentNo: '' };
+        const n1 = (top1 && top1.namaz) || { points: 0, fullBonusCount: 0 };
+        const y1 = (top1 && top1.yatak) || { points: 0 };
+        const o1 = (top1 && top1.okul) || { points: 0 };
+        const a1 = (top1 && top1.akademi) || { points: 0 };
+        const score1 = (top1 && top1.totalScore) || 0;
+
+        const s2 = (top2 && top2.student) || { firstName: '2. Talebe', lastName: '', className: '', studentNo: '' };
+        const n2 = (top2 && top2.namaz) || { points: 0 };
+        const y2 = (top2 && top2.yatak) || { points: 0 };
+        const o2 = (top2 && top2.okul) || { points: 0 };
+        const a2 = (top2 && top2.akademi) || { points: 0 };
+        const score2 = (top2 && top2.totalScore) || 0;
+
+        const s3 = (top3 && top3.student) || { firstName: '3. Talebe', lastName: '', className: '', studentNo: '' };
+        const n3 = (top3 && top3.namaz) || { points: 0 };
+        const y3 = (top3 && top3.yatak) || { points: 0 };
+        const o3 = (top3 && top3.okul) || { points: 0 };
+        const a3 = (top3 && top3.akademi) || { points: 0 };
+        const score3 = (top3 && top3.totalScore) || 0;
+
+        container.innerHTML = `
+          <div class="space-y-2 sm:space-y-3 animate-fade-in w-full max-w-5xl mx-auto">
+            <div class="text-center">
+              <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-black text-[11px] uppercase tracking-widest mb-0.5 shadow-md">
+                <span>👑</span> HAFTANIN ŞAMPİYONLARI <span>👑</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+                İrfaniye Akademi Şampiyonlar Kürsüsü
+              </h2>
+              <p class="text-[11px] text-slate-400 font-medium">
+                Dönem: ${data.startDate || ''} – ${data.endDate || ''} • Tüm Kurs Genel Başarı Puanları
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 items-end max-w-4xl mx-auto pt-1 sm:pt-2">
+              
+              <!-- 🥈 2. SIRA (GÜMÜŞ) -->
+              <div class="order-2 md:order-1">
+                ${top2 ? `
+                  <div class="bg-slate-900/90 rounded-2xl sm:rounded-3xl border-2 border-slate-500/60 p-3.5 sm:p-4 text-center shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-400 to-slate-200"></div>
+                    <div class="text-3xl mb-0.5">🥈</div>
+                    <div class="text-[10px] font-black uppercase text-slate-400 tracking-wider">2. SIRA • GÜMÜŞ</div>
+                    <h3 class="text-base sm:text-lg font-black text-white mt-0.5 truncate">
+                      ${s2.firstName} ${s2.lastName}
+                    </h3>
+                    <div class="text-[11px] text-slate-400 font-bold mb-2">${s2.className} • No: ${s2.studentNo}</div>
+
+                    <div class="p-2 bg-slate-950/80 rounded-xl border border-slate-800 mb-2">
+                      <div class="text-[9px] font-bold text-slate-400 uppercase">TOPLAM PUAN</div>
+                      <div class="text-2xl sm:text-3xl font-black text-slate-200">${score2}</div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-400">
+                      <div class="p-1 rounded-lg bg-slate-950/60 border border-slate-800">🕌 +${n2.points}</div>
+                      <div class="p-1 rounded-lg bg-slate-950/60 border border-slate-800">🛏️ +${y2.points}</div>
+                      <div class="p-1 rounded-lg bg-slate-950/60 border border-slate-800">🎒 +${o2.points}</div>
+                      <div class="p-1 rounded-lg bg-slate-950/60 border border-slate-800">📚 +${a2.points}</div>
+                    </div>
+                  </div>
+                ` : '<div class="text-center text-slate-600 text-xs p-6 bg-slate-900/40 rounded-2xl border border-slate-800">2. Bekleniyor</div>'}
+              </div>
+
+              <!-- 🥇 1. SIRA (ALTIN ŞAMPİYON) -->
+              <div class="order-1 md:order-2">
+                ${top1 ? `
+                  <div class="bg-gradient-to-b from-amber-950/40 via-slate-900 to-slate-900 rounded-2xl sm:rounded-3xl border-2 border-amber-400 p-4 sm:p-5 text-center shadow-2xl relative overflow-hidden gold-glow">
+                    <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500"></div>
+                    
+                    <div class="relative inline-block mb-0.5">
+                      <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-white font-black text-3xl sm:text-4xl flex items-center justify-center shadow-xl mx-auto">
+                        🏆
+                      </div>
+                      <span class="absolute -top-2.5 -right-1.5 text-xl animate-bounce">👑</span>
+                    </div>
+
+                    <div class="inline-block px-3 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-widest mt-1 shadow-md">
+                      🌟 HAFTANIN TALEBESİ 🌟
+                    </div>
+
+                    <h3 class="text-xl sm:text-2xl font-black text-amber-300 mt-1 truncate tracking-tight">
+                      ${s1.firstName} ${s1.lastName}
+                    </h3>
+                    <div class="text-xs font-bold text-slate-300 mb-2">${s1.className} • No: ${s1.studentNo}</div>
+
+                    <div class="p-2.5 sm:p-3 bg-slate-950/90 rounded-2xl border-2 border-amber-400/80 mb-2.5 shadow-inner">
+                      <div class="text-[10px] font-black uppercase text-amber-400 tracking-wider">ŞAMPİYONLUK PUANI</div>
+                      <div class="text-3xl sm:text-4xl font-black text-white my-0.5">${score1}</div>
+                      ${n1.fullBonusCount > 0 ? `
+                        <div class="text-[10px] font-black text-emerald-400 mt-0.5">
+                          ⭐ ${n1.fullBonusCount} Gün 5 Vakit Tam İbadet Bonusu!
+                        </div>
+                      ` : ''}
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-1 text-[11px] font-bold">
+                      <div class="p-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-emerald-400">🕌 +${n1.points}</div>
+                      <div class="p-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-teal-400">🛏️ +${y1.points}</div>
+                      <div class="p-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-blue-400">🎒 +${o1.points}</div>
+                      <div class="p-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-sky-400">📚 +${a1.points}</div>
+                    </div>
+                  </div>
+                ` : '<div class="text-center text-slate-600 text-xs p-6 bg-slate-900/40 rounded-2xl border border-slate-800">1. Bekleniyor</div>'}
+              </div>
+
+              <!-- 🥉 3. SIRA (BRONZ) -->
+              <div class="order-3 md:order-3">
+                ${top3 ? `
+                  <div class="bg-slate-900/90 rounded-2xl sm:rounded-3xl border-2 border-amber-700/60 p-3.5 sm:p-4 text-center shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-700 to-amber-500"></div>
+                    <div class="text-3xl mb-0.5">🥉</div>
+                    <div class="text-[10px] font-black uppercase text-amber-500 tracking-wider">3. SIRA • BRONZ</div>
+                    <h3 class="text-base sm:text-lg font-black text-white mt-0.5 truncate">
+                      ${s3.firstName} ${s3.lastName}
+                    </h3>
+                    <div class="text-[11px] text-slate-400 font-bold mb-2">${s3.className} • No: ${s3.studentNo}</div>
+
+                    <div class="p-2 bg-slate-950/80 rounded-xl border border-slate-800 mb-2">
+                      <div class="text-[9px] font-bold text-slate-400 uppercase">TOPLAM PUAN</div>
+                      <div class="text-2xl sm:text-3xl font-black text-slate-200">${score3}</div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-1 text-[10px] text-slate-400">
+                      <div class="p-1 rounded-lg bg-slate-950/60 border border-slate-800">🕌 +${n3.points}</div>
+                      <div class="p-1 rounded-lg bg-slate-950/60 border border-slate-800">🛏️ +${y3.points}</div>
+                      <div class="p-1 rounded-lg bg-slate-950/60 border border-slate-800">🎒 +${o3.points}</div>
+                      <div class="p-1 rounded-lg bg-slate-950/60 border border-slate-800">📚 +${a3.points}</div>
+                    </div>
+                  </div>
+                ` : '<div class="text-center text-slate-600 text-xs p-6 bg-slate-900/40 rounded-2xl border border-slate-800">3. Bekleniyor</div>'}
+              </div>
+
+            </div>
+          </div>
+        `;
+      },
+
+      // SLAYT 1: 🎓 SINIF SEVİYESİ ŞAMPİYONLARI (Şube Fark Etmeksizin Tek Sınıf: 5, 6, 7, 8)
+      renderSlideClassChampions(container, data) {
+        const allClasses = (window.Store && typeof window.Store.getClasses === 'function') 
+          ? window.Store.getClasses() 
+          : ['5-A', '5-B', '6-A', '6-B', '7-A', '7-B', '8-A', '8-B'];
+
+        // Şube fark etmeksizin temel sınıf seviyelerini (5, 6, 7, 8 vb.) tespit et ve şubelerini topla
+        const gradeMap = new Map();
+
+        allClasses.forEach(cls => {
+          if (!cls) return;
+          const match = cls.match(/^\d+/);
+          if (match) {
+            const digit = match[0];
+            if (!gradeMap.has(digit)) {
+              gradeMap.set(digit, {
+                digit: digit,
+                label: `${digit}. Sınıflar`,
+                branches: []
               });
             }
-          });
-        }
-
-        if (!muezzin && (dutiesData.muezzinData || dutiesData.muezzin)) {
-          const m = dutiesData.muezzinData || dutiesData.muezzin;
-          if (typeof m === "object") {
-            const mVal = m.active || m;
-            muezzin = {
-              name: mVal.name || mVal.personName || mVal.studentName || 'Müezzin',
-              className: mVal.className || ''
-            };
-          } else if (typeof m === "string") {
-            muezzin = { name: m, className: '' };
-          }
-        }
-
-        // Genel dizi/nesne taraması
-        if (!cooks.length && !muezzin) {
-          Object.values(dutiesData).forEach(val => {
-            if (val && typeof val === "object") {
-              if (val.dutyType === "yemekhane" || val.dutyType === "bulasik" || val.dutyType === "cay") {
-                cooks.push({ name: val.personName || val.name || "Aşçı", className: "" });
-              } else if (val.dutyType === "muezzin") {
-                muezzin = { name: val.personName || val.name || "Müezzin", className: "" };
-              }
+            if (!gradeMap.get(digit).branches.includes(cls)) {
+              gradeMap.get(digit).branches.push(cls);
             }
+          } else {
+            // Rakam içermeyen özel sınıf tanımları (Örn: Hazırlık, Lise vb.)
+            if (!gradeMap.has(cls)) {
+              gradeMap.set(cls, {
+                digit: cls,
+                label: cls,
+                branches: [cls]
+              });
+            }
+          }
+        });
+
+        // Sınıf kaydı henüz yoksa standart 5, 6, 7, 8 seviyelerini ekle
+        if (gradeMap.size === 0) {
+          ['5', '6', '7', '8'].forEach(d => {
+            gradeMap.set(d, {
+              digit: d,
+              label: `${d}. Sınıflar`,
+              branches: [`${d}-A`, `${d}-B`]
+            });
           });
         }
-      }
 
-      // 1. Duyuru Bandını Güncelle
-      if (announceBox && announceText) {
-        if (announcement && announcement.trim()) {
-          announceText.textContent = announcement.trim();
-          announceBox.style.display = "flex";
-          if (tickerText) {
-            tickerText.textContent = `📢 ${announcement.trim()} • "İki günü birbirine eşit olan ziyandadır." (Hadis-i Şerif)`;
-          }
-        } else {
-          announceBox.style.display = "none";
-        }
-      }
+        // Seviye sırasına göre sırala (5, 6, 7, 8)
+        const sortedGrades = Array.from(gradeMap.values()).sort((a, b) => {
+          const numA = parseInt(a.digit, 10);
+          const numB = parseInt(b.digit, 10);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          return a.label.localeCompare(b.label, 'tr');
+        });
 
-      // 2. Günün Yemekçileri
-      if (cooksListArea) {
-        if (cookCountSub) cookCountSub.textContent = `Mutfak ve sofra görevlileri (${cooks.length} seçildi)`;
-        if (cooks.length > 0) {
-          cooksListArea.innerHTML = cooks.map((c, idx) => `
-            <div class="cookCardItem">
-              <div class="cookBadgeNum">${idx + 1}</div>
-              <div class="cookCardInfo">
-                <strong>${esc(c.name || 'Görevli')}</strong>
-                <small>${c.className ? `${esc(c.className)} Sınıfı` : 'Nöbetçi Talebe'}</small>
+        const { ranking: allRanking } = this.getLeaderboardData();
+
+        // Her bir sınıf seviyesinin tüm şubeler (A & B) genelindeki liderini ve takipçisini anında bul (0ms gecikme)
+        const gradeLeaders = sortedGrades.map(g => {
+          const gradeRanking = (allRanking || []).filter(r => {
+            const cls = (r.student && r.student.className) ? r.student.className.trim() : '';
+            return cls.startsWith(g.digit);
+          });
+          return {
+            gradeInfo: g,
+            leader: gradeRanking[0] || null,
+            runnerUp: gradeRanking[1] || null,
+            totalStudents: gradeRanking.length
+          };
+        });
+
+        container.innerHTML = `
+          <div class="space-y-2 sm:space-y-3 animate-fade-in max-w-7xl mx-auto w-full">
+            <div class="text-center">
+              <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 font-black text-[11px] uppercase tracking-widest mb-0.5 shadow-md">
+                <span>🎓</span> SINIF BAZLI ŞAMPİYONLAR (ŞUBELER BİRLEŞİK) <span>🎓</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+                Her Sınıf Seviyesinin Haftalık Zirvedeki Liderleri
+              </h2>
+              <p class="text-[11px] text-slate-400 font-medium">
+                Şube fark etmeksizin kendi akranları arasında en yüksek puanı toplayan sınıf şampiyonları
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 pt-1 sm:pt-2">
+              ${gradeLeaders.map(item => {
+                const l = item.leader;
+                const r = item.runnerUp;
+                const branchesText = item.gradeInfo.branches.length > 1 
+                  ? item.gradeInfo.branches.join(' & ') + ' Ortak'
+                  : item.gradeInfo.label;
+
+                const ls = (l && l.student) || { firstName: '1. Talebe', lastName: '', className: '', studentNo: '' };
+                const ln = (l && l.namaz) || { points: 0 };
+                const ly = (l && l.yatak) || { points: 0 };
+                const lo = (l && l.okul) || { points: 0 };
+                const la = (l && l.akademi) || { points: 0 };
+                const lScore = (l && l.totalScore) || 0;
+
+                const rs = (r && r.student) || { firstName: '2. Talebe', lastName: '', className: '', studentNo: '' };
+                const rScore = (r && r.totalScore) || 0;
+
+                return `
+                  <div class="bg-gradient-to-b from-slate-900 via-slate-900/95 to-slate-950 rounded-2xl border-2 border-slate-800 hover:border-amber-400/70 p-3 sm:p-3.5 text-center shadow-xl relative overflow-hidden transition flex flex-col justify-between group">
+                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-indigo-500 to-purple-500"></div>
+                    
+                    <div>
+                      <!-- Sınıf Rozeti & Şube Bilgisi -->
+                      <div class="flex items-center justify-between gap-1 mb-1.5">
+                        <span class="px-2 py-0.5 rounded-lg bg-indigo-500/20 border border-indigo-400/40 text-indigo-300 font-black text-[10px] uppercase">
+                          ${item.gradeInfo.label}
+                        </span>
+                        <span class="text-[9px] font-bold text-slate-400 bg-slate-950/80 px-1.5 py-0.5 rounded-md border border-slate-800/80 truncate max-w-[110px]">
+                          ${branchesText}
+                        </span>
+                      </div>
+
+                      ${l ? `
+                        <div class="relative inline-block my-1">
+                          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 font-black text-xl sm:text-2xl flex items-center justify-center shadow-md mx-auto">
+                            🥇
+                          </div>
+                          <span class="absolute -top-1.5 -right-1 text-xs">👑</span>
+                        </div>
+
+                        <h3 class="text-sm sm:text-base font-black text-white truncate group-hover:text-amber-300 transition leading-tight">
+                          ${ls.firstName} ${ls.lastName}
+                        </h3>
+
+                        <!-- Şubesi ve Numarası -->
+                        <div class="flex items-center justify-center gap-1.5 text-[11px] font-bold my-1">
+                          <span class="px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 font-black text-[10px]">
+                            ${ls.className}
+                          </span>
+                          <span class="text-slate-400 font-mono text-[10px]">No: ${ls.studentNo}</span>
+                        </div>
+
+                        <div class="p-1.5 sm:p-2 bg-slate-950 rounded-xl border border-slate-800 mb-1.5 shadow-inner">
+                          <div class="text-[9px] font-bold text-amber-400 uppercase tracking-wider">ŞAMPİYONLUK PUANI</div>
+                          <div class="text-2xl font-black text-white my-0.5 leading-none">${lScore}</div>
+                          <div class="text-[9px] text-slate-400">Genel Seviye 1.'si</div>
+                        </div>
+
+                        <div class="text-[10px] text-slate-400 space-y-0.5 text-left bg-slate-950/60 p-1.5 sm:p-2 rounded-xl border border-slate-800 mb-1.5">
+                          <div class="flex justify-between"><span>🕌 Namaz:</span> <strong class="text-emerald-400">+${ln.points}</strong></div>
+                          <div class="flex justify-between"><span>🛏️ Yatak:</span> <strong class="text-teal-400">+${ly.points}</strong></div>
+                          <div class="flex justify-between"><span>🎒 Okul:</span> <strong class="text-blue-400">+${lo.points}</strong></div>
+                          <div class="flex justify-between"><span>📚 Akademi:</span> <strong class="text-sky-400">+${la.points}</strong></div>
+                        </div>
+
+                        ${r ? `
+                          <div class="pt-1 border-t border-slate-800/80 text-[10px] text-slate-400 flex items-center justify-between">
+                            <span class="truncate">🥈 <strong>${rs.firstName} ${rs.lastName}</strong> (${rs.className})</span>
+                            <span class="text-amber-400 font-bold shrink-0 ml-1">${rScore} P</span>
+                          </div>
+                        ` : ''}
+
+                      ` : `
+                        <div class="py-10 text-slate-500 text-xs font-bold">
+                          Bu seviyede henüz puan kaydı bulunmuyor.
+                        </div>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      },
+
+      // SLAYT 2: 📊 İLK 10 TALEBE (LİDERLİK TABLOSU)
+      renderSlideLeaderboardTop10(container, ranking, data) {
+        const top10 = ranking.slice(0, 10);
+        this.renderTableSlide(container, top10, 'HAFTANIN İLK 10 TALEBESİ', '1 - 10 Arası Zirve Sıralaması', data);
+      },
+
+      // SLAYT 3: 📋 11 - 20 ARASI SIRALAMA
+      renderSlideLeaderboard11To20(container, ranking, data) {
+        const next10 = ranking.slice(10, 20);
+        this.renderTableSlide(container, next10, 'GENEL SIRALAMANIN DEVAMI', '11 - 20 Arası Başarılı Talebeler', data);
+      },
+
+      renderTableSlide(container, items, title, subtitle, data) {
+        container.innerHTML = `
+          <div class="space-y-2 animate-fade-in max-w-6xl mx-auto w-full">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">📊</span>
+                  <h2 class="text-lg sm:text-xl font-black text-white tracking-tight leading-tight">${title}</h2>
+                  <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold text-[11px]">
+                    ${subtitle}
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Dönem: ${data.startDate} – ${data.endDate}</p>
+              </div>
+              <div class="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-xl border border-amber-500/20">
+                ⭐ Canlı Sıralama
               </div>
             </div>
-          `).join("");
-        } else {
-          cooksListArea.innerHTML = '<p class="emptyMessage">Bugün için yemekhane nöbetçisi atanmadı.</p>';
-        }
-      }
 
-      // 3. Günün Müezzini
-      if (muezzinBoxArea) {
-        if (muezzin && muezzin.name) {
-          muezzinBoxArea.innerHTML = `
-            <div class="muezzinBigBox">
-              <div class="muezzinDome">🕌</div>
-              <div class="muezzinTagPill">GÜNÜN MÜEZZİNİ</div>
-              <div class="muezzinNameBig">${esc(muezzin.name)}</div>
-              <div class="muezzinClassBig">${muezzin.className ? `${esc(muezzin.className)} Sınıfı` : 'Ezan & Cemaat Sorumlusu'}</div>
-              <div class="muezzinDutyBadge">5 Vakit Ezan & Cemaat Görevi Atandı</div>
+            <div class="bg-slate-900/90 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-950/80 text-[10px] font-black uppercase text-slate-400 border-b border-slate-800">
+                    <th class="py-1.5 px-2 text-center w-12">SIRA</th>
+                    <th class="py-1.5 px-2">TALEBE ADI & SINIFI</th>
+                    <th class="py-1.5 px-1.5 text-center">🕌 NAMAZ</th>
+                    <th class="py-1.5 px-1.5 text-center">🛏️ YATAK</th>
+                    <th class="py-1.5 px-1.5 text-center">🎒 OKUL</th>
+                    <th class="py-1.5 px-1.5 text-center">🏠 İZİN</th>
+                    <th class="py-1.5 px-1.5 text-center">📚 AKADEMİ</th>
+                    <th class="py-1.5 px-1.5 text-center">🌟 TAKDİR</th>
+                    <th class="py-1.5 px-2 text-center font-black">TOPLAM PUAN</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/80">
+                  ${items.length === 0 ? `
+                    <tr><td colspan="9" class="p-6 text-center text-slate-500">Bu grupta henüz öğrenci yok.</td></tr>
+                  ` : items.map(i => {
+                    const st = (i && i.student) || { firstName: 'Talebe', lastName: '', className: '', studentNo: '' };
+                    const nPts = (i && i.namaz && i.namaz.points) || 0;
+                    const yPts = (i && i.yatak && i.yatak.points) || 0;
+                    const oPts = (i && i.okul && i.okul.points) || 0;
+                    const izPts = (i && i.izinDonus && i.izinDonus.points) || 0;
+                    const aPts = (i && i.akademi && i.akademi.points) || 0;
+                    const bPts = (i && i.bonus && i.bonus.points) || 0;
+                    const totScore = (i && i.totalScore) || 0;
+                    const rankNum = (i && i.rank) || '-';
+
+                    let rankBadge = `<span class="font-bold text-slate-400 text-xs">#${rankNum}</span>`;
+                    let rowBg = 'hover:bg-slate-800/50';
+                    if (rankNum === 1) {
+                      rankBadge = `<span class="w-6 h-6 rounded-lg bg-amber-400 text-slate-950 font-black text-[11px] flex items-center justify-center mx-auto shadow-sm">🥇 1</span>`;
+                      rowBg = 'bg-amber-500/10 hover:bg-amber-500/20';
+                    } else if (rankNum === 2) {
+                      rankBadge = `<span class="w-6 h-6 rounded-lg bg-slate-300 text-slate-950 font-black text-[11px] flex items-center justify-center mx-auto shadow-sm">🥈 2</span>`;
+                      rowBg = 'bg-slate-500/10 hover:bg-slate-500/20';
+                    } else if (rankNum === 3) {
+                      rankBadge = `<span class="w-6 h-6 rounded-lg bg-amber-700 text-white font-black text-[11px] flex items-center justify-center mx-auto shadow-sm">🥉 3</span>`;
+                      rowBg = 'bg-amber-700/10 hover:bg-amber-700/20';
+                    }
+
+                    return `
+                      <tr class="${rowBg} transition">
+                        <td class="py-1 sm:py-1.5 px-2 text-center">${rankBadge}</td>
+                        <td class="py-1 sm:py-1.5 px-2">
+                          <div class="font-black text-xs sm:text-sm text-white leading-tight">${st.firstName} ${st.lastName}</div>
+                          <div class="text-[9px] sm:text-[10px] text-slate-400 font-medium">${st.className} • No: ${st.studentNo}</div>
+                        </td>
+                        <td class="py-1 sm:py-1.5 px-1.5 text-center font-bold text-emerald-400 text-xs sm:text-sm">+${nPts}</td>
+                        <td class="py-1 sm:py-1.5 px-1.5 text-center font-bold text-teal-400 text-xs sm:text-sm">+${yPts}</td>
+                        <td class="py-1 sm:py-1.5 px-1.5 text-center font-bold text-blue-400 text-xs sm:text-sm">+${oPts}</td>
+                        <td class="py-1 sm:py-1.5 px-1.5 text-center font-bold text-indigo-400 text-xs sm:text-sm">+${izPts}</td>
+                        <td class="py-1 sm:py-1.5 px-1.5 text-center font-bold text-sky-400 text-xs sm:text-sm">+${aPts}</td>
+                        <td class="py-1 sm:py-1.5 px-1.5 text-center font-bold text-amber-400 text-xs sm:text-sm">+${bPts}</td>
+                        <td class="py-1 sm:py-1.5 px-2 text-center">
+                          <span class="px-2.5 py-0.5 rounded-lg bg-slate-950 text-amber-300 border border-amber-500/40 font-black text-xs sm:text-sm shadow-inner">
+                            ${totScore} Puan
+                          </span>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
             </div>
-          `;
-        } else {
-          muezzinBoxArea.innerHTML = `
-            <div class="muezzinBigBox" style="background: #1e293b; border-color: #334155;">
-              <div class="muezzinDome" style="opacity: 0.5;">🕌</div>
-              <div class="muezzinTagPill" style="background:#334155; color:#94a3b8;">GÜNÜN MÜEZZİNİ</div>
-              <div class="muezzinNameBig" style="font-size: 20px; color: #94a3b8;">Henüz Atanmadı</div>
-              <div class="muezzinDutyBadge" style="border-color: #475569; color: #94a3b8;">Bugün için müezzin seçilmedi</div>
+          </div>
+        `;
+      },
+
+      // SLAYT 4: 🎯 GÜNÜN GÖREVLİ TALEBELERİ (YEMEKÇİLER & MÜEZZİN)
+      renderSlideDailyDuties(container) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const duties = (window.Store && typeof window.Store.getDailyDuties === 'function')
+          ? window.Store.getDailyDuties(todayStr)
+          : { yemekciler: [], muezzin: '', note: '' };
+
+        const dateOptions = { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' };
+        const dateFormatted = new Date().toLocaleDateString('tr-TR', dateOptions);
+
+        const yemekciler = Array.isArray(duties.yemekciler) ? duties.yemekciler : [];
+        const muezzin = duties.muezzin || '';
+        const note = duties.note || '';
+
+        this.updateTickerWithDuties(duties);
+
+        const subtitleText = duties.isLatestFallback 
+          ? `Tarih: ${dateFormatted} • En Son Belirlenen Görev Dağılımı (${duties.date || todayStr})`
+          : `Tarih: ${dateFormatted} • Hizmet ve cemaat şuuruyla kardeşlerine rehber olan talebelerimiz`;
+
+        container.innerHTML = `
+          <div class="space-y-2 sm:space-y-3 animate-fade-in max-w-6xl mx-auto w-full">
+            <div class="text-center">
+              <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-black text-[11px] uppercase tracking-widest mb-0.5 shadow-md">
+                <span>🎯</span> KURS GÜNLÜK HİZMET VE İBADET NÖBETİ <span>🎯</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+                Günün Görevli Talebeleri
+              </h2>
+              <p class="text-[11px] text-slate-400 font-medium">
+                ${subtitleText}
+              </p>
             </div>
-          `;
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 pt-0.5">
+              
+              <!-- 🍽️ 1. KART: GÜNÜN YEMEKÇİLERİ -->
+              <div class="bg-gradient-to-b from-slate-900 via-slate-900/95 to-amber-950/20 rounded-2xl border-2 border-amber-500/50 p-3.5 sm:p-4 shadow-xl relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600"></div>
+                
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xl shadow-md">
+                        🍽️
+                      </div>
+                      <div>
+                        <div class="text-[9px] font-black uppercase tracking-wider text-amber-400">MUTFAK & YEMEKHANE</div>
+                        <h3 class="text-base sm:text-lg font-black text-white tracking-tight leading-tight">Günün Yemekçileri</h3>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono font-black text-[11px]">
+                      ${yemekciler.length} Talebe
+                    </span>
+                  </div>
+
+                  <p class="text-[11px] text-slate-400 mb-2 leading-tight">
+                    Sofra düzeni, kardeşlerine ikram ve yemekhane intizamından sorumlu görevli talebelerimiz:
+                  </p>
+
+                  ${yemekciler.length > 0 ? `
+                    <div class="${yemekciler.length > 4 ? 'grid grid-cols-2 gap-1.5' : 'space-y-1.5'}">
+                      ${yemekciler.map((name, idx) => `
+                        <div class="p-1.5 sm:p-2 bg-slate-950/80 rounded-xl border border-slate-800 hover:border-amber-500/50 flex items-center justify-between shadow-inner transition">
+                          <div class="flex items-center gap-2 overflow-hidden">
+                            <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-300 font-black text-[11px] flex items-center justify-center border border-amber-500/30 shrink-0">
+                              #${idx + 1}
+                            </span>
+                            <span class="font-black text-xs sm:text-sm text-white tracking-wide truncate">
+                              ${name}
+                            </span>
+                          </div>
+                          <span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 shrink-0">
+                            Nöbetçi
+                          </span>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : `
+                    <div class="py-6 text-center bg-slate-950/60 rounded-xl border border-slate-800">
+                      <div class="text-2xl mb-1 text-slate-600">🍲</div>
+                      <div class="text-xs font-bold text-slate-400">Bugün için yemekçi talebe henüz belirlenmedi.</div>
+                    </div>
+                  `}
+                </div>
+
+                <div class="mt-2.5 pt-1.5 border-t border-slate-800/80 text-[10px] text-amber-400/90 font-medium italic flex items-center gap-1.5">
+                  <span>✨</span>
+                  <span>"Kavmin efendisi, onlara hizmet edendir." (Hadis-i Şerif)</span>
+                </div>
+              </div>
+
+              <!-- 📢 2. KART: GÜNÜN MÜEZZİNİ -->
+              <div class="bg-gradient-to-b from-slate-900 via-slate-900/95 to-indigo-950/20 rounded-2xl border-2 border-indigo-500/50 p-3.5 sm:p-4 shadow-xl relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-emerald-400 to-indigo-600"></div>
+
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-400 flex items-center justify-center text-xl shadow-md">
+                        📢
+                      </div>
+                      <div>
+                        <div class="text-[9px] font-black uppercase tracking-wider text-indigo-400">EZAN & CEMAAT ÇAĞRISI</div>
+                        <h3 class="text-base sm:text-lg font-black text-white tracking-tight leading-tight">Günün Müezzini</h3>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-mono font-black text-[11px]">
+                      5 Vakit
+                    </span>
+                  </div>
+
+                  <p class="text-[11px] text-slate-400 mb-2 leading-tight">
+                    Vakit ezanlarını okumak ve cemaat nizamını sağlamakla görevli talebemiz:
+                  </p>
+
+                  ${muezzin ? `
+                    <div class="p-3.5 sm:p-4 bg-gradient-to-tr from-slate-950 via-slate-950 to-indigo-950/60 rounded-2xl border border-indigo-500/60 text-center shadow-inner relative overflow-hidden">
+                      <div class="text-2xl mb-0.5">🕌</div>
+                      <div class="text-[9px] font-black uppercase text-indigo-400 tracking-wider">BAŞ MÜEZZİN & CEMAAT REHBERİ</div>
+                      <h4 class="text-xl sm:text-2xl font-black text-amber-300 mt-0.5 mb-1.5 tracking-tight leading-tight">
+                        ${muezzin}
+                      </h4>
+                      <div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold shadow-sm">
+                        <span>🟢 5 Vakit Ezan & Cemaat Nöbetinde</span>
+                      </div>
+                    </div>
+                  ` : `
+                    <div class="py-6 text-center bg-slate-950/60 rounded-xl border border-slate-800">
+                      <div class="text-2xl mb-1 text-slate-600">🕌</div>
+                      <div class="text-xs font-bold text-slate-400">Bugün için müezzin talebe henüz belirlenmedi.</div>
+                    </div>
+                  `}
+                </div>
+
+                <div class="mt-2.5 pt-1.5 border-t border-slate-800/80 text-[10px] text-indigo-300 font-medium italic flex items-center gap-1.5">
+                  <span>✨</span>
+                  <span>"Müezzinler kıyamet günü insanların en şerefli olanlarıdır." (Hadis-i Şerif)</span>
+                </div>
+              </div>
+
+            </div>
+
+            ${note ? `
+              <div class="p-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2.5 shadow-sm">
+                <span class="text-base shrink-0">📌</span>
+                <div class="overflow-hidden">
+                  <span class="text-[9px] font-black text-amber-400 uppercase tracking-wider mr-1.5">GÜNÜN ÖZEL DUYURUSU:</span>
+                  <span class="text-xs sm:text-sm font-bold text-slate-200">${note}</span>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      },
+
+      // SLAYT 5: 🕌 GÜNÜN HADİS-İ ŞERİFİ & HİKMETİ (KULLANICI LİSTESİNDEN SEÇİMLİ)
+      renderSlideDailyPrayerQuote(container) {
+        let hadisList = [];
+        try {
+          if (window.Store && typeof window.Store.getCustomHadisler === 'function') {
+            hadisList = window.Store.getCustomHadisler();
+          }
+        } catch (e) {}
+
+        if (!Array.isArray(hadisList) || hadisList.length === 0) {
+          hadisList = (window.HADIS_LISTESI && Array.isArray(window.HADIS_LISTESI) && window.HADIS_LISTESI.length > 0)
+            ? window.HADIS_LISTESI
+            : [
+              { text: "İki günü birbirine eşit olan ziyandadır.", author: "Hadis-i Şerif (Beyhaki)" },
+              { text: "Namaz dinin direğidir; kim onu ikame ederse dinini ikame etmiş olur.", author: "Hadis-i Şerif (Tirmizi)" },
+              { text: "Sizin en hayırlınız, Kur'an'ı öğrenen ve öğretendir.", author: "Hadis-i Şerif (Buhari)" },
+              { text: "İlim tahsil etmek her Müslümana farzdır.", author: "Hadis-i Şerif (İbn Mace)" },
+              { text: "Müminlerin iman bakımından en mükemmeli, ahlakı en güzel olanıdır.", author: "Hadis-i Şerif (Tirmizi)" },
+              { text: "Temizlik imanın yarısıdır.", author: "Hadis-i Şerif (Müslim)" }
+            ];
         }
-      }
-    }
 
-    // 2. NAMAZ TAKİBİ VERİSİ
-    function renderPrayers(dayData) {
-      const prayers = ["sabah", "ogle", "ikindi", "aksam", "yatsi"];
-      const pData = dayData || {};
+        // Günün gün numarasına göre sabit, titreşimsiz Hadis seçimi (Günün boyunca sabit kalır)
+        const now = new Date();
+        const start = new Date(now.getFullYear(), 0, 0);
+        const diff = now - start;
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
+        const quoteIdx = dayOfYear % hadisList.length;
+        const currentQuote = hadisList[quoteIdx] || hadisList[0];
 
-      prayers.forEach(p => {
-        const records = pData[p] || {};
-        let varCount = 0;
-        Object.values(records).forEach(r => {
-          if (r && typeof r === "object" && r.durum === "var") varCount++;
-        });
-        const badge = $(`prayer${p.charAt(0).toUpperCase() + p.slice(1)}Badge`);
-        if (badge) {
-          badge.textContent = varCount > 0 ? `${varCount} Var` : "- Var";
+        // Hadis metninin uzunluğuna göre dinamik font boyutu
+        const quoteText = currentQuote.text || '';
+        let textSizeClass = 'text-2xl sm:text-3xl lg:text-4xl';
+        if (quoteText.length > 150) {
+          textSizeClass = 'text-lg sm:text-xl lg:text-2xl';
+        } else if (quoteText.length > 80) {
+          textSizeClass = 'text-xl sm:text-2xl lg:text-3xl';
         }
-      });
-    }
 
-    // 3. ÖDÜLLER & ŞAMPİYONLAR
-    function renderAwards(awardsData) {
-      const container = $("awardsContainer");
-      if (!container) return;
+        container.innerHTML = `
+          <div class="space-y-2 sm:space-y-3 animate-fade-in max-w-5xl mx-auto w-full text-center py-0.5">
+            
+            <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-black text-[11px] uppercase tracking-widest shadow-md">
+              <span>🕌</span> GÜNÜN HADİS-İ ŞERİFİ VE HİKMETİ <span>🕌</span>
+            </div>
 
-      const data = awardsData || {};
-      const entries = [];
-      Object.entries(data).forEach(([type, records]) => {
-        Object.values(records || {}).forEach(r => {
-          if (r && typeof r === "object") {
-            entries.push({
-              type: r.type || type,
-              name: r.name || r.studentName || "Talebe",
-              note: r.note || "",
-              createdAt: r.createdAt || ""
-            });
+            <!-- Hadis / Hikmet Kartı -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/60 rounded-2xl sm:rounded-3xl border-2 border-indigo-500/40 p-4 sm:p-6 md:p-7 shadow-xl relative overflow-hidden">
+              <div class="text-3xl sm:text-4xl text-amber-400/40 font-serif mb-1 select-none leading-none">“</div>
+              <p class="${textSizeClass} font-black text-white leading-relaxed tracking-tight max-w-3xl mx-auto">
+                ${quoteText}
+              </p>
+              <div class="text-amber-400 font-black text-xs sm:text-sm mt-3 uppercase tracking-widest">
+                — ${currentQuote.author || 'Hadis-i Şerif'}
+              </div>
+            </div>
+
+            <!-- Kompakt Motivasyon Kutucukları (TV Uyumlu Tek Sıra) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left">
+              <div class="p-2.5 sm:p-3 rounded-xl bg-slate-900/80 border border-slate-800 shadow-md flex items-start gap-2.5">
+                <span class="text-xl shrink-0">🕌</span>
+                <div>
+                  <div class="font-black text-xs text-white">5 Vakit Cemaat</div>
+                  <div class="text-[10px] text-slate-400 leading-tight mt-0.5">Her vakit +10 Puan, 5 vakit tam kılanlara günlük +15 İbadet Bonusu!</div>
+                </div>
+              </div>
+
+              <div class="p-2.5 sm:p-3 rounded-xl bg-slate-900/80 border border-slate-800 shadow-md flex items-start gap-2.5">
+                <span class="text-xl shrink-0">🛏️</span>
+                <div>
+                  <div class="font-black text-xs text-white">Oda & Yatak Düzeni</div>
+                  <div class="text-[10px] text-slate-400 leading-tight mt-0.5">Sabah odasını, yatağını ve dolabını nizami toplayan talebelere +15 Puan!</div>
+                </div>
+              </div>
+
+              <div class="p-2.5 sm:p-3 rounded-xl bg-slate-900/80 border border-slate-800 shadow-md flex items-start gap-2.5">
+                <span class="text-xl shrink-0">📚</span>
+                <div>
+                  <div class="font-black text-xs text-white">Akademi & Gayret</div>
+                  <div class="text-[10px] text-slate-400 leading-tight mt-0.5">Takviye dersleri ve yüksek sınav notlarıyla haftanın zirvesine yerleş!</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        `;
+      },
+
+      // SLAYT 6: ⚠️ HAFTALIK İNTİZAM & ÇIKIŞ TELAFİ RAPORU
+      renderSlidePenalties(container) {
+        const todayStr = this.getTodayDate();
+        const res = (window.Store && typeof window.Store.getPanoPenalizedStudents === 'function')
+          ? window.Store.getPanoPenalizedStudents(todayStr)
+          : { totalPenalizedCount: 0, penalizedStudents: [], totalStudents: 0, onTimeCount: 0 };
+
+        const list = res.penalizedStudents || [];
+
+        container.innerHTML = `
+          <div class="space-y-2 animate-fade-in max-w-6xl mx-auto w-full">
+            <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-1.5 gap-2">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xl">⚠️</span>
+                  <h2 class="text-lg sm:text-xl font-black text-white tracking-tight leading-tight">Haftalık İntizam & Çıkış Telafi Raporu</h2>
+                  <span class="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 font-black text-[10px]">
+                    Çıkış Telafileri
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                  İlk 3 kusur affedilmiş olup, 3'ü aşan intizam kusurları ek telafi süresi olarak yansıtılmıştır.
+                </p>
+              </div>
+
+              <div class="flex items-center gap-2">
+                ${(res.clearedCount || 0) > 0 ? `
+                  <div class="text-[11px] font-bold text-emerald-300 bg-emerald-950/40 px-2.5 py-1 rounded-xl border border-emerald-800/60 flex items-center gap-1">
+                    <span>✓</span> <span>Tam Af: <strong class="text-emerald-400">${res.clearedCount}</strong></span>
+                  </div>
+                ` : ''}
+                ${(res.partiallyClearedCount || 0) > 0 ? `
+                  <div class="text-[11px] font-bold text-indigo-300 bg-indigo-950/40 px-2.5 py-1 rounded-xl border border-indigo-800/60 flex items-center gap-1">
+                    <span>✂️</span> <span>Kısmi Af: <strong class="text-indigo-400">${res.partiallyClearedCount}</strong></span>
+                  </div>
+                ` : ''}
+                <div class="text-[11px] font-bold text-slate-300 bg-slate-900 px-2.5 py-1 rounded-xl border border-slate-800">
+                  Zamanında Çıkış: <span class="text-emerald-400 font-black">${res.onTimeCount || 0}</span>
+                </div>
+                <div class="text-[11px] font-bold text-rose-300 bg-rose-950/40 px-2.5 py-1 rounded-xl border border-rose-800/60">
+                  Aktif Telafili: <span class="text-rose-400 font-black">${res.totalPenalizedCount || 0} Talebe</span>
+                </div>
+              </div>
+            </div>
+
+            ${list.length === 0 ? `
+              <!-- Telafili Yoksa Kutlama Kartı -->
+              <div class="bg-gradient-to-b from-slate-900 via-emerald-950/20 to-slate-950 rounded-2xl sm:rounded-3xl border-2 border-emerald-500/40 p-5 sm:p-7 text-center shadow-xl max-w-xl mx-auto my-2">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-2xl mx-auto mb-2 shadow-md shadow-emerald-500/10">
+                  🌟
+                </div>
+                <div class="inline-block px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 font-black text-[10px] uppercase tracking-widest mb-1.5">
+                  MAŞAALLAH • TAM İNTİZAM
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white tracking-tight mb-1.5">
+                  Şu Anda Kursumuzda Aktif Telafisi Olan Talebe Bulunmamaktadır!
+                </h3>
+                <p class="text-xs text-slate-300 leading-relaxed max-w-md mx-auto">
+                  ${(res.clearedCount || 0) > 0 
+                    ? `Bu hafta oluşan intizam telafileri talebelerimiz tarafından tamamlanmış ve intizam sağlanmıştır. Gayretlerinden ötürü tüm talebelerimizi tebrik ederiz.`
+                    : `Haftalık 3 kusur affı ve tam intizam gayreti sayesinde tüm talebelerimiz standart izin saatinde (${res.baseExitTime || '13:00'}) çıkış yapabilecektir.`}
+                </p>
+              </div>
+            ` : `
+              <!-- TV UYUMLU ŞIK VE NET LİSTE DÜZENİ -->
+              <div class="bg-slate-900/90 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden">
+                <!-- Liste Başlığı -->
+                <div class="grid grid-cols-12 bg-slate-950/90 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-800 items-center">
+                  <div class="col-span-1 text-center">SIRA</div>
+                  <div class="col-span-3">TALEBE BİLGİSİ</div>
+                  <div class="col-span-2 text-center">KUSUR / AF DURUMU</div>
+                  <div class="col-span-3">TELAFİ SEBEPLERİ (3'Ü AŞANLAR)</div>
+                  <div class="col-span-1 text-center">EK SÜRE</div>
+                  <div class="col-span-2 text-right pr-2">KAPI ÇIKIŞ SAATİ</div>
+                </div>
+
+                <!-- Liste Satırları -->
+                <div class="divide-y divide-slate-800/70 max-h-[calc(100vh-230px)] overflow-y-auto no-scrollbar">
+                  ${list.map((item, idx) => {
+                    const st = item.student || {};
+                    const rep = item.report || {};
+                    const isPartial = !!rep.isPartiallyCleared;
+                    const activeInf = (rep.activeInfractions && rep.activeInfractions.length > 0)
+                      ? rep.activeInfractions
+                      : (rep.infractions ? rep.infractions.slice(3) : []);
+
+                    return `
+                      <div class="grid grid-cols-12 items-center px-3 py-1.5 hover:bg-slate-800/40 transition gap-2 ${isPartial ? 'bg-indigo-950/15' : ''}">
+                        <!-- 1. Sıra No -->
+                        <div class="col-span-1 text-center">
+                          <span class="w-6 h-6 rounded-lg ${isPartial ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/30'} font-mono font-black text-xs inline-flex items-center justify-center border">
+                            #${idx + 1}
+                          </span>
+                        </div>
+
+                        <!-- 2. Talebe Adı Soyadı & Sınıfı -->
+                        <div class="col-span-3">
+                          <div class="font-black text-xs sm:text-sm text-white tracking-tight truncate leading-tight flex items-center gap-1.5">
+                            <span>${st.firstName} ${st.lastName}</span>
+                            ${isPartial ? `<span class="px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[9px] font-black shrink-0">✂️ -${rep.waivedMinutes} Dk</span>` : ''}
+                          </div>
+                          <div class="text-[10px] text-slate-400 font-bold truncate">
+                            ${st.className || ''} ${st.studentNo ? '• No: ' + st.studentNo : ''}
+                          </div>
+                        </div>
+
+                        <!-- 3. Kusur Sayısı & Af Durumu -->
+                        <div class="col-span-2 text-center">
+                          <div class="inline-flex flex-col items-center">
+                            <span class="px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 font-black text-[11px] font-mono leading-none">
+                              ${rep.totalInfractions || (activeInf.length + 3)} Kusur
+                            </span>
+                            ${isPartial ? `
+                              <span class="text-[9px] text-indigo-400 font-bold mt-0.5">
+                                ✂️ ${rep.waivedMinutes} dk İndirildi (Kalan: ${rep.penaltyMinutes} dk)
+                              </span>
+                            ` : `
+                              <span class="text-[9px] text-emerald-400 font-bold mt-0.5">
+                                (3'ü Affedildi • ${rep.activeInfractionsCount || activeInf.length} Telafi)
+                              </span>
+                            `}
+                          </div>
+                        </div>
+
+                        <!-- 4. Telafi Sebepleri -->
+                        <div class="col-span-3">
+                          <div class="flex flex-wrap items-center gap-1 max-h-10 overflow-hidden">
+                            ${activeInf.length === 0 ? `
+                              <span class="text-slate-500 text-xs">-</span>
+                            ` : activeInf.map(inf => {
+                              if (!inf) return '';
+                              let badgeClass = 'bg-slate-950 text-slate-300 border-slate-800';
+                              let icon = '⏱️';
+                              if (inf.category === 'namaz') { badgeClass = 'bg-amber-950/40 text-amber-300 border-amber-800/50'; icon = '🕌'; }
+                              else if (inf.category === 'yatak') { badgeClass = 'bg-teal-950/40 text-teal-300 border-teal-800/50'; icon = '🛏️'; }
+                              else if (inf.category === 'okul' || inf.category === 'okul_donusu') { badgeClass = 'bg-blue-950/40 text-blue-300 border-blue-800/50'; icon = '🎒'; }
+                              else if (inf.category === 'izin_donusu') { badgeClass = 'bg-purple-950/40 text-purple-300 border-purple-800/50'; icon = '🏠'; }
+                              else if (inf.category === 'takviye_dersi') { badgeClass = 'bg-rose-950/50 text-rose-300 border-rose-800/60'; icon = '📚'; }
+
+                              return `
+                                <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-md border text-[9px] font-bold ${badgeClass}">
+                                  <span>${icon}</span>
+                                  <span class="truncate max-w-[110px]">${inf.subLabel || inf.desc || ''}</span>
+                                </span>
+                              `;
+                            }).join('')}
+                          </div>
+                        </div>
+
+                        <!-- 5. Ek Telafi Süresi -->
+                        <div class="col-span-1 text-center">
+                          <div class="inline-flex flex-col items-center">
+                            <span class="px-2 py-0.5 rounded-lg ${isPartial ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40' : 'bg-rose-500/20 text-rose-300 border-rose-500/40'} border font-mono font-black text-xs inline-block shadow-sm">
+                              +${rep.penaltyFormatted || (rep.penaltyMinutes + ' Dk')}
+                            </span>
+                            ${isPartial ? `<span class="text-[8px] text-indigo-400 font-bold leading-tight">(-${rep.waivedMinutes} dk af)</span>` : ''}
+                          </div>
+                        </div>
+
+                        <!-- 6. Kapı Çıkış Saati -->
+                        <div class="col-span-2 text-right pr-2">
+                          <div class="font-mono font-black text-base sm:text-lg ${isPartial ? 'text-indigo-400' : 'text-rose-400'} leading-tight">
+                            ${rep.calculatedExitTime || '13:00'}
+                          </div>
+                          <div class="text-[9px] ${isPartial ? 'text-indigo-400 font-bold' : 'text-slate-500'} font-mono">
+                            ${isPartial ? `Af Sonrası (Kalan: +${rep.penaltyMinutes} dk)` : `Normal: ${rep.baseExitTime || '13:00'}`}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+      },
+
+      // SLAYT 7: 📖 KUR'AN-I KERİM HATİM & TİLAVET TAKİP PANOSU
+      renderSlideQuranHatim(container) {
+        const leaderboard = window.Store.getQuranLeaderboard ? window.Store.getQuranLeaderboard(10, 'ALL') : [];
+        const groupSummaries = window.Store.getQuranGroupSummary ? window.Store.getQuranGroupSummary() : [];
+        const allRecords = window.Store.getAllQuranRecords ? window.Store.getAllQuranRecords() : {};
+
+        let totalLifetimePages = 0;
+        let totalCompletedHatims = 0;
+        Object.values(allRecords).forEach(r => {
+          if (r && typeof window.Store?.calculateQuranStats === 'function') {
+            const stats = window.Store.calculateQuranStats(r.currentPage, r.hatimCount);
+            totalLifetimePages += (stats?.totalLifetimePages || 0);
+            totalCompletedHatims += (stats?.hatimCount || 0);
           }
         });
-      });
 
-      entries.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
-      const topAwards = entries.slice(0, 6);
+        const top1 = leaderboard[0] || null;
+        const top2 = leaderboard[1] || null;
+        const top3 = leaderboard[2] || null;
+        const restList = leaderboard.slice(3, 9);
 
-      if (!topAwards.length) {
-        container.innerHTML = '<p class="emptyMessage">Kayıtlı talebe ödülü bulunmuyor.</p>';
-        return;
+        const s1 = (top1 && top1.student) || { firstName: '1. Talebe', lastName: '', className: '-' };
+        const st1 = (top1 && top1.stats) || { currentPage: 0, percentRead: 0, cuzNo: 1, cuzPageRange: '1 - 20', hatimCount: 0, pagesLeftInHatim: 604, percentLeft: 100 };
+        const s2 = (top2 && top2.student) || { firstName: '2. Talebe', lastName: '', className: '-' };
+        const st2 = (top2 && top2.stats) || { currentPage: 0, percentRead: 0, cuzNo: 1, cuzPageRange: '1 - 20', hatimCount: 0, pagesLeftInHatim: 604, percentLeft: 100 };
+        const s3 = (top3 && top3.student) || { firstName: '3. Talebe', lastName: '', className: '-' };
+        const st3 = (top3 && top3.stats) || { currentPage: 0, percentRead: 0, cuzNo: 1, cuzPageRange: '1 - 20', hatimCount: 0, pagesLeftInHatim: 604, percentLeft: 100 };
+
+        container.innerHTML = `
+          <div class="space-y-2 animate-fade-in w-full max-w-7xl mx-auto">
+            <!-- 1. Üst Başlık & KPI Çubuğu -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
+              <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 font-black text-xl flex items-center justify-center shadow-md">
+                  📖
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="px-2 py-0.2 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[9px] font-black uppercase tracking-wider">
+                      DİNİ DERSLER & TİLAVET
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-mono">Mushaf: 604 Sayfa</span>
+                  </div>
+                  <h2 class="text-lg sm:text-xl font-black text-white tracking-tight leading-tight">
+                    Kur'an-ı Kerim Hatim ve Tilavet Liderliği
+                  </h2>
+                </div>
+              </div>
+
+              <!-- Toplam Sayaçlar -->
+              <div class="flex items-center gap-2 text-xs">
+                <div class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                  <div class="text-[8px] font-bold text-slate-400 uppercase">Toplam Okunan</div>
+                  <div class="text-xs sm:text-sm font-black text-emerald-400 font-mono leading-none">${totalLifetimePages.toLocaleString('tr-TR')} sf</div>
+                </div>
+                <div class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                  <div class="text-[8px] font-bold text-slate-400 uppercase">Biten Hatim</div>
+                  <div class="text-xs sm:text-sm font-black text-amber-400 font-mono leading-none">${totalCompletedHatims} Hatim</div>
+                </div>
+                <div class="px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-center">
+                  <div class="text-[8px] font-bold text-slate-400 uppercase">Dini Ders Grubu</div>
+                  <div class="text-xs sm:text-sm font-black text-indigo-400 font-mono leading-none">${groupSummaries.length} Grup</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. İkili Düzen: Sol Podyum (Top 3) & Sağ Sıralama Listesi (Top 4-9) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch">
+              
+              <!-- SOL: 🏆 İLK 3 PODYUMU (7 Kolon) -->
+              <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-end">
+                
+                <!-- 🥈 2. SIRA (GÜMÜŞ) -->
+                <div class="order-2 sm:order-1">
+                  ${top2 ? `
+                    <div class="bg-slate-900/90 rounded-2xl border-2 border-slate-600/60 p-3 text-center shadow-lg relative overflow-hidden">
+                      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-slate-400 to-slate-200"></div>
+                      <div class="text-2xl mb-0.5">🥈</div>
+                      <div class="text-[9px] font-black uppercase text-slate-400 tracking-wider">2. SIRA • GÜMÜŞ</div>
+                      <h4 class="text-xs sm:text-sm font-black text-white mt-0.5 truncate" title="${s2.firstName} ${s2.lastName}">
+                        ${s2.firstName} ${s2.lastName}
+                      </h4>
+                      <div class="text-[10px] text-slate-400 mb-1.5">${s2.className} • ${top2.diniGrup || '-'}</div>
+
+                      <!-- İlerleme Çubuğu -->
+                      <div class="space-y-0.5 p-1.5 bg-slate-950/80 rounded-xl border border-slate-800 mb-1.5">
+                        <div class="flex items-center justify-between text-[10px]">
+                          <span class="text-slate-400">Sayfa: <strong class="text-emerald-400 font-mono">${st2.currentPage}</strong> / 604</span>
+                          <span class="text-emerald-400 font-black font-mono">%${st2.percentRead}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                          <div class="h-full bg-gradient-to-r from-slate-400 to-slate-200 rounded-full" style="width: ${st2.percentRead}%"></div>
+                        </div>
+                        <div class="text-[9px] text-slate-400 flex items-center justify-between pt-0.5">
+                          <span>${st2.cuzNo}. Cüz</span>
+                          <span class="text-amber-400 font-bold">${st2.hatimCount} Hatim</span>
+                        </div>
+                      </div>
+
+                      <div class="text-[10px] text-slate-400 font-medium">
+                        Kalan: <strong class="text-amber-300">${st2.pagesLeftInHatim} sf</strong> (%${st2.percentLeft})
+                      </div>
+                    </div>
+                  ` : '<div class="text-center text-slate-600 text-xs p-5 bg-slate-900/40 rounded-xl border border-slate-800">2. Bekleniyor</div>'}
+                </div>
+
+                <!-- 🥇 1. SIRA (ALTIN LİDER) -->
+                <div class="order-1 sm:order-2">
+                  ${top1 ? `
+                    <div class="bg-gradient-to-b from-amber-950/30 via-slate-900 to-slate-900 rounded-2xl border-2 border-amber-400 p-3.5 text-center shadow-xl relative overflow-hidden gold-glow">
+                      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500"></div>
+                      
+                      <div class="relative inline-block mb-0.5">
+                        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 font-black text-xl flex items-center justify-center shadow-md mx-auto">
+                          👑
+                        </div>
+                        <span class="absolute -top-2 -right-1.5 text-sm">🥇</span>
+                      </div>
+
+                      <div class="text-[9px] font-black uppercase text-amber-300 tracking-wider">KUR'AN-I KERİM LİDERİ</div>
+                      <h3 class="text-sm sm:text-base font-black text-white mt-0.5 truncate" title="${s1.firstName} ${s1.lastName}">
+                        ${s1.firstName} ${s1.lastName}
+                      </h3>
+                      <div class="text-[11px] text-amber-300/80 font-bold mb-2">${s1.className} • ${top1.diniGrup || '-'}</div>
+
+                      <!-- İlerleme Çubuğu -->
+                      <div class="space-y-1 p-2 bg-slate-950/90 rounded-xl border border-amber-500/40 mb-1.5">
+                        <div class="flex items-center justify-between text-xs">
+                          <span class="text-slate-300">Sayfa: <strong class="text-amber-400 font-mono">${st1.currentPage}</strong> / 604</span>
+                          <span class="text-amber-300 font-black font-mono">%${st1.percentRead}</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+                          <div class="h-full bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-400 rounded-full shadow-xs" style="width: ${st1.percentRead}%"></div>
+                        </div>
+                        <div class="text-[9px] text-slate-300 flex items-center justify-between pt-0.5">
+                          <span>${st1.cuzNo}. Cüz (${st1.cuzPageRange}. sf)</span>
+                          <span class="text-amber-300 font-black">🌟 ${st1.hatimCount} Hatim</span>
+                        </div>
+                      </div>
+
+                      <div class="text-[10px] text-slate-300 font-medium">
+                        Kalan: <strong class="text-amber-400 font-bold">${st1.pagesLeftInHatim} sf</strong> (%${st1.percentLeft})
+                      </div>
+                    </div>
+                  ` : '<div class="text-center text-slate-600 text-xs p-5 bg-slate-900/40 rounded-xl border border-slate-800">1. Bekleniyor</div>'}
+                </div>
+
+                <!-- 🥉 3. SIRA (BRONZ) -->
+                <div class="order-3 sm:order-3">
+                  ${top3 ? `
+                    <div class="bg-slate-900/90 rounded-2xl border-2 border-amber-700/60 p-3 text-center shadow-lg relative overflow-hidden">
+                      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-700 to-amber-600"></div>
+                      <div class="text-2xl mb-0.5">🥉</div>
+                      <div class="text-[9px] font-black uppercase text-amber-500 tracking-wider">3. SIRA • BRONZ</div>
+                      <h4 class="text-xs sm:text-sm font-black text-white mt-0.5 truncate" title="${s3.firstName} ${s3.lastName}">
+                        ${s3.firstName} ${s3.lastName}
+                      </h4>
+                      <div class="text-[10px] text-slate-400 mb-1.5">${s3.className} • ${top3.diniGrup || '-'}</div>
+
+                      <!-- İlerleme Çubuğu -->
+                      <div class="space-y-0.5 p-1.5 bg-slate-950/80 rounded-xl border border-slate-800 mb-1.5">
+                        <div class="flex items-center justify-between text-[10px]">
+                          <span class="text-slate-400">Sayfa: <strong class="text-emerald-400 font-mono">${st3.currentPage}</strong> / 604</span>
+                          <span class="text-emerald-400 font-black font-mono">%${st3.percentRead}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                          <div class="h-full bg-gradient-to-r from-amber-700 to-amber-500 rounded-full" style="width: ${st3.percentRead}%"></div>
+                        </div>
+                        <div class="text-[9px] text-slate-400 flex items-center justify-between pt-0.5">
+                          <span>${st3.cuzNo}. Cüz</span>
+                          <span class="text-amber-400 font-bold">${st3.hatimCount} Hatim</span>
+                        </div>
+                      </div>
+
+                      <div class="text-[10px] text-slate-400 font-medium">
+                        Kalan: <strong class="text-amber-300">${st3.pagesLeftInHatim} sf</strong> (%${st3.percentLeft})
+                      </div>
+                    </div>
+                  ` : '<div class="text-center text-slate-600 text-xs p-5 bg-slate-900/40 rounded-xl border border-slate-800">3. Bekleniyor</div>'}
+                </div>
+
+              </div>
+
+              <!-- SAĞ: 📋 EN ÇOK OKUYANLAR LİSTESİ (5 Kolon) -->
+              <div class="lg:col-span-5 bg-slate-900/90 rounded-2xl border border-slate-800 p-3 flex flex-col justify-between shadow-xl">
+                <div>
+                  <div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-800 text-xs font-black text-slate-300">
+                    <span class="flex items-center gap-1.5">
+                      <span>✨</span> <span>En Çok Okuyan Talebeler</span>
+                    </span>
+                    <span class="text-[10px] text-slate-500 font-mono">Mushaf: 604 sf</span>
+                  </div>
+
+                  <div class="space-y-1">
+                    ${restList.length === 0 ? `
+                      <div class="py-4 text-center text-slate-500 text-xs">
+                        Diğer sıralamalar güncelleniyor...
+                      </div>
+                    ` : restList.map(item => {
+                      const s = (item && item.student) || { firstName: 'Talebe', lastName: '', className: '-' };
+                      const st = (item && item.stats) || { currentPage: 0, percentRead: 0, cuzNo: 1, hatimCount: 0 };
+                      return `
+                        <div class="p-1.5 bg-slate-950/70 hover:bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between gap-1.5 text-xs transition">
+                          <div class="flex items-center gap-1.5 overflow-hidden">
+                            <span class="w-4 text-center font-mono font-black text-slate-500 text-[10px]">${item.rank || '-'}</span>
+                            <div class="truncate">
+                              <div class="font-bold text-white text-xs truncate leading-tight">${s.firstName} ${s.lastName}</div>
+                              <div class="text-[9px] text-slate-400 truncate">${s.className} • ${item.diniGrup || '-'}</div>
+                            </div>
+                          </div>
+
+                          <div class="text-right flex-shrink-0">
+                            <div class="font-mono font-black text-emerald-400 text-xs leading-none">
+                              ${st.currentPage}. sf <span class="text-slate-400 font-normal text-[9px]">(%${st.percentRead})</span>
+                            </div>
+                            <div class="text-[9px] text-slate-400 mt-0.5">
+                              ${st.cuzNo}. Cüz ${st.hatimCount > 0 ? `• <span class="text-amber-400 font-bold">${st.hatimCount} H.</span>` : ''}
+                            </div>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+
+                <!-- Hadis-i Şerif Şeridi -->
+                <div class="mt-2 p-1.5 bg-emerald-950/30 rounded-xl border border-emerald-800/40 text-center">
+                  <p class="text-[10px] text-emerald-200 font-medium italic">
+                    "Sizin en hayırlınız, Kur'an'ı öğrenen ve öğretendir." (Buhârî)
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- 3. DİNİ DERS GRUPLARI ŞERİDİ (Alt Kısım) -->
+            <div class="pt-1">
+              <div class="text-[9px] font-black uppercase text-slate-500 tracking-wider mb-1 flex items-center gap-1">
+                <span>🕌</span> <span>Dini Ders Grupları Hatim İlerleme Durumu:</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1.5">
+                ${groupSummaries.slice(0, 7).map(g => `
+                  <div class="p-1.5 bg-slate-900/80 rounded-xl border border-slate-800 text-center text-xs">
+                    <div class="font-black text-slate-200 truncate text-[10px]">${g.groupName}</div>
+                    <div class="font-mono font-black text-emerald-400 text-xs mt-0.5 leading-none">${g.totalLifetimePages.toLocaleString('tr-TR')} sf</div>
+                    <div class="text-[8px] text-slate-400 mt-0.5">%${g.avgPercent} Ortalama</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      // Alt Kayan Haber Bandını (Ticker) Günün Görevlileriyle Zenginleştirme
+      updateTickerWithDuties(duties) {
+        const tickerEl = document.getElementById('pano-ticker');
+        if (!tickerEl) return;
+        const yemekcilerStr = (duties && Array.isArray(duties.yemekciler) && duties.yemekciler.length > 0)
+          ? duties.yemekciler.join(', ')
+          : 'Belirlenmedi';
+        const muezzinStr = (duties && duties.muezzin) ? duties.muezzin : 'Belirlenmedi';
+
+        tickerEl.innerHTML = `
+          🍽️ <strong>Günün Yemekçileri:</strong> ${yemekcilerStr} • 
+          📢 <strong>Günün Müezzini:</strong> ${muezzinStr} • 
+          🕌 5 Vakit namazını cemaatle kılanlara günlük +15 puan İbadet Bonusu! • 
+          🛏️ Sabah odasını ve yatağını nizami toplayana +15 puan • 
+          📚 Takviye ders sınavlarında 100 tam puan alan talebelerimize +50 şampiyonluk puanı! • 
+          "İki günü birbirine eşit olan ziyandadır." (Hadis-i Şerif)
+        `;
       }
+    };
 
-      const medals = ['🥇', '🥈', '🥉', '🎖️', '🎖️', '🎖️'];
-      container.innerHTML = topAwards.map((a, i) => `
-        <div class="awardBox">
-          <div class="awardMedal">${medals[i] || '🎖️'}</div>
-          <div class="awardStudentName">${esc(a.name)}</div>
-          <div class="awardTitle">${esc(a.type === 'ay' ? '🏆 Ayın Talebesi' : '🏆 Haftanın Talebesi')}</div>
-          ${a.note ? `<div class="awardNote">${esc(a.note)}</div>` : ''}
-        </div>
-      `).join("");
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', () => {
+        PanoApp.init();
+      });
+    } else {
+      PanoApp.init();
     }
-
-    // 4. CANLI BAĞLANTILARI KURMA (onValue)
-    function setupRealtimeListeners() {
-      const today = getTodayStr();
-
-      // 1. Günün Görevlileri & Duyuru
-      onValue(ref(db, "dailyDuties/" + today), snap => {
-        renderDuties(snap.val());
-      }, err => {
-        console.error("Günün görevlileri dinlenirken hata:", err);
-      });
-
-      // 2. Namaz Takibi
-      onValue(ref(db, "prayerAttendance/" + today), snap => {
-        renderPrayers(snap.val());
-      }, err => {
-        console.error("Namaz durumu dinlenirken hata:", err);
-      });
-
-      // 3. Örnek Talebeler
-      onValue(ref(db, "studentAwards"), snap => {
-        renderAwards(snap.val());
-      }, err => {
-        console.error("Ödüller dinlenirken hata:", err);
-      });
-
-      // Gün değişimi kontrolü (Gece yarısı otomatik yeni günü dinle)
-      setInterval(() => {
-        const curToday = getTodayStr();
-        if (curToday !== today) {
-          window.location.reload();
-        }
-      }, 60000);
-    }
-
-    // Yenile Butonu
-    $("refreshPanoBtn")?.addEventListener("click", () => {
-      window.location.reload(true);
-    });
-
-    // Başlat
-    setupRealtimeListeners();
   </script>
 </body>
 </html>

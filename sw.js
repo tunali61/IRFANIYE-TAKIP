@@ -1,5 +1,5 @@
-// sw.js - Ömer Avniyel Akademi PWA Service Worker (v10.6 - Kur'an Takip Kesintisiz Sayfa Girişi & Silme Koruması)
-const CACHE_NAME = 'oay-takip-cache-v10.6';
+// sw.js - İrfaniye Akademi PWA Service Worker (v10.6 - Kur'an Takip Kesintisiz Sayfa Girişi & Silme Koruması)
+const CACHE_NAME = 'irfaniye-takip-cache-v10.6';
 
 // Statik temel dosyalar (HTML ve JS dosyaları KESİNLİKLE buraya eklenmez, daima taze çekilir!)
 const STATIC_ASSETS = [

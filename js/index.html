@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Ömer Avniyel Akademi</title>
+  <meta name="description" content="Öğrenci Bilgi ve Takip Portalı">
+
+  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v5.6) -->
+  <script>
+    (function() {
+      var CURRENT_BUILD = '20260930_v5.6_QURAN_DINI_GRUPLAR_SYNC';
+      var savedBuild = localStorage.getItem('oay_app_build_version');
+
+      // Kullanıcının dilediğinde manuel de tetikleyebileceği evrensel sıfırlama fonksiyonu
+      window.forcePurgeAppCache = function() {
+        if (window.App && window.App.showToast) {
+          window.App.showToast('Önbellek siliniyor, en güncel sistem yükleniyor...', 'info');
+        }
+        try {
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              names.forEach(function(name) { caches.delete(name); });
+            });
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            });
+          }
+          localStorage.setItem('oay_app_build_version', CURRENT_BUILD);
+        } catch (e) {
+          console.warn('Cache purge error:', e);
+        }
+        setTimeout(function() {
+          window.location.href = window.location.pathname + '?reload=' + Date.now();
+        }, 250);
+      };
+
+      // Cihaz eski sürümde kalmışsa KULLANICIYA HİÇBİR ŞEY SORMADAN VE BUTON BEKLEMEDEN OTOMATİK SIFIRLA!
+      if (savedBuild !== CURRENT_BUILD) {
+        console.log('[Auto-Purge] Eski önbellek tespit edildi, otomatik temizleniyor:', savedBuild, '->', CURRENT_BUILD);
+        localStorage.setItem('oay_app_build_version', CURRENT_BUILD);
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            return Promise.all(names.map(function(n) { return caches.delete(n); }));
+          }).then(function() {
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                return Promise.all(regs.map(function(r) { return r.unregister(); }));
+              }).then(function() {
+                if (savedBuild) {
+                  window.location.href = window.location.pathname + '?v=' + Date.now();
+                }
+              });
+            } else if (savedBuild) {
+              window.location.href = window.location.pathname + '?v=' + Date.now();
+            }
+          });
+        } else if (savedBuild) {
+          window.location.href = window.location.pathname + '?v=' + Date.now();
+        }
+      }
+    })();
+  </script>
+  
+  <!-- WhatsApp ve Sosyal Medya Paylaşım Kartı (Open Graph) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Ömer Avniyel Akademi">
+  <meta property="og:description" content="Öğrenci Bilgi ve Takip Portalı">
+  <meta property="og:site_name" content="Ömer Avniyel Akademi">
+  <meta property="og:image" content="icon.svg">
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#059669">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="shortcut icon" href="icon.svg">
+
+  <!-- Apple iOS & Standalone Kısayol Desteği -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Ömer Avniyel Akademi">
+  <link rel="apple-touch-icon" href="icon.svg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas CDN (Veli ile Paylaşım İçin Görüntü Alma Kütüphanesi - Çift CDN Korumalı) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';"></script>
+  
+  <!-- Özel Stiller ve Yazdırma Kuralları -->
+  <link rel="stylesheet" href="css/custom.css">
+  
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d'
+            }
+          }
+        }
+      }
+    };
+
+    // Global Hata Yakalayıcı
+    window.addEventListener('error', function(e) {
+      if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT')) {
+        return;
+      }
+      var main = document.getElementById('main-content');
+      if (main && (!main.children || main.children.length === 0)) {
+        main.innerHTML = '<div style="max-width:640px;margin:40px auto;padding:24px;background:#fff1f2;border:2px solid #f43f5e;border-radius:20px;color:#9f1239;font-family:system-ui,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,0.1);">' +
+          '<h3 style="font-weight:900;font-size:18px;margin-bottom:8px;display:flex;align-items:center;gap:8px;"><span>⚠️</span> <span>Sistem Başlatma Uyarısı</span></h3>' +
+          '<p style="font-size:13px;margin-bottom:12px;color:#881337;">Sayfa çalışırken bir hata yakalandı:</p>' +
+          '<div style="background:#fff;padding:12px;border-radius:12px;border:1px solid #fecdd3;font-family:monospace;font-size:12px;word-break:break-all;color:#be123c;">' +
+          '<strong>' + (e.message || 'JavaScript Hatası') + '</strong><br><small style="color:#64748b;">Dosya: ' + (e.filename || 'Bilinmiyor') + ' | Satır: ' + (e.lineno || '?') + '</small></div>' +
+          '</div>';
+      }
+    });
+
+    // Dosya & Modül Yüklenme Kontrolü (Ağ gecikmelerini ve yanlış yerel çalıştırmaları güvenle yönetir)
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        if (!window.App || !window.Store) {
+          var main = document.getElementById('main-content');
+          if (main && (!main.children || main.children.length === 0)) {
+            main.innerHTML = '<div style="max-width:600px;margin:40px auto;padding:30px;background:#ffffff;border:2px solid #f59e0b;border-radius:24px;box-shadow:0 15px 35px rgba(0,0,0,0.08);font-family:system-ui,sans-serif;text-align:center;">' +
+              '<div style="font-size:44px;margin-bottom:12px;">📁</div>' +
+              '<h2 style="font-size:19px;font-weight:900;color:#92400e;margin-bottom:10px;">JavaScript Modülleri Bulunamadı</h2>' +
+              '<p style="font-size:14px;color:#475569;line-height:1.6;margin-bottom:16px;">' +
+              'Bu sayfanın açılabilmesi için <strong>js/</strong> ve <strong>css/</strong> klasörlerinin <code>index.html</code> dosyasının yanında bulunması gerekir.' +
+              '</p>' +
+              '<div style="background:#fef3c7;padding:12px 16px;border-radius:14px;font-size:12px;color:#78350f;text-align:left;line-height:1.5;margin-bottom:14px;">' +
+              '💡 <strong>Çözüm:</strong> Eğer bu dosyayı Masaüstüne tek başına kopyaladıysanız, lütfen <code>okul-yoklama-performans</code> klasörünün tamamını açıp içindeki <code>baslat.bat</code> veya <code>index.html</code> dosyasına tıklayınız.' +
+              '</div>' +
+              '<button onclick="location.reload()" style="padding:10px 22px;background:#059669;color:#fff;font-weight:bold;border:none;border-radius:14px;cursor:pointer;font-size:13px;">Sayfayı Yeniden Yükle ⟳</button>' +
+              '</div>';
+          }
+        }
+      }, 3000);
+    });
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- Üst Başlık & Menü -->
+  <header id="header-nav" class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <!-- app.js renderHeader() ile doldurulacak -->
+  </header>
+
+  <!-- Ana İçerik Alanı -->
+  <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto p-2.5 sm:p-6 lg:p-8">
+    <!-- app.js renderMainContent() ile doldurulacak -->
+  </main>
+
+  <!-- Alt Bilgi (Footer) -->
+  <footer class="no-print bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <strong>Kurs & Etüt Öğrenci Takip Sistemi</strong> • Ana Yönetici, Personel & Veli Ortak Portalı
+      </div>
+      <div class="text-[11px] text-slate-400">
+        Yoklama Durumları: <strong>Var</strong>, <strong>Yok</strong>, <strong>Geç</strong>, <strong>Takkesiz</strong>, <strong>İzinli</strong>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Bildirim Konteyneri -->
+  <div id="toast-container"></div>
+
+  <!-- Soldan Kayar Menü Penceresi (Slide-Over Drawer) -->
+  <div id="side-drawer-container" class="fixed inset-0 z-50 pointer-events-none transition-all duration-300">
+    <!-- Karartma Arka Planı -->
+    <div id="side-drawer-backdrop" onclick="window.App.closeDrawer()" 
+      class="absolute inset-0 bg-slate-900/60 opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+
+    <!-- Soldan Kayarak Açılan Menü Paneli -->
+    <div id="side-drawer-panel" 
+      class="absolute top-0 left-0 bottom-0 w-80 sm:w-96 max-w-[85vw] bg-white shadow-2xl border-r border-slate-200 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-auto">
+      <!-- İçerik app.js renderDrawer() ile dinamik doldurulacaktır -->
+    </div>
+  </div>
+
+  <!-- Excel'den Toplu Öğrenci Ekleme Modalı (Sadece Ana Yönetici) -->
+  <div id="bulk-import-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div>
+          <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+            <span>📋 Excel'den Toplu Öğrenci Ekle</span>
+          </h3>
+          <p class="text-xs text-slate-500">Excel'deki satırları kopyalayıp aşağıdaki kutuya yapıştırın</p>
+        </div>
+        <button onclick="window.App.closeBulkImportModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+          <div class="font-bold text-slate-800">Sütun Sırası (Excel'den kopyalanacak alanlar):</div>
+          <div class="font-mono text-[11px] text-emerald-800 bg-white p-2 rounded border border-slate-200">
+            No &nbsp;|&nbsp; Adı Soyadı &nbsp;|&nbsp; Sınıfı &nbsp;|&nbsp; Okulu &nbsp;|&nbsp; Seviye &nbsp;|&nbsp; Etüt Hocası &nbsp;|&nbsp; Dahili Hocası
+          </div>
+        </div>
+
+        <div>
+          <textarea id="bulk-paste-textarea" rows="8" placeholder="Excel tablonuzu kopyalayıp (Ctrl+C) buraya yapıştırın (Ctrl+V)..."
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-800 focus:bg-white focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeBulkImportModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            İptal
+          </button>
+          <button type="button" onclick="window.App.handleBulkPasteImport()" 
+            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition">
+            Öğrencileri Kaydet ve Yükle
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tekil Öğrenci Ekleme & Düzenleme Modalı (Şifre Alanı Dahil) -->
+  <div id="student-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 id="student-modal-title" class="text-base font-black text-slate-900">Öğrenci & Şifre Kaydı</h3>
+        <button onclick="window.App.closeStudentModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+      </div>
+
+      <form id="student-form" onsubmit="window.App.saveStudentFromModal(event)" class="space-y-3.5">
+        <input type="hidden" id="modal-student-id">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">OKUL / KURS NO *</label>
+            <input type="text" id="modal-student-no" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">SINIF / ŞUBE *</label>
+            <input type="text" id="modal-student-class" required placeholder="Örn: 5. Sınıf, 8. Sınıf" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">ÖĞRENCİ ADI *</label>
+            <input type="text" id="modal-student-fn" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">SOYADI *</label>
+            <input type="text" id="modal-student-ln" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Veli Giriş Şifresi Belirleme Alanı (Ana Yönetici Tarafından) -->
+        <div class="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200">
+          <label class="block text-xs font-bold text-emerald-900 mb-1 uppercase">VELİ GİRİŞ ŞİFRESİ (Ana Yönetici Belirler)</label>
+          <input type="text" id="modal-student-pass" required placeholder="Örn: 123" 
+            class="w-full px-3 py-2 bg-white border border-emerald-300 rounded-lg text-sm font-mono font-bold text-emerald-900 focus:outline-none">
+          <p class="text-[11px] text-emerald-700 mt-1">
+            💡 Veli sisteme giriş yaparken öğrencinin Adı Soyadı ve bu şifreyi kullanacaktır.
+          </p>
+        </div>
+
+        <!-- Hoca ve Yatakhane Bilgileri -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">ETÜT HOCASI</label>
+            <input type="text" id="modal-student-etut" placeholder="Örn: Yasin Ekinci" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">DAHİLİ (DİNİ) HOCASI</label>
+            <input type="text" id="modal-student-dahili" placeholder="Örn: Selim Bozkurt" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">YATAKHANE / ODA NO</label>
+            <input type="text" id="modal-student-yatakhane" placeholder="Örn: Oda 101" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-indigo-900 mb-1">ORTAK AİLE KODU</label>
+            <input type="text" id="modal-student-family" placeholder="Örn: KALKAN2026" 
+              class="w-full px-3 py-2 bg-indigo-50/70 border border-indigo-200 rounded-lg text-sm font-mono font-bold text-indigo-900 uppercase focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">VELİ ADI SOYADI</label>
+            <input type="text" id="modal-student-father" placeholder="Baba veya Anne Adı" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">VELİ İLETİŞİM TELEFONU</label>
+            <input type="tel" id="modal-student-phone" placeholder="0555 123 45 67" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Kayıt Durumu: Aktif / Pasif -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <label class="block text-xs font-bold text-slate-700 mb-1">KAYIT DURUMU (AKTİF / PASİF)</label>
+          <select id="modal-student-status" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-800 focus:outline-none">
+            <option value="active">🟢 Aktif (Tüm günlük yoklama ve listelerde görünür)</option>
+            <option value="passive">⏸️ Pasif (Geçmiş kayıtlar silinmez, yoklama listelerinden gizlenir)</option>
+          </select>
+          <p class="text-[11px] text-slate-500 mt-1">
+            💡 Pasife alınan talebelerin geçmiş yoklama ve puan verileri korunur, ancak yeni yoklamalara çıkarılmaz.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeStudentModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Vazgeç
+          </button>
+          <button type="submit" 
+            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition">
+            Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Personel / Hoca Kendi Şifresini Değiştirme Modalı -->
+  <div id="staff-self-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 relative overflow-hidden">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 text-lg font-black flex items-center justify-center shadow-inner">
+            🔑
+          </div>
+          <div>
+            <h3 class="text-base font-black text-slate-900">Eğitmen Giriş Şifremi Değiştir</h3>
+            <p id="staff-modal-user-name" class="text-xs text-slate-500 font-bold"></p>
+          </div>
+        </div>
+        <button type="button" onclick="window.App.closeStaffSelfPasswordModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+      </div>
+
+      <div class="p-3 bg-amber-50/70 rounded-2xl border border-amber-200 text-xs text-amber-900 mb-4 flex items-center justify-between">
+        <span>Mevcut Şifreniz:</span>
+        <strong id="staff-modal-current-pass" class="font-mono bg-white px-2.5 py-1 rounded-lg border border-amber-300 text-amber-950 font-bold">123</strong>
+      </div>
+
+      <form id="staff-self-password-form" onsubmit="window.App.handleStaffSelfPasswordSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1 uppercase">YENİ GİRİŞ ŞİFRENİZ *</label>
+          <input type="text" id="staff-self-new-password" required minlength="3" placeholder="Yeni şifrenizi giriniz (en az 3 karakter)" 
+            class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-amber-500 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1 uppercase">YENİ ŞİFRE (TEKRAR) *</label>
+          <input type="text" id="staff-self-confirm-password" required minlength="3" placeholder="Yeni şifrenizi tekrar giriniz" 
+            class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-amber-500 transition">
+        </div>
+
+        <p class="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          💡 Şifrenizi değiştirdiğinizde sisteme bir sonraki girişinizde bu yeni şifrenizi kullanacaksınız. Ana Yönetici (Müdür) gerektiğinde şifrenizi sistem panelinden görebilir.
+        </p>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeStaffSelfPasswordModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Vazgeç
+          </button>
+          <button type="submit" 
+            class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow transition">
+            Şifremi Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Doğrudan HTML'e Gömülü Acil Önbellek & Sürüm Sıfırlama Butonu (Her Durumda, Giriş Yapılmasa Bile %100 Görünür) -->
+  <div id="quick-cache-clear-bar" class="no-print fixed bottom-3 right-3 z-50">
+    <button type="button" onclick="window.forcePurgeAppCache()" 
+      class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-900/95 hover:bg-slate-900 text-amber-300 hover:text-amber-200 border-2 border-amber-400 shadow-2xl text-xs font-black backdrop-blur transition-all active:scale-95 cursor-pointer"
+      title="Eski önbelleği temizleyip en yeni sistemi zorla yükler">
+      <span class="text-sm">🔄</span>
+      <span>Önbelleği Temizle (v5.5)</span>
+    </button>
+  </div>
+
+  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v5.5 Sürüm İmzası) -->
+  <script src="js/hadisler.js?v=5.5"></script>
+  <script src="js/store.js?v=5.5"></script>
+  <script src="js/attendance.js?v=5.5"></script>
+  <script src="js/leave-tracker.js?v=5.5"></script>
+  <script src="js/leave-return.js?v=5.5"></script>
+  <script src="js/quran-tracker.js?v=5.5"></script>
+  <script src="js/performance.js?v=5.5"></script>
+  <script src="js/test-results.js?v=5.5"></script>
+  <script src="js/leaderboard.js?v=5.5"></script>
+  <script src="js/parent-portal.js?v=5.5"></script>
+  <script src="js/student-excel.js?v=5.5"></script>
+  <script src="js/app.js?v=5.5"></script>
+
+  <!-- Service Worker Kaydı (Kısayol ve PWA Hızlı Başlatma) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js?v=5.5').then(function(reg) {
+          if (reg) {
+            reg.update();
+          }
+        }).catch(function(err) {
+          console.warn('[PWA] Service Worker kaydı:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,9 +1,9 @@
-﻿# PowerShell Yerel Sunucu ve Uygulama Başlatıcı
+# PowerShell Yerel Sunucu ve Uygulama Başlatıcı
 $Port = 8080
 $Root = $PSScriptRoot
 
 Write-Host "==========================================================" -ForegroundColor Cyan
-Write-Host "  Öğrenci Yoklama & Performans Takip Sistemi Başlatılıyor  " -ForegroundColor Green
+Write-Host "    İrfaniye Akademi - Talebe Takip Sistemi Başlatılıyor  " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "Dizin: $Root" -ForegroundColor Yellow
 Write-Host "Port : $Port" -ForegroundColor Yellow
