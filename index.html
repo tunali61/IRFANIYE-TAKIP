@@ -9,10 +9,10 @@
   <title>İrfaniye Akademi</title>
   <meta name="description" content="İrfaniye Akademi Öğrenci Bilgi ve Takip Portalı">
 
-  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v10.7 - PERSONEL YÖNETİMİ & TELEFON GİRİŞ SENKRONİZASYONU) -->
+  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v10.9 - PERSONEL YÖNETİMİ & TELEFON GİRİŞ SENKRONİZASYONU) -->
   <script>
     (function() {
-      var CURRENT_BUILD = '20261016_v10.7_IRFANIYE_AKADEMI';
+      var CURRENT_BUILD = '20261016_v10.9_IRFANIYE_AKADEMI';
       var savedBuild = localStorage.getItem('irfaniye_app_build_version');
 
       // Kullanıcının dilediğinde manuel de tetikleyebileceği evrensel sıfırlama fonksiyonu
@@ -386,36 +386,54 @@
       class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-900/95 hover:bg-slate-900 text-amber-300 hover:text-amber-200 border-2 border-amber-400 shadow-2xl text-xs font-black backdrop-blur transition-all active:scale-95 cursor-pointer"
       title="Eski önbelleği temizleyip en yeni sistemi zorla yükler">
       <span class="text-sm">🔄</span>
-      <span>Önbelleği Temizle (v10.7)</span>
+      <span>Önbelleği Temizle (v10.9)</span>
     </button>
   </div>
 
-  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v10.7 Sürüm İmzası) -->
-  <script src="js/hadisler.js?v=10.7"></script>
-  <script src="js/store.js?v=10.7"></script>
-  <script src="js/attendance.js?v=10.7"></script>
-  <script src="js/leave-tracker.js?v=10.7"></script>
-  <script src="js/leave-return.js?v=10.7"></script>
-  <script src="js/quran-tracker.js?v=10.7"></script>
-  <script src="js/performance.js?v=10.7"></script>
-  <script src="js/omr-scanner.js?v=10.7"></script>
-  <script src="js/test-results.js?v=10.7"></script>
-  <script src="js/mock-exam.js?v=10.7"></script>
-  <script src="js/leaderboard.js?v=10.7"></script>
-  <script src="js/parent-portal.js?v=10.7"></script>
-  <script src="js/app.js?v=10.7"></script>
+  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v10.9 Sürüm İmzası) -->
+  <script src="js/hadisler.js?v=10.9"></script>
+  <script src="js/store.js?v=10.9"></script>
 
-  <!-- v10.7 Doğrudan Gömülü Personel Silme Koruması & Telefon Giriş Senkronizasyon Motoru -->
+  <!-- v10.9 STORE MOTORU: app.js yüklenmeden ÖNCE devreye girer (Silinen personel asla geri gelmez, telefon girişi %100 çalışır) -->
   <script>
     (function() {
-      if (!window.Store || !window.App) return;
+      if (!window.Store) return;
       var STAFF_KEY = 'irfaniye_staff';
       var DEL_STAFF_KEY = 'irfaniye_deleted_staff_ids_v1';
       var CUST_STAFF_KEY = 'irfaniye_staff_customized_v1';
       var STAFF_TIME_KEY = 'irfaniye_staff_updated_at_v1';
+      var STUDENTS_KEY = 'irfaniye_students';
       var BACKUP_FB = 'https://oay-takip-default-rtdb.firebaseio.com';
 
       window.Store.getBackupFirebaseUrl = function() { return BACKUP_FB; };
+
+      // 1. Otomatik hoca senkronizasyonunun silinen varsayılan personelleri geri getirmesini %100 engelle
+      window.Store.autoSyncStaffAndClassTeachers = function() {
+        return;
+      };
+
+      window.Store.normalizeSearchKey = function(str) {
+        if (!str) return '';
+        return str
+          .toString()
+          .trim()
+          .replace(/İ/g, 'i')
+          .replace(/I/g, 'i')
+          .replace(/ı/g, 'i')
+          .replace(/i/g, 'i')
+          .replace(/Ğ/g, 'g')
+          .replace(/ğ/g, 'g')
+          .replace(/Ü/g, 'u')
+          .replace(/ü/g, 'u')
+          .replace(/Ş/g, 's')
+          .replace(/ş/g, 's')
+          .replace(/Ö/g, 'o')
+          .replace(/ö/g, 'o')
+          .replace(/Ç/g, 'c')
+          .replace(/ç/g, 'c')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '');
+      };
 
       window.Store.getDeletedStaffIds = function() {
         try {
@@ -427,9 +445,7 @@
       window.Store.saveDeletedStaffIds = function(map) {
         try {
           localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(map || {}));
-          if (this.isCloudEnabled()) {
-            this.syncToCloud('irfaniye_data/deleted_staff_ids', map || {});
-          }
+          this.syncToCloud('irfaniye_data/deleted_staff_ids', map || {});
         } catch(e) {}
       };
 
@@ -439,74 +455,207 @@
         var cleanEndpoint = (endpoint || '').replace(/^\/+/, '').replace(/^kurs_data\//, 'irfaniye_data/');
         var bodyStr = JSON.stringify(data);
         var anyOk = false;
-        if (baseUrl) {
+        if (backupUrl) {
           try {
-            var r1 = await fetch(baseUrl + '/' + cleanEndpoint + '.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: bodyStr });
-            if (r1.ok) anyOk = true;
+            var r2 = await fetch(backupUrl + '/' + cleanEndpoint + '.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: bodyStr
+            });
+            if (r2.ok) anyOk = true;
           } catch(e) {}
         }
-        if (backupUrl && backupUrl !== baseUrl) {
+        if (baseUrl && baseUrl !== backupUrl) {
           try {
-            var r2 = await fetch(backupUrl + '/' + cleanEndpoint + '.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: bodyStr });
-            if (r2.ok) anyOk = true;
+            var r1 = await fetch(baseUrl + '/' + cleanEndpoint + '.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: bodyStr
+            });
+            if (r1.ok) anyOk = true;
           } catch(e) {}
         }
         return anyOk;
       };
 
-      var origSyncFromCloud = window.Store.syncFromCloud.bind(window.Store);
+      // Özel korumalı bulut kanalı: Eski v10.6 sekmeleri veya TV ekranları bu kanalı asla ezemez!
+      window.Store.pushStaffAuthToCloud = async function() {
+        var staffList = this.getStaff();
+        var delMap = this.getDeletedStaffIds();
+        var isCust = localStorage.getItem(CUST_STAFF_KEY) === 'true';
+        var nowIso = localStorage.getItem(STAFF_TIME_KEY) || new Date().toISOString();
+        var payload = {
+          staff: staffList,
+          deleted_staff_ids: delMap,
+          staff_customized: isCust,
+          updatedAt: nowIso
+        };
+        try {
+          await fetch(BACKUP_FB + '/irfaniye_v10_auth.json', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } catch(e) {}
+        try {
+          await this.syncToCloud('irfaniye_data/staff', staffList);
+          await this.syncToCloud('irfaniye_data/deleted_staff_ids', delMap);
+          await this.syncToCloud('irfaniye_data/staff_customized', isCust);
+          await this.syncToCloud('irfaniye_data/staff_updatedAt', nowIso);
+        } catch(e) {}
+        return true;
+      };
+
+      window.Store.pullStaffAuthFromCloud = async function() {
+        try {
+          var r = await fetch(BACKUP_FB + '/irfaniye_v10_auth.json?t=' + Date.now(), {
+            headers: { 'Accept': 'application/json' },
+            cache: 'no-store'
+          });
+          if (!r.ok) return false;
+          var authData = await r.json();
+
+          var localDel = this.getDeletedStaffIds();
+          var localIsCust = localStorage.getItem(CUST_STAFF_KEY) === 'true';
+          var localRaw = localStorage.getItem(STAFF_KEY);
+          var localStaff = [];
+          try { if (localRaw) localStaff = JSON.parse(localRaw) || []; } catch(e) {}
+          var localCustomItems = Array.isArray(localStaff) ? localStaff.filter(function(s) {
+            return s && s.id && (s.isCustomAdded || !/^stf_[1-8]$/.test(s.id) || (s.password && s.password !== '123'));
+          }) : [];
+
+          // Eğer bulutta henüz irfaniye_v10_auth yoksa ve bu cihazda özel personel veya yönetici oturumu varsa buluta gönder
+          if (!authData || typeof authData !== 'object') {
+            if (localIsCust || localCustomItems.length > 0 || Object.keys(localDel).length > 0) {
+              await this.pushStaffAuthToCloud();
+            }
+            return true;
+          }
+
+          // Son 15 saniye içinde bu cihazda personel düzenlendiyse yerel veriyi koru ve buluta bas
+          var timeSinceEdit = this._lastStaffEditTime ? (Date.now() - this._lastStaffEditTime) : 999999;
+          if (timeSinceEdit < 15000) {
+            await this.pushStaffAuthToCloud();
+            return true;
+          }
+
+          var cloudDel = (authData.deleted_staff_ids && typeof authData.deleted_staff_ids === 'object') ? authData.deleted_staff_ids : {};
+          var mergedDel = Object.assign({}, localDel, cloudDel);
+          localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(mergedDel));
+
+          if (authData.staff_customized === true || mergedDel['__ALL_DEFAULTS_CLEARED__']) {
+            localStorage.setItem(CUST_STAFF_KEY, 'true');
+          }
+
+          var cloudStaff = Array.isArray(authData.staff)
+            ? authData.staff
+            : (authData.staff && typeof authData.staff === 'object' ? Object.values(authData.staff).filter(Boolean) : []);
+
+          // Buluttaki personeller ile bu bilgisayarda önceden eklenmiş özel personelleri birleştir (silinenleri hariç tut)
+          var byName = {};
+          var combined = [];
+          cloudStaff.concat(localCustomItems).forEach(function(stf) {
+            if (!stf || !stf.id || !stf.fullName) return;
+            if (mergedDel[stf.id]) return;
+            var n = window.Store.normalizeSearchKey(stf.fullName);
+            if (!n || mergedDel['name_' + n]) return;
+            if (mergedDel['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(stf.id) && !stf.isCustomAdded) return;
+            if (!byName[n]) {
+              byName[n] = stf;
+              combined.push(stf);
+            } else {
+              // Daha yeni veya özel şifreli olanı tercih et
+              var existing = byName[n];
+              if ((stf.password && stf.password !== '123' && existing.password === '123') ||
+                  (stf.updatedAt && (!existing.updatedAt || stf.updatedAt > existing.updatedAt))) {
+                var idx = combined.indexOf(existing);
+                if (idx !== -1) combined[idx] = stf;
+                byName[n] = stf;
+              }
+            }
+          });
+
+          if (combined.length > 0 || authData.staff_customized === true || mergedDel['__ALL_DEFAULTS_CLEARED__'] || localStorage.getItem(CUST_STAFF_KEY) === 'true') {
+            localStorage.setItem(STAFF_KEY, JSON.stringify(combined));
+            if (combined.length > cloudStaff.length) {
+              this.pushStaffAuthToCloud();
+            }
+          }
+          return true;
+        } catch(e) {
+          return false;
+        }
+      };
+
       window.Store.syncFromCloud = async function() {
+        await this.pullStaffAuthFromCloud();
+
         var baseUrl = this.getFirebaseUrl();
         var backupUrl = BACKUP_FB;
         var pData = null, bData = null;
-        if (baseUrl) {
+        if (backupUrl) {
           try {
-            var r1 = await fetch(baseUrl + '/irfaniye_data.json', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
-            if (r1.ok) pData = await r1.json();
-          } catch(e) {}
-        }
-        if (backupUrl && backupUrl !== baseUrl) {
-          try {
-            var r2 = await fetch(backupUrl + '/irfaniye_data.json', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            var r2 = await fetch(backupUrl + '/irfaniye_data.json?t=' + Date.now(), { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
             if (r2.ok) bData = await r2.json();
           } catch(e) {}
         }
+        if (baseUrl && baseUrl !== backupUrl) {
+          try {
+            var r1 = await fetch(baseUrl + '/irfaniye_data.json?t=' + Date.now(), { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (r1.ok) pData = await r1.json();
+          } catch(e) {}
+        }
+
+        // Her zaman çalışan yedek bulutu (bData) önceliklendir (eski salt-okunur pData'nın yeni veriyi ezmesini engelle)
         var cloudData = null;
         if (pData && bData) {
-          var pT = pData.staff_updatedAt || pData.lastSyncedAt || '';
-          var bT = bData.staff_updatedAt || bData.lastSyncedAt || '';
-          cloudData = (bT > pT) ? Object.assign({}, pData, bData) : Object.assign({}, bData, pData);
+          cloudData = Object.assign({}, pData, bData);
         } else {
-          cloudData = pData || bData;
+          cloudData = bData || pData;
         }
+
+        // Personel listesini korumaya al (applyFullCloudSync içindeki eski kodun personeli ezmesini önle)
+        var savedStaffBeforeSync = localStorage.getItem(STAFF_KEY);
+        var savedCustBeforeSync = localStorage.getItem(CUST_STAFF_KEY);
+        var savedDelBeforeSync = localStorage.getItem(DEL_STAFF_KEY);
+
         if (cloudData) {
           if (cloudData.deleted_staff_ids && typeof cloudData.deleted_staff_ids === 'object') {
-            var mergedDel = Object.assign({}, this.getDeletedStaffIds(), cloudData.deleted_staff_ids);
-            localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(mergedDel));
+            var mDel = Object.assign({}, this.getDeletedStaffIds(), cloudData.deleted_staff_ids);
+            localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(mDel));
           }
           if (cloudData.staff_customized === true) {
             localStorage.setItem(CUST_STAFF_KEY, 'true');
           }
           this.applyFullCloudSync(cloudData);
-          var delMap = this.getDeletedStaffIds();
-          var timeSince = this._lastStaffEditTime ? (Date.now() - this._lastStaffEditTime) : 999999;
-          if (timeSince >= 20000) {
-            var cStaff = Array.isArray(cloudData.staff) ? cloudData.staff : (cloudData.staff && typeof cloudData.staff === 'object' ? Object.values(cloudData.staff).filter(Boolean) : []);
-            if (cStaff.length > 0 || cloudData.staff_customized === true || delMap['__ALL_DEFAULTS_CLEARED__']) {
-              var cleanCStaff = cStaff.filter(function(stf) {
-                if (!stf || !stf.id) return false;
-                if (delMap[stf.id]) return false;
-                var n = window.Store.normalizeSearchKey(stf.fullName);
-                if (n && delMap['name_' + n]) return false;
-                if (delMap['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(stf.id) && !stf.isCustomAdded) return false;
-                return true;
-              });
-              localStorage.setItem(STAFF_KEY, JSON.stringify(cleanCStaff));
+        }
+
+        // Korumalı personel listesini geri yükle ve tekrar filtrele
+        if (savedCustBeforeSync === 'true') localStorage.setItem(CUST_STAFF_KEY, 'true');
+        if (savedDelBeforeSync) {
+          var curDel = this.getDeletedStaffIds();
+          try {
+            var prevDel = JSON.parse(savedDelBeforeSync) || {};
+            localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(Object.assign({}, prevDel, curDel)));
+          } catch(e) {}
+        }
+        if (savedStaffBeforeSync !== null) {
+          localStorage.setItem(STAFF_KEY, savedStaffBeforeSync);
+        }
+        await this.pullStaffAuthFromCloud();
+
+        // Eğer bu cihazda yönetici oturumu açıksa ve bulutta (bData) henüz öğrenci listesi yoksa öğrencileri de buluta aktar
+        try {
+          var sessRaw = sessionStorage.getItem('irfaniye_active_session') || localStorage.getItem('irfaniye_active_session');
+          var sess = sessRaw ? JSON.parse(sessRaw) : null;
+          if (sess && (sess.role === 'superadmin' || sess.staffId === 'admin_root')) {
+            if (!bData || !bData.students) {
+              this.syncToCloud('irfaniye_data/students', this.getAllStudents());
             }
           }
-          return { success: true, message: 'Güncel veriler senkronize edildi.' };
-        }
-        return origSyncFromCloud();
+        } catch(e) {}
+
+        return { success: true, message: 'Güncel veriler senkronize edildi.' };
       };
 
       window.Store.getStaff = function() {
@@ -535,7 +684,10 @@
             localStorage.setItem(STAFF_KEY, JSON.stringify([]));
             return [];
           }
-          return typeof DEFAULT_STAFF !== 'undefined' ? DEFAULT_STAFF : [];
+          var defs = (typeof DEFAULT_STAFF !== 'undefined' ? DEFAULT_STAFF : []).filter(function(s) {
+            return s && !delMap[s.id] && !delMap['name_' + window.Store.normalizeSearchKey(s.fullName)];
+          });
+          return defs;
         } catch(e) { return []; }
       };
 
@@ -546,10 +698,7 @@
         localStorage.setItem(CUST_STAFF_KEY, 'true');
         localStorage.setItem(STAFF_TIME_KEY, nowIso);
         localStorage.setItem(STAFF_KEY, JSON.stringify(cleanList));
-        this.syncToCloud('irfaniye_data/staff', cleanList);
-        this.syncToCloud('irfaniye_data/deleted_staff_ids', this.getDeletedStaffIds());
-        this.syncToCloud('irfaniye_data/staff_customized', true);
-        this.syncToCloud('irfaniye_data/staff_updatedAt', nowIso);
+        this.pushStaffAuthToCloud();
       };
 
       window.Store.addStaff = function(member) {
@@ -559,13 +708,18 @@
         var delMap = this.getDeletedStaffIds();
         if (normName && delMap['name_' + normName]) {
           delete delMap['name_' + normName];
-          this.saveDeletedStaffIds(delMap);
+          localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(delMap));
         }
         var existingIdx = list.findIndex(function(s) { return window.Store.normalizeSearchKey(s.fullName) === normName; });
         if (existingIdx !== -1) {
+          if (delMap[list[existingIdx].id]) {
+            delete delMap[list[existingIdx].id];
+            localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(delMap));
+          }
           list[existingIdx] = Object.assign({}, list[existingIdx], {
             fullName: fullNameClean,
             role: member.role || list[existingIdx].role || 'Eğitmen',
+            phone: member.phone || list[existingIdx].phone || '',
             password: (member.password || '123').toString().trim(),
             isCustomAdded: true,
             updatedAt: new Date().toISOString()
@@ -576,6 +730,8 @@
         var newMember = Object.assign({}, member, {
           fullName: fullNameClean,
           id: 'stf_' + Date.now(),
+          role: member.role || 'Eğitmen',
+          phone: member.phone || '',
           password: (member.password || '123').toString().trim(),
           isCustomAdded: true,
           updatedAt: new Date().toISOString()
@@ -583,6 +739,33 @@
         list.push(newMember);
         this.saveStaff(list);
         return newMember;
+      };
+
+      window.Store.updateStaff = function(id, updated) {
+        var list = this.getStaff();
+        var idx = list.findIndex(function(s) { return s.id === id; });
+        if (idx !== -1) {
+          var cleanUpdated = Object.assign({}, updated);
+          if (cleanUpdated.password !== undefined) {
+            cleanUpdated.password = cleanUpdated.password.toString().trim();
+          }
+          if (cleanUpdated.fullName !== undefined) {
+            cleanUpdated.fullName = cleanUpdated.fullName.toString().trim().toLocaleUpperCase('tr-TR');
+          }
+          list[idx] = Object.assign({}, list[idx], cleanUpdated, {
+            isCustomAdded: true,
+            updatedAt: new Date().toISOString()
+          });
+          this.saveStaff(list);
+          return list[idx];
+        }
+        return null;
+      };
+
+      window.Store.updateStaffPassword = function(id, newPassword) {
+        var updated = this.updateStaff(id, { password: (newPassword || '123').toString().trim() });
+        if (!updated) return { success: false, message: 'Personel bulunamadı.' };
+        return { success: true };
       };
 
       window.Store.deleteStaff = function(id) {
@@ -622,18 +805,459 @@
         this.saveStaff([]);
       };
 
-      var origHandleLogin = window.App.handleUserLogin.bind(window.App);
+      // 2. Evrensel Kullanıcı ve Personel Doğrulama Motoru (Mobil Klavye, Türkçe Karakter, Kısmi İsim & Hoca Sütunu Uyumlu)
+      window.Store.authenticateUser = function(usernameInput, passwordInput) {
+        if (!usernameInput || !passwordInput) return null;
+
+        var rawInput = usernameInput.toString().trim();
+        var normInput = this.normalizeSearchKey(rawInput);
+        var rawPass = passwordInput.toString().trim();
+        var normPass = this.normalizeSearchKey(rawPass);
+
+        if (!normInput || !rawPass) return null;
+
+        // 0. Kurum Yöneticisi Kontrolü
+        if (
+          normInput === 'admin' ||
+          normInput === 'yonetici' ||
+          normInput === 'mudur' ||
+          normInput === 'yonetim' ||
+          normInput === 'superadmin' ||
+          normInput === 'kurumyoneticisi'
+        ) {
+          if (this.verifyAdminPassword(rawPass)) {
+            return {
+              requiresAdminOtp: true,
+              role: 'superadmin',
+              staffId: 'admin_root',
+              name: 'Kurum Yöneticisi',
+              email: this.getSettings().adminEmail || 'admin@irfaniye.com'
+            };
+          }
+          return null;
+        }
+
+        var checkPassMatch = function(expectedPass) {
+          var exp = (expectedPass || '123').toString().trim();
+          var normExp = window.Store.normalizeSearchKey(exp);
+          if (rawPass === exp) return true;
+          if (rawPass.toLowerCase() === exp.toLowerCase()) return true;
+          if (normPass && normExp && normPass === normExp) return true;
+          if (exp === '123' && (rawPass === '123' || normPass === '123')) return true;
+          return false;
+        };
+
+        // 1. Personel / Hoca Listesi Kontrolü (getStaff)
+        var staffList = this.getStaff();
+        var inputWords = rawInput.split(/\s+/).map(function(w) { return window.Store.normalizeSearchKey(w); }).filter(Boolean);
+        var matchedStaff = staffList.find(function(s) {
+          if (!s || !s.fullName) return false;
+          var sNorm = window.Store.normalizeSearchKey(s.fullName);
+          var sWords = s.fullName.split(/\s+/).map(function(w) { return window.Store.normalizeSearchKey(w); }).filter(Boolean);
+          var sPhoneNorm = s.phone ? s.phone.replace(/\D/g, '') : '';
+          var inputDigits = rawInput.replace(/\D/g, '');
+
+          var isIdMatch = s.id && (s.id.toLowerCase() === rawInput.toLowerCase());
+          var isPhoneMatch = sPhoneNorm.length >= 7 && inputDigits.length >= 7 && (sPhoneNorm.endsWith(inputDigits) || inputDigits.endsWith(sPhoneNorm));
+          var isExactOrSubMatch = sNorm === normInput || (normInput.length >= 3 && (sNorm.includes(normInput) || normInput.includes(sNorm)));
+          var isWordMatch = inputWords.length > 0 && sWords.length > 0 && inputWords[0].length >= 3 && sWords.includes(inputWords[0]);
+
+          if (!isExactOrSubMatch && !isWordMatch && !isIdMatch && !isPhoneMatch) return false;
+          return checkPassMatch(s.password || '123');
+        });
+
+        if (matchedStaff) {
+          return {
+            role: 'staff',
+            staffId: matchedStaff.id,
+            name: matchedStaff.fullName,
+            password: matchedStaff.password || '123',
+            staffRole: matchedStaff.role || 'Etüt & Dahili Hocası',
+            canEditStudents: false,
+            canManageStaff: false,
+            canEditSettings: false
+          };
+        }
+
+        // 1b. Öğrenci Tablosunda (Etüt Hocası / Dahili Hoca Sütununda) Atanmış Hoca Kontrolü
+        var students = this.getAllStudents();
+        var delStaffMap = this.getDeletedStaffIds();
+        if (normInput.length >= 3 && !delStaffMap['name_' + normInput]) {
+          var assignedTeacherName = null;
+          var teacherStudentPasswords = [];
+          for (var i = 0; i < students.length; i++) {
+            var st = students[i];
+            if (!st) continue;
+            var etut = (st.etutHocasi || '').trim();
+            var dahili = (st.dahiliHoca || '').trim();
+            var etutNorm = this.normalizeSearchKey(etut);
+            var dahiliNorm = this.normalizeSearchKey(dahili);
+
+            if (etutNorm && etutNorm !== 'genel' && (etutNorm === normInput || etutNorm.includes(normInput) || normInput.includes(etutNorm))) {
+              if (!delStaffMap['name_' + etutNorm]) {
+                if (!assignedTeacherName) assignedTeacherName = etut;
+                if (st.password) teacherStudentPasswords.push(st.password);
+              }
+            }
+            if (dahiliNorm && dahiliNorm !== 'genel' && (dahiliNorm === normInput || dahiliNorm.includes(normInput) || normInput.includes(dahiliNorm))) {
+              if (!delStaffMap['name_' + dahiliNorm]) {
+                if (!assignedTeacherName) assignedTeacherName = dahili;
+                if (st.password) teacherStudentPasswords.push(st.password);
+              }
+            }
+          }
+          if (assignedTeacherName) {
+            var passOk = checkPassMatch('123') || teacherStudentPasswords.some(function(p) { return checkPassMatch(p); });
+            if (passOk) {
+              return {
+                role: 'staff',
+                staffId: 'stf_assigned_' + this.normalizeSearchKey(assignedTeacherName),
+                name: assignedTeacherName.toLocaleUpperCase('tr-TR'),
+                password: rawPass,
+                staffRole: 'Etüt & Dahili Hocası',
+                canEditStudents: false,
+                canManageStaff: false,
+                canEditSettings: false
+              };
+            }
+          }
+        }
+
+        // 2. Öğrenci / Veli Kontrolü
+        var matchedStudent = students.find(function(s) {
+          if (!s) return false;
+          var stdNo = (s.studentNo || '').toString().trim();
+          var stdFamNorm = window.Store.normalizeSearchKey(s.familyCode);
+          var stdFullNorm = window.Store.normalizeSearchKey((s.firstName || '') + ' ' + (s.lastName || ''));
+          var firstParts = (s.firstName || '').trim().split(/\s+/);
+          var stdFirstLastNorm = window.Store.normalizeSearchKey((firstParts[0] || '') + ' ' + (s.lastName || ''));
+          var lastNameNorm = window.Store.normalizeSearchKey(s.lastName);
+          var firstNameNorm = window.Store.normalizeSearchKey(firstParts[0]);
+
+          var isNoMatch = stdNo && (stdNo === rawInput || normInput === stdNo.toLowerCase());
+          var isFamMatch = stdFamNorm && stdFamNorm === normInput;
+          var isFullNameMatch = stdFullNorm && stdFullNorm === normInput;
+          var isFirstLastMatch = stdFirstLastNorm && stdFirstLastNorm === normInput;
+          var isLooseMatch = normInput.length >= 4 && firstNameNorm && lastNameNorm && normInput.includes(lastNameNorm) && normInput.includes(firstNameNorm);
+
+          if (!isNoMatch && !isFamMatch && !isFullNameMatch && !isFirstLastMatch && !isLooseMatch) return false;
+
+          var currentPass = (s.password || '123').toString().trim();
+          return checkPassMatch(currentPass) || (currentPass === '123' && (normPass === stdFamNorm || rawPass === stdNo));
+        });
+
+        if (matchedStudent) {
+          var famCode = matchedStudent.familyCode;
+          var allFamilyStudents = this.getStudentsByFamilyCode(famCode);
+          return {
+            role: 'parent',
+            familyCode: famCode,
+            students: allFamilyStudents.length > 0 ? allFamilyStudents : [matchedStudent],
+            canEditStudents: false,
+            canManageStaff: false,
+            canEditSettings: false
+          };
+        }
+
+        return null;
+      };
+    })();
+  </script>
+
+  <script src="js/attendance.js?v=10.9"></script>
+  <script src="js/leave-tracker.js?v=10.9"></script>
+  <script src="js/leave-return.js?v=10.9"></script>
+  <script src="js/quran-tracker.js?v=10.9"></script>
+  <script src="js/performance.js?v=10.9"></script>
+  <script src="js/omr-scanner.js?v=10.9"></script>
+  <script src="js/test-results.js?v=10.9"></script>
+  <script src="js/mock-exam.js?v=10.9"></script>
+  <script src="js/leaderboard.js?v=10.9"></script>
+  <script src="js/parent-portal.js?v=10.9"></script>
+  <script src="js/app.js?v=10.9"></script>
+
+  <!-- v10.9 APP MOTORU: Personel Yönetimi Ekranı ve Mobil Giriş Senkronizasyonu -->
+  <script>
+    (function() {
+      if (!window.App || !window.Store) return;
+
+      // 1. Mobil ve Bilgisayar Girişinde Anında Bulut Senkronizasyonu
       window.App.handleUserLogin = async function(event) {
         if (event) event.preventDefault();
         var nameInput = document.getElementById('login-fullname');
         var passInput = document.getElementById('login-password');
-        if (nameInput && passInput && nameInput.value.trim() && passInput.value.trim()) {
-          var s = window.Store.authenticateUser(nameInput.value.trim(), passInput.value.trim());
-          if (!s) {
-            try { await window.Store.syncFromCloud(); } catch(e) {}
+        if (!nameInput) return;
+
+        var name = nameInput.value.trim();
+        var pass = passInput ? passInput.value.trim() : '';
+
+        if (!name) {
+          this.showToast('Lütfen Ad Soyad, Öğrenci No veya Eğitmen Adınızı giriniz.', 'warning');
+          nameInput.focus();
+          return;
+        }
+        if (!pass) {
+          this.showToast('Lütfen şifrenizi giriniz.', 'warning');
+          if (passInput) passInput.focus();
+          return;
+        }
+
+        // Önce buluttan en güncel personel ve şifre listesini canlı çek
+        try {
+          await window.Store.pullStaffAuthFromCloud();
+        } catch(e) {}
+
+        var session = window.Store.authenticateUser(name, pass);
+
+        if (!session) {
+          try {
+            await window.Store.syncFromCloud();
+            session = window.Store.authenticateUser(name, pass);
+          } catch(e) {}
+        }
+
+        if (!session) {
+          this.showToast('Girdiğiniz bilgiler veya şifre hatalıdır. Lütfen kontrol edip tekrar deneyiniz.', 'error');
+          if (passInput) passInput.select();
+          return;
+        }
+
+        if (session.requiresAdminOtp) {
+          var settings = window.Store.getSettings();
+          var adminEmail = session.email || settings.adminEmail || 'selimbozkurt111@gmail.com';
+          var res = window.Store.generateAdminOtp(adminEmail);
+          if (res && res.success) {
+            this.sendAdminOtpEmail(adminEmail, res.code);
+            this.adminEmailDraft = adminEmail;
+            this.lastGeneratedAdminOtp = res.code;
+            this.showAdminOtpOnScreen = true;
+            this.loginMode = 'admin_otp';
+            this.otpStep = 'verify';
+            this.showToast('✓ Şifreniz onaylandı! 2. Güvenlik Aşaması kodu oluşturuldu.', 'success');
+            this.renderMainContent();
+            return;
           }
         }
-        return origHandleLogin(null);
+
+        this.currentSession = session;
+        sessionStorage.setItem('irfaniye_active_session', JSON.stringify(session));
+        localStorage.setItem('irfaniye_active_session', JSON.stringify(session));
+
+        if (session.role === 'superadmin' || session.staffId === 'admin_root') {
+          this.activeTab = 'ogrenciler';
+          this.showToast('👑 Hoş geldiniz Sayın ' + session.name + '! Yönetim Paneli açıldı.', 'success');
+        } else if (session.role === 'staff') {
+          this.activeTab = 'yoklama';
+          this.showToast('Hoş geldiniz Sayın ' + session.name, 'success');
+        } else if (session.role === 'parent') {
+          this.showToast('Hoş geldiniz Sayın Veli', 'success');
+        }
+
+        this.renderHeader();
+        this.renderMainContent();
+      };
+
+      // 2. Gelişmiş Personel İsim ve Şifre Yönetimi Ekranı (Doğrudan Form + Anında Telefon Senkronizasyonu)
+      window.App.renderStaffView = function() {
+        var container = document.getElementById('staff-container');
+        if (!container) return;
+
+        if (!this.currentSession || (!this.currentSession.canManageStaff && this.currentSession.role !== 'superadmin')) {
+          container.innerHTML = '<div class="p-8 text-center text-rose-600 font-bold">Yetkisiz erişim.</div>';
+          return;
+        }
+
+        var staffList = window.Store.getStaff();
+        // Ekran açıldığında mevcut personel listesini otomatik olarak telefon bulutuna da eşitle
+        window.Store.pushStaffAuthToCloud();
+
+        container.innerHTML = `
+          <div class="max-w-5xl mx-auto space-y-6">
+            <!-- Doğrudan Yeni Personel Ekleme ve Şifre Verme Kartı -->
+            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl shadow-sm border-2 border-emerald-200 p-5 sm:p-6">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h4 class="font-black text-emerald-950 text-base flex items-center gap-2">
+                  <span>➕ Yeni Personel / Hoca Ekle ve Şifre Belirle</span>
+                </h4>
+                <span class="px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-bold shadow-2xs">
+                  📲 Telefonlarla Anında Eşitlenir
+                </span>
+              </div>
+              <form onsubmit="window.App.handleInlineAddStaff(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                <div>
+                  <label class="block text-[11px] font-black text-slate-700 mb-1 uppercase">1. GİRİŞ YAPILACAK AD SOYAD *</label>
+                  <input type="text" id="inline-staff-name" required placeholder="Örn: AHMET YILMAZ"
+                    class="w-full px-3.5 py-2.5 bg-white border-2 border-emerald-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-black text-slate-700 mb-1 uppercase">2. GÖREVİ / ALANI</label>
+                  <input type="text" id="inline-staff-role" value="Etüt & Dahili Hocası" placeholder="Örn: Etüt Hocası"
+                    class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-black text-slate-700 mb-1 uppercase">3. TELEFON GİRİŞ ŞİFRESİ *</label>
+                  <input type="text" id="inline-staff-pass" required value="123" placeholder="Şifre yazınız"
+                    class="w-full px-3.5 py-2.5 bg-white border-2 border-amber-400 rounded-xl text-sm font-mono font-black text-slate-900 focus:outline-none focus:border-amber-600">
+                </div>
+                <div>
+                  <button type="submit"
+                    class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95">
+                    <span>💾</span>
+                    <span>Personeli Ekle & Kaydet</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Kayıtlı Personel Tablosu -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <h3 class="font-black text-slate-900 text-lg flex items-center gap-2">
+                    <span>👨‍🏫 Kayıtlı Personel Listesi (${staffList.length} Kişi)</span>
+                  </h3>
+                  <p class="text-xs text-slate-500">
+                    Buradaki personeller kendi telefonlarından <strong>Ad Soyad</strong> ve <strong>Giriş Şifresi</strong> ile doğrudan giriş yapabilir.
+                  </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                  <button type="button" onclick="window.App.syncStaffToPhonesNow()"
+                    class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow transition flex items-center gap-1.5 cursor-pointer">
+                    <span>📲 Telefonlara Şimdi Eşitle</span>
+                  </button>
+                  ${staffList.length > 0 ? `
+                    <button type="button" onclick="window.App.clearAllStaffConfirm()"
+                      class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                      <span>🗑️ Tüm Personeli Sil</span>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div class="mt-4 overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase">
+                      <th class="py-3 px-4">Giriş Yapılacak İsim (Ad Soyad)</th>
+                      <th class="py-3 px-4">Görevi / Alanı</th>
+                      <th class="py-3 px-4">Giriş Şifresi</th>
+                      <th class="py-3 px-4 text-right">İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 text-sm">
+                    ${staffList.length === 0 ? `
+                      <tr>
+                        <td colspan="4" class="py-10 px-4 text-center text-slate-500">
+                          <div class="text-2xl mb-2">👨‍🏫</div>
+                          <div class="font-bold text-slate-700 mb-1">Kayıtlı personel bulunmuyor (Tüm eski personeller temizlendi).</div>
+                          <div class="text-xs text-slate-500">Yukarıdaki yeşil kutucuktan kendi personelinizi ekleyip şifre verebilirsiniz.</div>
+                        </td>
+                      </tr>
+                    ` : staffList.map(function(stf) {
+                      return `
+                        <tr class="table-row-hover transition">
+                          <td class="py-3 px-4 font-bold text-slate-900">${stf.fullName}</td>
+                          <td class="py-3 px-4 text-xs text-slate-600">${stf.role || 'Eğitmen'}</td>
+                          <td class="py-3 px-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 text-amber-900 font-mono font-black text-xs border border-amber-300">
+                              <span>🔑</span>
+                              <span>${stf.password || '123'}</span>
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right space-x-1">
+                            <button type="button" onclick="window.App.editStaffPassword('${stf.id}')"
+                              class="text-xs text-indigo-700 hover:text-indigo-900 font-bold px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition cursor-pointer">
+                              🔑 Şifre Değiştir
+                            </button>
+                            <button type="button" onclick="window.App.deleteStaff('${stf.id}')"
+                              class="text-xs text-rose-600 hover:text-rose-800 font-bold px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 rounded-lg transition cursor-pointer">
+                              🗑️ Çıkar
+                            </button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      window.App.handleInlineAddStaff = async function(event) {
+        if (event) event.preventDefault();
+        var nameEl = document.getElementById('inline-staff-name');
+        var roleEl = document.getElementById('inline-staff-role');
+        var passEl = document.getElementById('inline-staff-pass');
+        if (!nameEl || !nameEl.value.trim()) return;
+
+        var added = window.Store.addStaff({
+          fullName: nameEl.value.trim().toLocaleUpperCase('tr-TR'),
+          role: (roleEl && roleEl.value.trim()) ? roleEl.value.trim() : 'Etüt & Dahili Hocası',
+          password: (passEl && passEl.value.trim()) ? passEl.value.trim() : '123'
+        });
+
+        await window.Store.pushStaffAuthToCloud();
+        this.showToast('✅ ' + added.fullName + ' (Şifre: ' + added.password + ') eklendi ve telefonlara aktarıldı!', 'success');
+        this.renderStaffView();
+      };
+
+      window.App.syncStaffToPhonesNow = async function() {
+        this.showToast('Personel ve şifreler telefonlara aktarılıyor...', 'info');
+        await window.Store.pushStaffAuthToCloud();
+        await window.Store.syncToCloud('irfaniye_data/students', window.Store.getAllStudents());
+        this.showToast('✅ Tüm personel ve şifreler telefonlara başarıyla aktarıldı! Şimdi telefondan giriş yapabilirsiniz.', 'success');
+      };
+
+      window.App.openStaffModal = async function() {
+        var name = prompt('Eğitmenin Adı ve Soyadı:');
+        if (!name || !name.trim()) return;
+        var role = prompt('Görevi (Örn: Etüt & Dahili Hocası):', 'Etüt & Dahili Hocası');
+        var pass = prompt('Sisteme giriş yaparken kullanacağı Şifre:', '123');
+
+        var added = window.Store.addStaff({
+          fullName: name.trim().toLocaleUpperCase('tr-TR'),
+          role: role ? role.trim() : 'Eğitmen',
+          password: pass ? pass.trim() : '123'
+        });
+
+        await window.Store.pushStaffAuthToCloud();
+        this.showToast('✅ ' + added.fullName + ' eklendi ve telefonlara aktarıldı!', 'success');
+        this.renderStaffView();
+      };
+
+      window.App.editStaffPassword = async function(id) {
+        var staffList = window.Store.getStaff();
+        var stf = staffList.find(function(s) { return s.id === id; });
+        if (!stf) return;
+
+        var newPass = prompt(stf.fullName + ' için yeni giriş şifresi:', stf.password || '123');
+        if (newPass !== null && newPass.trim()) {
+          window.Store.updateStaff(id, { password: newPass.trim() });
+          await window.Store.pushStaffAuthToCloud();
+          this.showToast('✅ ' + stf.fullName + ' şifresi (' + newPass.trim() + ') olarak güncellendi ve telefonlara aktarıldı!', 'success');
+          this.renderStaffView();
+        }
+      };
+
+      window.App.deleteStaff = async function(id) {
+        if (confirm('Bu personeli sistemden kalıcı olarak çıkarmak istediğinizden emin misiniz?')) {
+          window.Store.deleteStaff(id);
+          await window.Store.pushStaffAuthToCloud();
+          this.showToast('Personel kalıcı olarak çıkarıldı.', 'info');
+          this.renderStaffView();
+        }
+      };
+
+      window.App.clearAllStaffConfirm = async function() {
+        if (confirm('Listedeki TÜM personelleri kalıcı olarak silmek istediğinizden emin misiniz? Sildikten sonra sadece kendi personelinizi ekleyebilirsiniz.')) {
+          window.Store.clearAllStaff();
+          await window.Store.pushStaffAuthToCloud();
+          this.showToast('✅ Tüm personel listesi temizlendi! Yukarıdaki kutucuktan kendi personelinizi ekleyebilirsiniz.', 'success');
+          this.renderStaffView();
+        }
       };
     })();
   </script>
@@ -642,7 +1266,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js?v=10.7').then(function(reg) {
+        navigator.serviceWorker.register('./sw.js?v=10.9').then(function(reg) {
           if (reg) {
             reg.update();
           }
