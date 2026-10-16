@@ -1,5 +1,5 @@
-// sw.js - İrfaniye Akademi PWA Service Worker (v10.9 - Mobil Personel Girişi & Canlı Bulut Senkronizasyonu)
-const CACHE_NAME = 'irfaniye-takip-cache-v10.9';
+// sw.js - İrfaniye Akademi PWA Service Worker (v11.0 - Mobil Personel Girişi & Canlı Bulut Senkronizasyonu)
+const CACHE_NAME = 'irfaniye-takip-cache-v11.0';
 
 // Statik temel dosyalar (HTML ve JS dosyaları KESİNLİKLE buraya eklenmez, daima taze çekilir!)
 const STATIC_ASSETS = [
