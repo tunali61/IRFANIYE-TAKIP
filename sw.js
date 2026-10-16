@@ -1,5 +1,5 @@
-// sw.js - İrfaniye Akademi PWA Service Worker (v10.9 - Mobil Personel Girişi & Canlı Bulut Senkronizasyonu)
-const CACHE_NAME = 'irfaniye-takip-cache-v10.9';
+// sw.js - Ömer Avniyel Akademi PWA Service Worker (v5.6 - Kur'an Dini Ders Grupları Senkronizasyonu)
+const CACHE_NAME = 'oay-takip-cache-v5.6';
 
 // Statik temel dosyalar (HTML ve JS dosyaları KESİNLİKLE buraya eklenmez, daima taze çekilir!)
 const STATIC_ASSETS = [
@@ -48,7 +48,6 @@ self.addEventListener('fetch', (event) => {
 
   // Firebase Realtime, Formsubmit, CDN servislerini SW karışmasın
   if (
-    url.includes('firebaseio.com') ||
     url.includes('firebasedatabase.app') ||
     url.includes('formsubmit.co') ||
     url.includes('cdn.tailwindcss.com') ||
