@@ -8,6 +8,8 @@ const STORAGE_KEYS = {
   DELETED_STUDENT_IDS: 'irfaniye_deleted_student_ids_v1',
   PASSIVE_STUDENT_IDS: 'irfaniye_passive_student_ids_v1',
   STAFF: 'irfaniye_staff',
+  DELETED_STAFF_IDS: 'irfaniye_deleted_staff_ids_v1',
+  STAFF_CUSTOMIZED: 'irfaniye_staff_customized_v1',
   ATTENDANCE: 'irfaniye_attendance',
   PERFORMANCE: 'irfaniye_performance',
   ACADEMIC_SCORES: 'irfaniye_academic_scores',
@@ -447,40 +449,39 @@ class DataStore {
     return { success: true, count: 0 };
   }
 
-  // 8-A ve 8-B Etüt Hocası ve Personel Rol Güncellemesi (8-A: Yavuz Selim Seven, 8-B: Tunahan Taşkın)
+  // 8-A ve 8-B Etüt Hocası ve Personel Rol Güncellemesi (Kullanıcının sildiği personeli ASLA geri getirmez)
   autoSyncStaffAndClassTeachers() {
     try {
-      // 1. Personel / Hoca Listesini Eşitle
+      const isCustomized = localStorage.getItem(STORAGE_KEYS.STAFF_CUSTOMIZED) === 'true';
+      const deletedStaffMap = this.getDeletedStaffIds ? this.getDeletedStaffIds() : {};
       const staffRaw = localStorage.getItem(STORAGE_KEYS.STAFF);
       let staffList = staffRaw ? JSON.parse(staffRaw) : null;
-      if (!Array.isArray(staffList) || staffList.length === 0) {
-        staffList = DEFAULT_STAFF;
-      }
-      let staffChanged = false;
-      staffList = staffList.map(stf => {
-        if (!stf || !stf.fullName) return stf;
-        const name = stf.fullName.toUpperCase();
-        if (name.includes('YAVUZ SELİM SEVEN')) {
-          if (!stf.role || !stf.role.includes('8-A')) {
-            staffChanged = true;
-            return { ...stf, role: '8-A Sınıfı Etüt & Dahili Hocası' };
-          }
-        } else if (name.includes('TUNAHAN TAŞKIN')) {
-          if (!stf.role || !stf.role.includes('8-B')) {
-            staffChanged = true;
-            return { ...stf, role: '8-B Sınıfı Etüt & Dahili Hocası' };
-          }
+
+      if (!Array.isArray(staffList)) {
+        if (isCustomized || deletedStaffMap['__ALL_DEFAULTS_CLEARED__']) {
+          staffList = [];
+        } else {
+          staffList = DEFAULT_STAFF.filter(s => !deletedStaffMap[s.id]);
         }
-        return stf;
-      });
-      if (staffChanged) {
         localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(staffList));
-        if (this.isCloudEnabled()) {
-          this.syncToCloud('irfaniye_data/staff', staffList);
-        }
+        return;
       }
 
-      // 2. 8. Sınıf Kütüğünü Onar (8-A [9], 8-B [9])
+      // Silinmiş personelleri her durumda listeden arındır
+      const filteredList = staffList.filter(stf => {
+        if (!stf || !stf.id) return false;
+        if (deletedStaffMap[stf.id]) return false;
+        const normName = this.normalizeSearchKey ? this.normalizeSearchKey(stf.fullName) : '';
+        if (normName && deletedStaffMap['name_' + normName]) return false;
+        if (deletedStaffMap['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(stf.id)) return false;
+        return true;
+      });
+
+      if (filteredList.length !== staffList.length) {
+        localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(filteredList));
+      }
+
+      // 2. 8. Sınıf Kütüğünü Onar
       this.forceRepair8thGradeClasses(false);
     } catch (e) {
       console.warn('[autoSyncStaffAndClassTeachers] Hata:', e);
@@ -518,9 +519,6 @@ class DataStore {
 
         if (studentsChanged) {
           localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
-          if (this.isCloudEnabled()) {
-            this.syncToCloud('irfaniye_data/students', students);
-          }
         }
       }
 
@@ -554,7 +552,7 @@ class DataStore {
             quranRecords[s.id].diniGrup = properHoca;
             quranChanged = true;
             if (this.isCloudEnabled()) {
-              this.syncToCloud(`kurs_data/quranTracker/${s.id}/diniGrup`, properHoca);
+              this.syncToCloud(`irfaniye_data/quranTracker/${s.id}/diniGrup`, properHoca);
             }
           }
         }
@@ -731,9 +729,13 @@ class DataStore {
   getFirebaseUrl() {
     const settings = this.getSettings();
     let url = (settings.firebaseUrl || '').trim();
-    if (!url) return '';
+    if (!url) return 'https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app';
     url = url.replace(/\/+$/, '');
     return url;
+  }
+
+  getBackupFirebaseUrl() {
+    return 'https://oay-takip-default-rtdb.firebaseio.com';
   }
 
   isCloudEnabled() {
@@ -749,27 +751,50 @@ class DataStore {
     }
   }
 
-  // Buluta Asenkron Arka Plan Gönderimi
+  // Buluta Asenkron Arka Plan Gönderimi (Ana Sunucu + Otomatik Yedek Köprü)
   async syncToCloud(endpoint, data) {
     const baseUrl = this.getFirebaseUrl();
-    if (!baseUrl) return false;
-    try {
-      const res = await fetch(`${baseUrl}/${endpoint}.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      return res.ok;
-    } catch (err) {
-      console.warn(`[CloudSync] ${endpoint} gönderilemedi (çevrimdışı):`, err);
-      return false;
+    const backupUrl = this.getBackupFirebaseUrl();
+    if (!baseUrl && !backupUrl) return false;
+
+    const cleanEndpoint = (endpoint || '').replace(/^\/+/, '').replace(/^kurs_data\//, 'irfaniye_data/');
+    const bodyStr = JSON.stringify(data);
+    let anyOk = false;
+
+    if (baseUrl) {
+      try {
+        const res = await fetch(`${baseUrl}/${cleanEndpoint}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyStr
+        });
+        if (res.ok) anyOk = true;
+      } catch (err) {
+        console.warn(`[CloudSync] ${cleanEndpoint} ana sunucuya gönderilemedi:`, err);
+      }
     }
+
+    if (backupUrl && backupUrl !== baseUrl) {
+      try {
+        const resBackup = await fetch(`${backupUrl}/${cleanEndpoint}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyStr
+        });
+        if (resBackup.ok) anyOk = true;
+      } catch (err) {
+        console.warn(`[CloudSync] ${cleanEndpoint} yedek sunucuya gönderilemedi:`, err);
+      }
+    }
+
+    return anyOk;
   }
 
   // Tüm Veritabanını Tek Tıkla Buluta İlk Yükleme
   async pushAllToCloud() {
     const baseUrl = this.getFirebaseUrl();
-    if (!baseUrl) {
+    const backupUrl = this.getBackupFirebaseUrl();
+    if (!baseUrl && !backupUrl) {
       return { success: false, message: 'Lütfen önce geçerli bir Firebase Veritabanı URL adresi giriniz.' };
     }
 
@@ -777,6 +802,9 @@ class DataStore {
       settings: this.getSettings(),
       students: this.getAllStudents(),
       staff: this.getStaff(),
+      deleted_staff_ids: this.getDeletedStaffIds(),
+      staff_customized: localStorage.getItem(STORAGE_KEYS.STAFF_CUSTOMIZED) === 'true',
+      staff_updatedAt: localStorage.getItem('irfaniye_staff_updated_at_v1') || new Date().toISOString(),
       attendance: this.getAttendance(),
       performance: this.getPerformances(),
       academicScores: this.getAcademicScores(),
@@ -806,28 +834,43 @@ class DataStore {
       lastSyncedAt: new Date().toISOString()
     };
 
-    try {
-      const res = await fetch(`${baseUrl}/irfaniye_data.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    const bodyStr = JSON.stringify(payload);
+    let primaryOk = false;
+    let backupOk = false;
+    let lastStatus = 0;
 
-      if (res.ok) {
-        return { 
-          success: true, 
-          message: 'Tüm öğrenci, hoca, yoklama ve sistem verileri başarıyla buluta yüklendi! Artık tüm telefonlar ve bilgisayarlar bu verileri anlık görebilir.' 
-        };
-      } else {
-        return { 
-          success: false, 
-          message: `Buluta yükleme başarısız (Kod: ${res.status}). Lütfen Firebase kurallarınızı ("read": true, "write": true) kontrol ediniz.` 
-        };
-      }
-    } catch (err) {
+    if (baseUrl) {
+      try {
+        const res = await fetch(`${baseUrl}/irfaniye_data.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyStr
+        });
+        lastStatus = res.status;
+        if (res.ok) primaryOk = true;
+      } catch (e) {}
+    }
+
+    if (backupUrl && backupUrl !== baseUrl) {
+      try {
+        const resB = await fetch(`${backupUrl}/irfaniye_data.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: bodyStr
+        });
+        if (resB.ok) backupOk = true;
+      } catch (e) {}
+    }
+
+    if (primaryOk || backupOk) {
+      return { 
+        success: true, 
+        message: 'Tüm öğrenci, hoca, yoklama ve sistem verileri başarıyla buluta yüklendi! Artık tüm telefonlar ve bilgisayarlar bu verileri anlık görebilir.' 
+      };
+    } else {
       return { 
         success: false, 
-        message: `Bağlantı hatası: ${err.message}. Lütfen internetinizi ve Firebase linkinizi kontrol ediniz.` 
+        message: `Buluta yükleme başarısız (Kod: ${lastStatus}). Lütfen internet bağlantınızı kontrol ediniz.` 
       };
     }
   }
@@ -835,31 +878,72 @@ class DataStore {
   // Buluttan En Güncel Verileri Çekme ve Yerel Hafıza ile Birleştirme (Merge)
   async syncFromCloud() {
     const baseUrl = this.getFirebaseUrl();
-    if (!baseUrl) return { success: false, message: 'Bulut bağlantısı tanımlı değil.' };
+    const backupUrl = this.getBackupFirebaseUrl();
+    if (!baseUrl && !backupUrl) return { success: false, message: 'Bulut bağlantısı tanımlı değil.' };
 
-    try {
-      const res = await fetch(`${baseUrl}/irfaniye_data.json`, {
-        headers: { 'Accept': 'application/json' }
-      });
+    let primaryData = null;
+    let backupData = null;
 
-      if (!res.ok) {
-        return { success: false, message: `Bulut veri hatası: ${res.status}` };
-      }
-
-      const cloudData = await res.json();
-      if (!cloudData) {
-        return { success: true, message: 'Bulutta henüz kayıtlı veri bulunmuyor.' };
-      }
-
-      this.applyFullCloudSync(cloudData);
-      return { 
-        success: true, 
-        message: 'Buluttaki en güncel yoklama ve not kayıtları cihazınıza başarıyla aktarıldı.' 
-      };
-    } catch (err) {
-      console.warn('[CloudSync] Veri çekme hatası (çevrimdışı):', err);
-      return { success: false, message: err.message };
+    if (baseUrl) {
+      try {
+        const res = await fetch(`${baseUrl}/irfaniye_data.json`, {
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store'
+        });
+        if (res.ok) {
+          primaryData = await res.json();
+        }
+      } catch (e) {}
     }
+
+    if (backupUrl && backupUrl !== baseUrl) {
+      try {
+        const resB = await fetch(`${backupUrl}/irfaniye_data.json`, {
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store'
+        });
+        if (resB.ok) {
+          backupData = await resB.json();
+        }
+      } catch (e) {}
+    }
+
+    // Hangisi daha güncelse veya doluysa onu baz al, ikisi de varsa birleştir
+    let cloudData = null;
+    if (primaryData && backupData) {
+      const pTime = primaryData.staff_updatedAt || primaryData.lastSyncedAt || '';
+      const bTime = backupData.staff_updatedAt || backupData.lastSyncedAt || '';
+      cloudData = (bTime > pTime) ? { ...primaryData, ...backupData } : { ...backupData, ...primaryData };
+    } else {
+      cloudData = primaryData || backupData;
+    }
+
+    if (!cloudData) {
+      // Bulutta henüz hiç veri yoksa ve bu cihazda veri varsa otomatik bulutu başlat
+      if (!this._initialCloudSeedDone) {
+        this._initialCloudSeedDone = true;
+        this.pushAllToCloud().catch(() => {});
+      }
+      return { success: true, message: 'Bulutta henüz kayıtlı veri bulunmuyor, yerel veriler buluta aktarıldı.' };
+    }
+
+    this.applyFullCloudSync(cloudData);
+
+    // Eğer bu cihazda özel personel düzenlemesi yapıldıysa ve bulutta henüz yoksa buluta otomatik gönder
+    const localCustomized = localStorage.getItem(STORAGE_KEYS.STAFF_CUSTOMIZED) === 'true';
+    const localStaffUpdatedAt = localStorage.getItem('irfaniye_staff_updated_at_v1') || '';
+    const cloudStaffUpdatedAt = cloudData.staff_updatedAt || '';
+    if (localCustomized && (!cloudData.staff_customized || (localStaffUpdatedAt && localStaffUpdatedAt > cloudStaffUpdatedAt))) {
+      this.syncToCloud('irfaniye_data/staff', this.getStaff());
+      this.syncToCloud('irfaniye_data/deleted_staff_ids', this.getDeletedStaffIds());
+      this.syncToCloud('irfaniye_data/staff_customized', true);
+      this.syncToCloud('irfaniye_data/staff_updatedAt', localStaffUpdatedAt || new Date().toISOString());
+    }
+
+    return { 
+      success: true, 
+      message: 'Buluttaki en güncel yoklama ve personel kayıtları cihazınıza başarıyla aktarıldı.' 
+    };
   }
 
   // Buluttan Gelen Verileri Yerel Hafıza ile Eksiksiz ve Akıllıca Birleştirme (Deep Merge)
@@ -1114,10 +1198,55 @@ class DataStore {
       localStorage.setItem(STORAGE_KEYS.PASSIVE_STUDENT_IDS, JSON.stringify({}));
     }
 
-    // 5. Hoca listesi
-    const cloudStaff = toArray(cloudData.staff);
-    if (cloudStaff.length > 0) {
-      localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(cloudStaff));
+    // 5. Hoca / Personel listesi (Silinenler sicili + akıllı birleştirme + yerel düzenleme koruması)
+    const deletedStaffMap = { ...(this.getDeletedStaffIds ? this.getDeletedStaffIds() : {}) };
+    if (cloudData.deleted_staff_ids && typeof cloudData.deleted_staff_ids === 'object') {
+      Object.assign(deletedStaffMap, cloudData.deleted_staff_ids);
+      localStorage.setItem(STORAGE_KEYS.DELETED_STAFF_IDS, JSON.stringify(deletedStaffMap));
+    }
+    if (cloudData.staff_customized === true || deletedStaffMap['__ALL_DEFAULTS_CLEARED__'] || Object.keys(deletedStaffMap).length > 0) {
+      localStorage.setItem(STORAGE_KEYS.STAFF_CUSTOMIZED, 'true');
+    }
+
+    const timeSinceStaffEdit = this._lastStaffEditTime ? (Date.now() - this._lastStaffEditTime) : 999999;
+    if (timeSinceStaffEdit >= 25000) {
+      const cloudStaff = toArray(cloudData.staff);
+      const localRawStaff = localStorage.getItem(STORAGE_KEYS.STAFF);
+      let localStaff = [];
+      try {
+        localStaff = localRawStaff ? JSON.parse(localRawStaff) : [];
+        if (!Array.isArray(localStaff)) localStaff = [];
+      } catch (e) { localStaff = []; }
+
+      const localStaffTime = localStorage.getItem('irfaniye_staff_updated_at_v1') || '';
+      const cloudStaffTime = cloudData.staff_updatedAt || '';
+
+      // Buluttaki ve yereldeki personelleri birleştir (Yeni eklenen hocalar kaybolmasın, silinenler elensin)
+      const staffById = new Map();
+      if (cloudStaffTime >= localStaffTime) {
+        localStaff.forEach(s => { if (s && s.id) staffById.set(s.id, s); });
+        cloudStaff.forEach(s => { if (s && s.id) staffById.set(s.id, s); });
+      } else {
+        cloudStaff.forEach(s => { if (s && s.id) staffById.set(s.id, s); });
+        localStaff.forEach(s => { if (s && s.id) staffById.set(s.id, s); });
+      }
+
+      const mergedStaff = Array.from(staffById.values()).filter(stf => {
+        if (!stf || !stf.id) return false;
+        if (deletedStaffMap[stf.id]) return false;
+        const normName = this.normalizeSearchKey ? this.normalizeSearchKey(stf.fullName) : '';
+        if (normName && deletedStaffMap['name_' + normName]) return false;
+        if (deletedStaffMap['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(stf.id) && !stf.isCustomAdded) return false;
+        return true;
+      });
+
+      if (cloudStaff.length > 0 || cloudData.staff_customized === true || deletedStaffMap['__ALL_DEFAULTS_CLEARED__']) {
+        localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(mergedStaff));
+        if (cloudStaffTime && cloudStaffTime > localStaffTime) {
+          localStorage.setItem('irfaniye_staff_updated_at_v1', cloudStaffTime);
+        }
+        window.dispatchEvent(new CustomEvent('staff-updated', { detail: mergedStaff }));
+      }
     }
 
     // 6. İzin kapı çıkışları
@@ -1392,119 +1521,133 @@ class DataStore {
   // Gerçek Zamanlı (Realtime SSE) Bulut Dinleyicisi - Anında Değişim
   initRealtimeListener() {
     const baseUrl = this.getFirebaseUrl();
-    if (!baseUrl || typeof EventSource === 'undefined') return;
+    const backupUrl = this.getBackupFirebaseUrl();
+    if ((!baseUrl && !backupUrl) || typeof EventSource === 'undefined') return;
 
     if (this._eventSource) {
       try { this._eventSource.close(); } catch (e) {}
       this._eventSource = null;
     }
+    if (this._backupEventSource) {
+      try { this._backupEventSource.close(); } catch (e) {}
+      this._backupEventSource = null;
+    }
+
+    const handleSsePut = (e) => {
+      if (!e || !e.data) return;
+      try {
+        const parsed = JSON.parse(e.data);
+        const path = (parsed.path || '').replace(/^\/+/, '');
+        const data = parsed.data;
+
+        if (!path || path === '') {
+          if (data) this.applyFullCloudSync(data);
+        } else if (path.startsWith('staff') || path.startsWith('deleted_staff_ids')) {
+          const timeSinceStaffEdit = this._lastStaffEditTime ? (Date.now() - this._lastStaffEditTime) : 999999;
+          if (timeSinceStaffEdit < 20000) return;
+          this.syncFromCloud();
+        } else if (path.startsWith('leaveReturns')) {
+          this.handleRealtimeLeaveReturn(path, data);
+        } else if (path.startsWith('settings')) {
+          this.handleRealtimeSettings(path, data);
+        } else if (path.startsWith('hadisler')) {
+          if (data) {
+            const list = Array.isArray(data) ? data : (typeof data === 'object' ? Object.values(data).filter(Boolean) : null);
+            if (list && list.length > 0) {
+              localStorage.setItem(STORAGE_KEYS.HADISLER, JSON.stringify(list));
+              localStorage.setItem('yoklama_custom_hadisler_meta_v1', JSON.stringify({
+                list,
+                updatedAt: new Date().toISOString()
+              }));
+              window.dispatchEvent(new CustomEvent('hadisler-updated', { detail: list }));
+            }
+          }
+        } else if (path.startsWith('dailyDuties') || path.startsWith('daily_duties')) {
+          if (data && typeof data === 'object') {
+            try {
+              const localRaw = localStorage.getItem(STORAGE_KEYS.DUTIES);
+              let localObj = localRaw ? JSON.parse(localRaw) : {};
+              if (typeof localObj !== 'object' || localObj === null) localObj = {};
+              let merged;
+              if (path === 'dailyDuties' || path === 'daily_duties') {
+                merged = { ...localObj, ...data };
+              } else {
+                const subKey = path.split('/')[1];
+                if (subKey) {
+                  localObj[subKey] = data;
+                  merged = localObj;
+                } else {
+                  merged = { ...localObj, ...data };
+                }
+              }
+              localStorage.setItem(STORAGE_KEYS.DUTIES, JSON.stringify(merged));
+              window.dispatchEvent(new CustomEvent('daily-duties-updated', { detail: merged }));
+            } catch (e) {
+              localStorage.setItem(STORAGE_KEYS.DUTIES, JSON.stringify(data));
+              window.dispatchEvent(new CustomEvent('daily-duties-updated', { detail: data }));
+            }
+          }
+        } else if (path.startsWith('quranTracker')) {
+          this.handleRealtimeQuranTracker(path, data);
+        } else if (path.startsWith('students')) {
+          // Eğer son 20 saniye içinde bu tarayıcı öğrenci kaydetti veya düzenlediyse, bu gelen SSE kendi yansımamızdır; es geç
+          const timeSinceEdit = this._lastStudentEditTime ? (Date.now() - this._lastStudentEditTime) : 999999;
+          const timeSincePush = this._lastStudentPushTime ? (Date.now() - this._lastStudentPushTime) : 999999;
+          if (timeSinceEdit < 20000 || timeSincePush < 20000) {
+            return;
+          }
+          if (data) {
+            const studentsArr = Array.isArray(data) ? data : (typeof data === 'object' ? Object.values(data).filter(Boolean) : null);
+            if (studentsArr && studentsArr.length > 0) {
+              this.applyFullCloudSync({ students: studentsArr });
+              window.dispatchEvent(new CustomEvent('students-cloud-updated', { detail: studentsArr }));
+            }
+          }
+        } else if (path.startsWith('attendance')) {
+          this.handleRealtimeAttendance(path, data);
+        } else if (path.startsWith('penaltiesCleared')) {
+          if (data !== undefined) {
+            try {
+              const localCleared = this.getAllClearedPenalties();
+              const mergedCleared = { ...localCleared };
+              if (path === 'penaltiesCleared') {
+                if (data && typeof data === 'object') {
+                  Object.assign(mergedCleared, data);
+                }
+              } else {
+                const parts = path.split('/');
+                if (parts.length === 2 && parts[1]) {
+                  mergedCleared[parts[1]] = Object.assign(mergedCleared[parts[1]] || {}, data || {});
+                } else if (parts.length >= 3 && parts[1] && parts[2]) {
+                  if (!mergedCleared[parts[1]]) mergedCleared[parts[1]] = {};
+                  mergedCleared[parts[1]][parts[2]] = data;
+                }
+              }
+              localStorage.setItem(STORAGE_KEYS.PENALTY_CLEARED, JSON.stringify(mergedCleared));
+              window.dispatchEvent(new CustomEvent('penalty-cleared-updated', { detail: mergedCleared }));
+            } catch (e) {
+              console.warn('[RealtimeSync penaltiesCleared] Hata:', e);
+            }
+          }
+        } else {
+          this.syncFromCloud();
+        }
+      } catch (err) {
+        console.warn('[RealtimeSync] Ayrıştırma hatası:', err);
+      }
+    };
 
     try {
-      this._eventSource = new EventSource(`${baseUrl}/irfaniye_data.json`);
-
-      this._eventSource.addEventListener('put', (e) => {
-        if (!e || !e.data) return;
-        try {
-          const parsed = JSON.parse(e.data);
-          const path = (parsed.path || '').replace(/^\/+/, '');
-          const data = parsed.data;
-
-          if (!path || path === '') {
-            this.applyFullCloudSync(data);
-          } else if (path.startsWith('leaveReturns')) {
-            this.handleRealtimeLeaveReturn(path, data);
-          } else if (path.startsWith('settings')) {
-            this.handleRealtimeSettings(path, data);
-          } else if (path.startsWith('hadisler')) {
-            if (data) {
-              const list = Array.isArray(data) ? data : (typeof data === 'object' ? Object.values(data).filter(Boolean) : null);
-              if (list && list.length > 0) {
-                localStorage.setItem(STORAGE_KEYS.HADISLER, JSON.stringify(list));
-                localStorage.setItem('yoklama_custom_hadisler_meta_v1', JSON.stringify({
-                  list,
-                  updatedAt: new Date().toISOString()
-                }));
-                window.dispatchEvent(new CustomEvent('hadisler-updated', { detail: list }));
-              }
-            }
-          } else if (path.startsWith('dailyDuties') || path.startsWith('daily_duties')) {
-            if (data && typeof data === 'object') {
-              try {
-                const localRaw = localStorage.getItem(STORAGE_KEYS.DUTIES);
-                let localObj = localRaw ? JSON.parse(localRaw) : {};
-                if (typeof localObj !== 'object' || localObj === null) localObj = {};
-                let merged;
-                if (path === 'dailyDuties' || path === 'daily_duties') {
-                  merged = { ...localObj, ...data };
-                } else {
-                  const subKey = path.split('/')[1];
-                  if (subKey) {
-                    localObj[subKey] = data;
-                    merged = localObj;
-                  } else {
-                    merged = { ...localObj, ...data };
-                  }
-                }
-                localStorage.setItem(STORAGE_KEYS.DUTIES, JSON.stringify(merged));
-                window.dispatchEvent(new CustomEvent('daily-duties-updated', { detail: merged }));
-              } catch (e) {
-                localStorage.setItem(STORAGE_KEYS.DUTIES, JSON.stringify(data));
-                window.dispatchEvent(new CustomEvent('daily-duties-updated', { detail: data }));
-              }
-            }
-          } else if (path.startsWith('quranTracker')) {
-            this.handleRealtimeQuranTracker(path, data);
-          } else if (path.startsWith('students')) {
-            // Eğer son 20 saniye içinde bu tarayıcı öğrenci kaydetti veya düzenlediyse, bu gelen SSE kendi yansımamızdır; es geç
-            const timeSinceEdit = this._lastStudentEditTime ? (Date.now() - this._lastStudentEditTime) : 999999;
-            const timeSincePush = this._lastStudentPushTime ? (Date.now() - this._lastStudentPushTime) : 999999;
-            if (timeSinceEdit < 20000 || timeSincePush < 20000) {
-              return;
-            }
-            if (data) {
-              const studentsArr = Array.isArray(data) ? data : (typeof data === 'object' ? Object.values(data).filter(Boolean) : null);
-              if (studentsArr && studentsArr.length > 0) {
-                this.applyFullCloudSync({ students: studentsArr });
-                window.dispatchEvent(new CustomEvent('students-cloud-updated', { detail: studentsArr }));
-              }
-            }
-          } else if (path.startsWith('attendance')) {
-            this.handleRealtimeAttendance(path, data);
-          } else if (path.startsWith('penaltiesCleared')) {
-            if (data !== undefined) {
-              try {
-                const localCleared = this.getAllClearedPenalties();
-                const mergedCleared = { ...localCleared };
-                if (path === 'penaltiesCleared') {
-                  if (data && typeof data === 'object') {
-                    Object.assign(mergedCleared, data);
-                  }
-                } else {
-                  const parts = path.split('/');
-                  if (parts.length === 2 && parts[1]) {
-                    mergedCleared[parts[1]] = Object.assign(mergedCleared[parts[1]] || {}, data || {});
-                  } else if (parts.length >= 3 && parts[1] && parts[2]) {
-                    if (!mergedCleared[parts[1]]) mergedCleared[parts[1]] = {};
-                    mergedCleared[parts[1]][parts[2]] = data;
-                  }
-                }
-                localStorage.setItem(STORAGE_KEYS.PENALTY_CLEARED, JSON.stringify(mergedCleared));
-                window.dispatchEvent(new CustomEvent('penalty-cleared-updated', { detail: mergedCleared }));
-              } catch (e) {
-                console.warn('[RealtimeSync penaltiesCleared] Hata:', e);
-              }
-            }
-          } else {
-            this.syncFromCloud();
-          }
-        } catch (err) {
-          console.warn('[RealtimeSync] Ayrıştırma hatası:', err);
-        }
-      });
-
-      this._eventSource.onerror = () => {
-        // SSE bağlantısı koptuğunda arka planda otomatik yeniden dener
-      };
+      if (baseUrl) {
+        this._eventSource = new EventSource(`${baseUrl}/irfaniye_data.json`);
+        this._eventSource.addEventListener('put', handleSsePut);
+        this._eventSource.onerror = () => {};
+      }
+      if (backupUrl && backupUrl !== baseUrl) {
+        this._backupEventSource = new EventSource(`${backupUrl}/irfaniye_data.json`);
+        this._backupEventSource.addEventListener('put', handleSsePut);
+        this._backupEventSource.onerror = () => {};
+      }
     } catch (err) {
       console.warn('[RealtimeSync] EventSource başlatılamadı:', err);
     }
@@ -1753,8 +1896,6 @@ class DataStore {
     if (!normInput || !normPass) return null;
 
     // 0. Ana Yönetici (Müdürlük / Kurum Yöneticisi) Girişi (2 Aşamalı Güvenlik: Şifre -> E-posta OTP)
-    // DİKKAT: Selim Bozkurt artık bağımsız bir hoca/personel hesabıdır!
-    // Yönetici hesabına sadece 'admin', 'yonetici', 'mudur', 'yonetim', 'superadmin', 'kurumyoneticisi' ile girilir.
     if (
       normInput === 'admin' || 
       normInput === 'yonetici' || 
@@ -1775,13 +1916,17 @@ class DataStore {
       return null;
     }
 
-    // 1. Personel / Hoca Kontrolü (Ad Soyad ve Şifre) - Selim Bozkurt da diğer hocalar gibi doğrudan buraya girer!
+    // 1. Personel / Hoca Kontrolü (Ad Soyad, Kısmi İsim, Telefon veya ID ve Şifre)
     const staffList = this.getStaff();
     const matchedStaff = staffList.find(s => {
+      if (!s || !s.fullName) return false;
       const sNorm = this.normalizeSearchKey(s.fullName);
-      const isIdMatch = s.id.toLowerCase() === rawInput.toLowerCase() || s.id.replace(/\D/g, '') === rawInput;
-      const isNameMatch = sNorm === normInput || (normInput.length >= 4 && sNorm.includes(normInput));
-      if (!isNameMatch && !isIdMatch) return false;
+      const sPhoneNorm = s.phone ? s.phone.replace(/\D/g, '') : '';
+      const inputDigits = rawInput.replace(/\D/g, '');
+      const isIdMatch = s.id && (s.id.toLowerCase() === rawInput.toLowerCase() || (inputDigits.length >= 4 && s.id.replace(/\D/g, '') === inputDigits));
+      const isPhoneMatch = sPhoneNorm.length >= 7 && inputDigits.length >= 7 && (sPhoneNorm.endsWith(inputDigits) || inputDigits.endsWith(sPhoneNorm));
+      const isNameMatch = sNorm === normInput || (normInput.length >= 3 && sNorm.includes(normInput)) || (sNorm.length >= 3 && normInput.includes(sNorm));
+      if (!isNameMatch && !isIdMatch && !isPhoneMatch) return false;
 
       const currentPass = (s.password || '123').toString().trim();
       const isPassMatch = 
@@ -1804,8 +1949,45 @@ class DataStore {
       };
     }
 
-    // 2. Öğrenci / Veli Kontrolü (Öğrenci No, Aile Kodu, Tam Adı Soyadı, Kısmi İsim)
+    // 1b. Öğrenci Listesinde (Etüt Hocası veya Dahili Hoca Sütununda) Atanmış Hoca Kontrolü
     const students = this.getAllStudents();
+    const deletedStaffMap = this.getDeletedStaffIds();
+    if (normInput.length >= 3 && !deletedStaffMap['name_' + normInput]) {
+      let assignedTeacherName = null;
+      for (const st of students) {
+        if (!st) continue;
+        const etut = (st.etutHocasi || '').trim();
+        const dahili = (st.dahiliHoca || '').trim();
+        const etutNorm = this.normalizeSearchKey(etut);
+        const dahiliNorm = this.normalizeSearchKey(dahili);
+        if (etutNorm && etutNorm !== 'genel' && (etutNorm === normInput || (normInput.length >= 4 && etutNorm.includes(normInput)))) {
+          if (!deletedStaffMap['name_' + etutNorm]) {
+            assignedTeacherName = etut;
+            break;
+          }
+        }
+        if (dahiliNorm && dahiliNorm !== 'genel' && (dahiliNorm === normInput || (normInput.length >= 4 && dahiliNorm.includes(normInput)))) {
+          if (!deletedStaffMap['name_' + dahiliNorm]) {
+            assignedTeacherName = dahili;
+            break;
+          }
+        }
+      }
+      if (assignedTeacherName && (rawPass === '123' || normPass === '123')) {
+        return {
+          role: 'staff',
+          staffId: 'stf_assigned_' + this.normalizeSearchKey(assignedTeacherName),
+          name: assignedTeacherName.toLocaleUpperCase('tr-TR'),
+          password: '123',
+          staffRole: 'Etüt & Dahili Hocası',
+          canEditStudents: false,
+          canManageStaff: false,
+          canEditSettings: false
+        };
+      }
+    }
+
+    // 2. Öğrenci / Veli Kontrolü (Öğrenci No, Aile Kodu, Tam Adı Soyadı, Kısmi İsim)
     const matchedStudent = students.find(s => {
       const stdNo = (s.studentNo || '').toString().trim();
       const stdFamNorm = this.normalizeSearchKey(s.familyCode);
@@ -1856,40 +2038,114 @@ class DataStore {
   }
 
   // --- Personel / Hoca İşlemleri (Sadece Ana Yönetici) ---
+  getDeletedStaffIds() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.DELETED_STAFF_IDS);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  saveDeletedStaffIds(map) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.DELETED_STAFF_IDS, JSON.stringify(map || {}));
+      if (this.isCloudEnabled()) {
+        this.syncToCloud('irfaniye_data/deleted_staff_ids', map || {});
+      }
+    } catch (e) {}
+  }
+
   getStaff() {
     try {
+      const isCustomized = localStorage.getItem(STORAGE_KEYS.STAFF_CUSTOMIZED) === 'true';
+      const deletedMap = this.getDeletedStaffIds();
       const data = localStorage.getItem(STORAGE_KEYS.STAFF);
-      if (data) {
+
+      if (data !== null) {
         const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const selim = parsed.find(s => s.id === 'stf_1' || (s.fullName && s.fullName.toUpperCase().includes('SELİM BOZKURT')));
-          if (selim && selim.role && selim.role.includes('Yönetici')) {
-            selim.role = 'Dahili Hocası';
-            localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(parsed));
+        if (Array.isArray(parsed)) {
+          const filtered = parsed.filter(s => {
+            if (!s || !s.id) return false;
+            if (deletedMap[s.id]) return false;
+            const normName = this.normalizeSearchKey(s.fullName);
+            if (normName && deletedMap['name_' + normName]) return false;
+            if (deletedMap['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(s.id) && !s.isCustomAdded) return false;
+            return true;
+          });
+
+          if (filtered.length > 0 || isCustomized || deletedMap['__ALL_DEFAULTS_CLEARED__'] || Object.keys(deletedMap).length > 0) {
+            if (filtered.length !== parsed.length) {
+              localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(filtered));
+            }
+            return filtered;
           }
-          return parsed;
         }
       }
-      localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(DEFAULT_STAFF));
-      return DEFAULT_STAFF;
+
+      if (isCustomized || deletedMap['__ALL_DEFAULTS_CLEARED__']) {
+        localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify([]));
+        return [];
+      }
+
+      const initialDefaults = DEFAULT_STAFF.filter(s => !deletedMap[s.id]);
+      localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(initialDefaults));
+      return initialDefaults;
     } catch {
-      return DEFAULT_STAFF;
+      return [];
     }
   }
 
   saveStaff(staffList) {
-    localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(staffList));
+    const cleanList = Array.isArray(staffList) ? staffList : [];
+    const nowIso = new Date().toISOString();
+    this._lastStaffEditTime = Date.now();
+    localStorage.setItem(STORAGE_KEYS.STAFF_CUSTOMIZED, 'true');
+    localStorage.setItem('irfaniye_staff_updated_at_v1', nowIso);
+    localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(cleanList));
     if (this.isCloudEnabled()) {
-      this.syncToCloud('irfaniye_data/staff', staffList);
+      this.syncToCloud('irfaniye_data/staff', cleanList);
+      this.syncToCloud('irfaniye_data/deleted_staff_ids', this.getDeletedStaffIds());
+      this.syncToCloud('irfaniye_data/staff_customized', true);
+      this.syncToCloud('irfaniye_data/staff_updatedAt', nowIso);
     }
   }
 
   addStaff(member) {
     const list = this.getStaff();
+    const fullNameClean = (member.fullName || '').trim().toLocaleUpperCase('tr-TR');
+    const normName = this.normalizeSearchKey(fullNameClean);
+
+    // Eğer aynı isim daha önce silinmişse silinenler listesinden çıkar ki yeni eklenen personel görünsün
+    const deletedMap = this.getDeletedStaffIds();
+    if (normName && deletedMap['name_' + normName]) {
+      delete deletedMap['name_' + normName];
+      this.saveDeletedStaffIds(deletedMap);
+    }
+
+    // Aynı isimde mevcut personel varsa güncelle, yoksa yeni ekle
+    const existingIdx = list.findIndex(s => this.normalizeSearchKey(s.fullName) === normName);
+    if (existingIdx !== -1) {
+      list[existingIdx] = {
+        ...list[existingIdx],
+        fullName: fullNameClean,
+        role: member.role || list[existingIdx].role || 'Eğitmen',
+        phone: member.phone || list[existingIdx].phone || '',
+        password: (member.password || '123').toString().trim(),
+        isCustomAdded: true,
+        updatedAt: new Date().toISOString()
+      };
+      this.saveStaff(list);
+      return list[existingIdx];
+    }
+
     const newMember = {
       ...member,
+      fullName: fullNameClean,
       id: 'stf_' + Date.now(),
-      password: member.password || '123'
+      password: (member.password || '123').toString().trim(),
+      isCustomAdded: true,
+      updatedAt: new Date().toISOString()
     };
     list.push(newMember);
     this.saveStaff(list);
@@ -1900,7 +2156,7 @@ class DataStore {
     const list = this.getStaff();
     const idx = list.findIndex(s => s.id === id);
     if (idx !== -1) {
-      list[idx] = { ...list[idx], ...updated };
+      list[idx] = { ...list[idx], ...updated, isCustomAdded: true, updatedAt: new Date().toISOString() };
       this.saveStaff(list);
       return list[idx];
     }
@@ -1908,8 +2164,41 @@ class DataStore {
   }
 
   deleteStaff(id) {
-    let list = this.getStaff().filter(s => s.id !== id);
+    const currentList = this.getStaff();
+    const target = currentList.find(s => s.id === id);
+    const deletedMap = this.getDeletedStaffIds();
+    deletedMap[id] = true;
+    if (target && target.fullName) {
+      const normName = this.normalizeSearchKey(target.fullName);
+      if (normName) deletedMap['name_' + normName] = true;
+    }
+
+    const list = currentList.filter(s => s.id !== id);
+    if (list.length === 0) {
+      deletedMap['__ALL_DEFAULTS_CLEARED__'] = true;
+    }
+    localStorage.setItem(STORAGE_KEYS.DELETED_STAFF_IDS, JSON.stringify(deletedMap));
     this.saveStaff(list);
+  }
+
+  clearAllStaff() {
+    const currentList = this.getStaff();
+    const deletedMap = this.getDeletedStaffIds();
+    deletedMap['__ALL_DEFAULTS_CLEARED__'] = true;
+    DEFAULT_STAFF.forEach(s => {
+      deletedMap[s.id] = true;
+      const normName = this.normalizeSearchKey(s.fullName);
+      if (normName) deletedMap['name_' + normName] = true;
+    });
+    currentList.forEach(s => {
+      if (s && s.id) deletedMap[s.id] = true;
+      if (s && s.fullName) {
+        const normName = this.normalizeSearchKey(s.fullName);
+        if (normName) deletedMap['name_' + normName] = true;
+      }
+    });
+    localStorage.setItem(STORAGE_KEYS.DELETED_STAFF_IDS, JSON.stringify(deletedMap));
+    this.saveStaff([]);
   }
 
   updateStaffPassword(id, newPassword) {
@@ -1917,6 +2206,8 @@ class DataStore {
     const stf = list.find(s => s.id === id);
     if (!stf) return { success: false, message: 'Personel bulunamadı.' };
     stf.password = (newPassword || '123').toString().trim();
+    stf.isCustomAdded = true;
+    stf.updatedAt = new Date().toISOString();
     this.saveStaff(list);
     return { success: true };
   }

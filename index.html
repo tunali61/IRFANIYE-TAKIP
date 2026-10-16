@@ -9,10 +9,10 @@
   <title>İrfaniye Akademi</title>
   <meta name="description" content="İrfaniye Akademi Öğrenci Bilgi ve Takip Portalı">
 
-  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v10.6 - KUR'AN TAKİP KESİNTİSİZ SAYFA GİRİŞİ & SİLME KORUMASI) -->
+  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v10.7 - PERSONEL YÖNETİMİ & TELEFON GİRİŞ SENKRONİZASYONU) -->
   <script>
     (function() {
-      var CURRENT_BUILD = '20261015_v10.6_IRFANIYE_AKADEMI';
+      var CURRENT_BUILD = '20261016_v10.7_IRFANIYE_AKADEMI';
       var savedBuild = localStorage.getItem('irfaniye_app_build_version');
 
       // Kullanıcının dilediğinde manuel de tetikleyebileceği evrensel sıfırlama fonksiyonu
@@ -386,30 +386,263 @@
       class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-900/95 hover:bg-slate-900 text-amber-300 hover:text-amber-200 border-2 border-amber-400 shadow-2xl text-xs font-black backdrop-blur transition-all active:scale-95 cursor-pointer"
       title="Eski önbelleği temizleyip en yeni sistemi zorla yükler">
       <span class="text-sm">🔄</span>
-      <span>Önbelleği Temizle (v10.6)</span>
+      <span>Önbelleği Temizle (v10.7)</span>
     </button>
   </div>
 
-  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v10.6 Sürüm İmzası) -->
-  <script src="js/hadisler.js?v=10.6"></script>
-  <script src="js/store.js?v=10.6"></script>
-  <script src="js/attendance.js?v=10.6"></script>
-  <script src="js/leave-tracker.js?v=10.6"></script>
-  <script src="js/leave-return.js?v=10.6"></script>
-  <script src="js/quran-tracker.js?v=10.6"></script>
-  <script src="js/performance.js?v=10.6"></script>
-  <script src="js/omr-scanner.js?v=10.6"></script>
-  <script src="js/test-results.js?v=10.6"></script>
-  <script src="js/mock-exam.js?v=10.6"></script>
-  <script src="js/leaderboard.js?v=10.6"></script>
-  <script src="js/parent-portal.js?v=10.6"></script>
-  <script src="js/app.js?v=10.6"></script>
+  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v10.7 Sürüm İmzası) -->
+  <script src="js/hadisler.js?v=10.7"></script>
+  <script src="js/store.js?v=10.7"></script>
+  <script src="js/attendance.js?v=10.7"></script>
+  <script src="js/leave-tracker.js?v=10.7"></script>
+  <script src="js/leave-return.js?v=10.7"></script>
+  <script src="js/quran-tracker.js?v=10.7"></script>
+  <script src="js/performance.js?v=10.7"></script>
+  <script src="js/omr-scanner.js?v=10.7"></script>
+  <script src="js/test-results.js?v=10.7"></script>
+  <script src="js/mock-exam.js?v=10.7"></script>
+  <script src="js/leaderboard.js?v=10.7"></script>
+  <script src="js/parent-portal.js?v=10.7"></script>
+  <script src="js/app.js?v=10.7"></script>
+
+  <!-- v10.7 Doğrudan Gömülü Personel Silme Koruması & Telefon Giriş Senkronizasyon Motoru -->
+  <script>
+    (function() {
+      if (!window.Store || !window.App) return;
+      var STAFF_KEY = 'irfaniye_staff';
+      var DEL_STAFF_KEY = 'irfaniye_deleted_staff_ids_v1';
+      var CUST_STAFF_KEY = 'irfaniye_staff_customized_v1';
+      var STAFF_TIME_KEY = 'irfaniye_staff_updated_at_v1';
+      var BACKUP_FB = 'https://oay-takip-default-rtdb.firebaseio.com';
+
+      window.Store.getBackupFirebaseUrl = function() { return BACKUP_FB; };
+
+      window.Store.getDeletedStaffIds = function() {
+        try {
+          var r = localStorage.getItem(DEL_STAFF_KEY);
+          return r ? JSON.parse(r) : {};
+        } catch(e) { return {}; }
+      };
+
+      window.Store.saveDeletedStaffIds = function(map) {
+        try {
+          localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(map || {}));
+          if (this.isCloudEnabled()) {
+            this.syncToCloud('irfaniye_data/deleted_staff_ids', map || {});
+          }
+        } catch(e) {}
+      };
+
+      window.Store.syncToCloud = async function(endpoint, data) {
+        var baseUrl = this.getFirebaseUrl();
+        var backupUrl = BACKUP_FB;
+        var cleanEndpoint = (endpoint || '').replace(/^\/+/, '').replace(/^kurs_data\//, 'irfaniye_data/');
+        var bodyStr = JSON.stringify(data);
+        var anyOk = false;
+        if (baseUrl) {
+          try {
+            var r1 = await fetch(baseUrl + '/' + cleanEndpoint + '.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: bodyStr });
+            if (r1.ok) anyOk = true;
+          } catch(e) {}
+        }
+        if (backupUrl && backupUrl !== baseUrl) {
+          try {
+            var r2 = await fetch(backupUrl + '/' + cleanEndpoint + '.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: bodyStr });
+            if (r2.ok) anyOk = true;
+          } catch(e) {}
+        }
+        return anyOk;
+      };
+
+      var origSyncFromCloud = window.Store.syncFromCloud.bind(window.Store);
+      window.Store.syncFromCloud = async function() {
+        var baseUrl = this.getFirebaseUrl();
+        var backupUrl = BACKUP_FB;
+        var pData = null, bData = null;
+        if (baseUrl) {
+          try {
+            var r1 = await fetch(baseUrl + '/irfaniye_data.json', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (r1.ok) pData = await r1.json();
+          } catch(e) {}
+        }
+        if (backupUrl && backupUrl !== baseUrl) {
+          try {
+            var r2 = await fetch(backupUrl + '/irfaniye_data.json', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (r2.ok) bData = await r2.json();
+          } catch(e) {}
+        }
+        var cloudData = null;
+        if (pData && bData) {
+          var pT = pData.staff_updatedAt || pData.lastSyncedAt || '';
+          var bT = bData.staff_updatedAt || bData.lastSyncedAt || '';
+          cloudData = (bT > pT) ? Object.assign({}, pData, bData) : Object.assign({}, bData, pData);
+        } else {
+          cloudData = pData || bData;
+        }
+        if (cloudData) {
+          if (cloudData.deleted_staff_ids && typeof cloudData.deleted_staff_ids === 'object') {
+            var mergedDel = Object.assign({}, this.getDeletedStaffIds(), cloudData.deleted_staff_ids);
+            localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(mergedDel));
+          }
+          if (cloudData.staff_customized === true) {
+            localStorage.setItem(CUST_STAFF_KEY, 'true');
+          }
+          this.applyFullCloudSync(cloudData);
+          var delMap = this.getDeletedStaffIds();
+          var timeSince = this._lastStaffEditTime ? (Date.now() - this._lastStaffEditTime) : 999999;
+          if (timeSince >= 20000) {
+            var cStaff = Array.isArray(cloudData.staff) ? cloudData.staff : (cloudData.staff && typeof cloudData.staff === 'object' ? Object.values(cloudData.staff).filter(Boolean) : []);
+            if (cStaff.length > 0 || cloudData.staff_customized === true || delMap['__ALL_DEFAULTS_CLEARED__']) {
+              var cleanCStaff = cStaff.filter(function(stf) {
+                if (!stf || !stf.id) return false;
+                if (delMap[stf.id]) return false;
+                var n = window.Store.normalizeSearchKey(stf.fullName);
+                if (n && delMap['name_' + n]) return false;
+                if (delMap['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(stf.id) && !stf.isCustomAdded) return false;
+                return true;
+              });
+              localStorage.setItem(STAFF_KEY, JSON.stringify(cleanCStaff));
+            }
+          }
+          return { success: true, message: 'Güncel veriler senkronize edildi.' };
+        }
+        return origSyncFromCloud();
+      };
+
+      window.Store.getStaff = function() {
+        try {
+          var isCust = localStorage.getItem(CUST_STAFF_KEY) === 'true';
+          var delMap = this.getDeletedStaffIds();
+          var raw = localStorage.getItem(STAFF_KEY);
+          if (raw !== null) {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              var filtered = parsed.filter(function(s) {
+                if (!s || !s.id) return false;
+                if (delMap[s.id]) return false;
+                var n = window.Store.normalizeSearchKey(s.fullName);
+                if (n && delMap['name_' + n]) return false;
+                if (delMap['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(s.id) && !s.isCustomAdded) return false;
+                return true;
+              });
+              if (filtered.length > 0 || isCust || delMap['__ALL_DEFAULTS_CLEARED__'] || Object.keys(delMap).length > 0) {
+                if (filtered.length !== parsed.length) localStorage.setItem(STAFF_KEY, JSON.stringify(filtered));
+                return filtered;
+              }
+            }
+          }
+          if (isCust || delMap['__ALL_DEFAULTS_CLEARED__']) {
+            localStorage.setItem(STAFF_KEY, JSON.stringify([]));
+            return [];
+          }
+          return typeof DEFAULT_STAFF !== 'undefined' ? DEFAULT_STAFF : [];
+        } catch(e) { return []; }
+      };
+
+      window.Store.saveStaff = function(staffList) {
+        var cleanList = Array.isArray(staffList) ? staffList : [];
+        var nowIso = new Date().toISOString();
+        this._lastStaffEditTime = Date.now();
+        localStorage.setItem(CUST_STAFF_KEY, 'true');
+        localStorage.setItem(STAFF_TIME_KEY, nowIso);
+        localStorage.setItem(STAFF_KEY, JSON.stringify(cleanList));
+        this.syncToCloud('irfaniye_data/staff', cleanList);
+        this.syncToCloud('irfaniye_data/deleted_staff_ids', this.getDeletedStaffIds());
+        this.syncToCloud('irfaniye_data/staff_customized', true);
+        this.syncToCloud('irfaniye_data/staff_updatedAt', nowIso);
+      };
+
+      window.Store.addStaff = function(member) {
+        var list = this.getStaff();
+        var fullNameClean = (member.fullName || '').trim().toLocaleUpperCase('tr-TR');
+        var normName = this.normalizeSearchKey(fullNameClean);
+        var delMap = this.getDeletedStaffIds();
+        if (normName && delMap['name_' + normName]) {
+          delete delMap['name_' + normName];
+          this.saveDeletedStaffIds(delMap);
+        }
+        var existingIdx = list.findIndex(function(s) { return window.Store.normalizeSearchKey(s.fullName) === normName; });
+        if (existingIdx !== -1) {
+          list[existingIdx] = Object.assign({}, list[existingIdx], {
+            fullName: fullNameClean,
+            role: member.role || list[existingIdx].role || 'Eğitmen',
+            password: (member.password || '123').toString().trim(),
+            isCustomAdded: true,
+            updatedAt: new Date().toISOString()
+          });
+          this.saveStaff(list);
+          return list[existingIdx];
+        }
+        var newMember = Object.assign({}, member, {
+          fullName: fullNameClean,
+          id: 'stf_' + Date.now(),
+          password: (member.password || '123').toString().trim(),
+          isCustomAdded: true,
+          updatedAt: new Date().toISOString()
+        });
+        list.push(newMember);
+        this.saveStaff(list);
+        return newMember;
+      };
+
+      window.Store.deleteStaff = function(id) {
+        var currentList = this.getStaff();
+        var target = currentList.find(function(s) { return s.id === id; });
+        var delMap = this.getDeletedStaffIds();
+        delMap[id] = true;
+        if (target && target.fullName) {
+          var n = this.normalizeSearchKey(target.fullName);
+          if (n) delMap['name_' + n] = true;
+        }
+        var list = currentList.filter(function(s) { return s.id !== id; });
+        if (list.length === 0) delMap['__ALL_DEFAULTS_CLEARED__'] = true;
+        localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(delMap));
+        this.saveStaff(list);
+      };
+
+      window.Store.clearAllStaff = function() {
+        var currentList = this.getStaff();
+        var delMap = this.getDeletedStaffIds();
+        delMap['__ALL_DEFAULTS_CLEARED__'] = true;
+        if (typeof DEFAULT_STAFF !== 'undefined') {
+          DEFAULT_STAFF.forEach(function(s) {
+            delMap[s.id] = true;
+            var n = window.Store.normalizeSearchKey(s.fullName);
+            if (n) delMap['name_' + n] = true;
+          });
+        }
+        currentList.forEach(function(s) {
+          if (s && s.id) delMap[s.id] = true;
+          if (s && s.fullName) {
+            var n = window.Store.normalizeSearchKey(s.fullName);
+            if (n) delMap['name_' + n] = true;
+          }
+        });
+        localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(delMap));
+        this.saveStaff([]);
+      };
+
+      var origHandleLogin = window.App.handleUserLogin.bind(window.App);
+      window.App.handleUserLogin = async function(event) {
+        if (event) event.preventDefault();
+        var nameInput = document.getElementById('login-fullname');
+        var passInput = document.getElementById('login-password');
+        if (nameInput && passInput && nameInput.value.trim() && passInput.value.trim()) {
+          var s = window.Store.authenticateUser(nameInput.value.trim(), passInput.value.trim());
+          if (!s) {
+            try { await window.Store.syncFromCloud(); } catch(e) {}
+          }
+        }
+        return origHandleLogin(null);
+      };
+    })();
+  </script>
 
   <!-- Service Worker Kaydı (Kısayol ve PWA Hızlı Başlatma) -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js?v=10.6').then(function(reg) {
+        navigator.serviceWorker.register('./sw.js?v=10.7').then(function(reg) {
           if (reg) {
             reg.update();
           }

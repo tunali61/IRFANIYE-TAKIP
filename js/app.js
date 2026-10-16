@@ -253,7 +253,7 @@ window.App = {
   },
 
   // --- Kullanıcı Girişi (Veli & Personel / Hoca İçin Tek Ekran) ---
-  handleUserLogin(event) {
+  async handleUserLogin(event) {
     if (event) event.preventDefault();
     const nameInput = document.getElementById('login-fullname');
     const passInput = document.getElementById('login-password');
@@ -274,7 +274,17 @@ window.App = {
       return;
     }
 
-    const session = window.Store.authenticateUser(name, pass);
+    let session = window.Store.authenticateUser(name, pass);
+
+    // Eğer telefonda yerel hafızada henüz yeni eklenen personel veya güncel şifre yoksa, anında buluttan çekip tekrar doğrula!
+    if (!session && window.Store.isCloudEnabled()) {
+      try {
+        await window.Store.syncFromCloud();
+        session = window.Store.authenticateUser(name, pass);
+      } catch (e) {
+        console.warn('[LoginSync] Bulut kontrolü hatası:', e);
+      }
+    }
 
     if (!session) {
       this.showToast('Girdiğiniz bilgiler veya şifre hatalıdır. Lütfen kontrol edip tekrar deneyiniz.', 'error');
@@ -385,7 +395,7 @@ window.App = {
   // E-posta Kodunu Yeniden Gönderme
   handleAdminOtpResend() {
     const settings = window.Store.getSettings();
-    const email = this.adminEmailDraft || settings.adminEmail || 'selimbozkurt111@gmail.com';
+    const email = this.adminEmailDraft || settings.adminEmail || 'admin@irfaniye.com';
     const res = window.Store.generateAdminOtp(email);
 
     if (!res.success) {
@@ -1193,7 +1203,7 @@ window.App = {
                   <div class="p-3 bg-amber-50/80 rounded-2xl border border-amber-200 text-left flex items-start gap-2.5">
                     <span class="text-base">🛡️</span>
                     <div class="text-[11px] text-amber-900 leading-snug">
-                      Şifreniz doğru girildiğinde <strong>${settings.adminEmail || 'selimbozkurt111@gmail.com'}</strong> adresinize tek kullanımlık 6 haneli giriş kodu iletilecektir.
+                      Şifreniz doğru girildiğinde <strong>${settings.adminEmail || 'admin@irfaniye.com'}</strong> adresinize tek kullanımlık 6 haneli giriş kodu iletilecektir.
                     </div>
                   </div>
 
@@ -1239,11 +1249,11 @@ window.App = {
                         </div>
                       </div>
                       <p class="text-[10px] text-amber-800">
-                        ✓ Kod ayrıca <strong>${this.adminEmailDraft || settings.adminEmail || 'selimbozkurt111@gmail.com'}</strong> adresinize de gönderildi.
+                        ✓ Kod ayrıca <strong>${this.adminEmailDraft || settings.adminEmail || 'admin@irfaniye.com'}</strong> adresinize de gönderildi.
                       </p>
                     ` : `
                       <p class="text-[11px] text-amber-800 leading-relaxed">
-                        <strong>${this.adminEmailDraft || settings.adminEmail || 'selimbozkurt111@gmail.com'}</strong> adresinize 6 haneli doğrulama kodu gönderildi.
+                        <strong>${this.adminEmailDraft || settings.adminEmail || 'admin@irfaniye.com'}</strong> adresinize 6 haneli doğrulama kodu gönderildi.
                         ${currentCode ? `
                           <br><button type="button" onclick="window.App.toggleShowAdminOtp()" class="font-bold underline text-amber-950 mt-1 cursor-pointer">
                             👉 Kodu beklemeden ekranda görmek için tıklayınız.
@@ -2755,14 +2765,22 @@ window.App = {
                 <span>👨‍🏫 Personel İsim ve Şifre Yönetimi</span>
               </h3>
               <p class="text-xs text-slate-500">
-                Eğitmenlerin sisteme girerken kullanacağı Ad Soyad ve Şifrelerini buradan yönetebilirsiniz. Personeller kendi şifrelerini değiştirdiğinde burada sarı "🔑 Değişti" rozetiyle güncel olarak görüntülenir.
+                Eğitmenlerin sisteme girerken kullanacağı Ad Soyad ve Şifrelerini buradan yönetebilirsiniz. Eklediğiniz veya sildiğiniz personeller tüm telefonlara otomatik senkronize edilir.
               </p>
             </div>
 
-            <button onclick="window.App.openStaffModal()" 
-              class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5">
-              <span>+ Yeni Personel / Hoca Ekle</span>
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              ${staffList.length > 0 ? `
+                <button onclick="window.App.clearAllStaffConfirm()" 
+                  class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                  <span>🗑️ Tüm Personeli Sil</span>
+                </button>
+              ` : ''}
+              <button onclick="window.App.openStaffModal()" 
+                class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5">
+                <span>+ Yeni Personel / Hoca Ekle</span>
+              </button>
+            </div>
           </div>
 
           <div class="mt-4 overflow-x-auto">
@@ -2777,7 +2795,15 @@ window.App = {
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 text-sm">
-                ${staffList.map(stf => `
+                ${staffList.length === 0 ? `
+                  <tr>
+                    <td colspan="5" class="py-10 px-4 text-center text-slate-500">
+                      <div class="text-2xl mb-2">👨‍🏫</div>
+                      <div class="font-bold text-slate-700 mb-1">Kayıtlı personel bulunmuyor.</div>
+                      <div class="text-xs text-slate-500">Sağ üstteki <strong>"+ Yeni Personel / Hoca Ekle"</strong> butonuna tıklayarak kendi personelinizi ekleyip şifre verebilirsiniz.</div>
+                    </td>
+                  </tr>
+                ` : staffList.map(stf => `
                   <tr class="table-row-hover transition">
                     <td class="py-3 px-4 font-bold text-slate-900">${stf.fullName}</td>
                     <td class="py-3 px-4 text-xs text-slate-600">${stf.role}</td>
@@ -2821,13 +2847,13 @@ window.App = {
     const role = prompt('Görevi (Örn: 5. Sınıf Etüt Hocası):', 'Etüt & Dahili Hocası');
     const pass = prompt('Sisteme giriş yaparken kullanacağı Şifre:', '123');
 
-    window.Store.addStaff({
-      fullName: name.trim().toUpperCase(),
+    const added = window.Store.addStaff({
+      fullName: name.trim().toLocaleUpperCase('tr-TR'),
       role: role ? role.trim() : 'Eğitmen',
       password: pass ? pass.trim() : '123'
     });
 
-    this.showToast(`${name} başarıyla eklendi!`, 'success');
+    this.showToast(`${added.fullName} başarıyla eklendi ve telefonlara aktarıldı!`, 'success');
     this.renderStaffView();
   },
 
@@ -2839,15 +2865,23 @@ window.App = {
     const newPass = prompt(`${stf.fullName} için yeni giriş şifresi:`, stf.password || '123');
     if (newPass !== null && newPass.trim()) {
       window.Store.updateStaff(id, { password: newPass.trim() });
-      this.showToast('Şifre güncellendi.', 'success');
+      this.showToast('Şifre güncellendi ve telefonlara aktarıldı.', 'success');
       this.renderStaffView();
     }
   },
 
   deleteStaff(id) {
-    if (confirm('Bu personeli sistemden çıkarmak istediğinizden emin misiniz?')) {
+    if (confirm('Bu personeli sistemden kalıcı olarak çıkarmak istediğinizden emin misiniz?')) {
       window.Store.deleteStaff(id);
-      this.showToast('Personel çıkarıldı.', 'info');
+      this.showToast('Personel kalıcı olarak çıkarıldı.', 'info');
+      this.renderStaffView();
+    }
+  },
+
+  clearAllStaffConfirm() {
+    if (confirm('Listedeki TÜM personelleri kalıcı olarak silmek istediğinizden emin misiniz? Sildikten sonra sadece kendi personelinizi ekleyebilirsiniz.')) {
+      window.Store.clearAllStaff();
+      this.showToast('Tüm personel listesi temizlendi! Şimdi kendi personelinizi ekleyebilirsiniz.', 'success');
       this.renderStaffView();
     }
   },
