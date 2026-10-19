@@ -9,10 +9,10 @@
   <title>İrfaniye Akademi</title>
   <meta name="description" content="İrfaniye Akademi Öğrenci Bilgi ve Takip Portalı">
 
-  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v11.0 - KESİN TELEFON PERSONEL GİRİŞ MOTORU) -->
+  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v11.2 - TELEFON TALEBE LİSTESİ EŞİTLEME MOTORU) -->
   <script>
     (function() {
-      var CURRENT_BUILD = '20261016_v11.0_IRFANIYE_AKADEMI';
+      var CURRENT_BUILD = '20261019_v11.2_IRFANIYE_AKADEMI';
       var savedBuild = localStorage.getItem('irfaniye_app_build_version');
 
       // Kullanıcının dilediğinde manuel de tetikleyebileceği evrensel sıfırlama fonksiyonu
@@ -36,7 +36,7 @@
           console.warn('Cache purge error:', e);
         }
         setTimeout(function() {
-          window.location.href = window.location.pathname + '?v=11.0&t=' + Date.now();
+          window.location.href = window.location.pathname + '?v=11.2&t=' + Date.now();
         }, 200);
       };
 
@@ -386,16 +386,21 @@
       class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-900/95 hover:bg-slate-900 text-amber-300 hover:text-amber-200 border-2 border-amber-400 shadow-2xl text-xs font-black backdrop-blur transition-all active:scale-95 cursor-pointer"
       title="Eski önbelleği temizleyip en yeni sistemi zorla yükler">
       <span class="text-sm">🔄</span>
-      <span>Önbelleği Temizle (v11.0)</span>
+      <span>Önbelleği Temizle (v11.2)</span>
     </button>
   </div>
 
-  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v11.1 Sürüm İmzası) -->
-  <script src="js/hadisler.js?v=11.1"></script>
-  <script src="js/store.js?v=11.1"></script>
+  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v11.2 Sürüm İmzası) -->
+  <script src="js/hadisler.js?v=11.2"></script>
+  <script src="js/store.js?v=11.2"></script>
 
-  <!-- v11.1 STORE MOTORU: Eski kurum talebelerini %100 siler, yalnızca sizin kaydettiğiniz talebeleri korur ve telefonlara eşitler -->
+  <!-- v11.2 STORE MOTORU: Yönetici ekranındaki talebe listesini tüm telefonlara %100 aktarır, eski kurum talebelerini engeller -->
   <script>
+    /*__EMBEDDED_STUDENTS_START__*/
+    window.EMBEDDED_INSTITUTION_STUDENTS = [];
+    window.EMBEDDED_INSTITUTION_STAFF = [];
+    /*__EMBEDDED_STUDENTS_END__*/
+
     (function() {
       if (!window.Store) return;
       var STAFF_KEY = 'irfaniye_staff';
@@ -404,14 +409,33 @@
       var STAFF_TIME_KEY = 'irfaniye_staff_updated_at_v1';
       var STUDENTS_KEY = 'irfaniye_students';
       var DEL_STUDENTS_KEY = 'irfaniye_deleted_student_ids_v1';
+      var PRIMARY_FB = 'https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app';
       var BACKUP_FB = 'https://oay-takip-default-rtdb.firebaseio.com';
 
       window.Store.getBackupFirebaseUrl = function() { return BACKUP_FB; };
+      window.Store.getAllCloudUrls = function() {
+        var urls = [];
+        try {
+          var customUrl = this.getFirebaseUrl ? (this.getFirebaseUrl() || '').replace(/\/+$/, '') : '';
+          if (customUrl && urls.indexOf(customUrl) === -1) urls.push(customUrl);
+        } catch(e) {}
+        if (urls.indexOf(PRIMARY_FB) === -1) urls.push(PRIMARY_FB);
+        if (urls.indexOf(BACKUP_FB) === -1) urls.push(BACKUP_FB);
+        return urls;
+      };
 
-      // 0. Eski varsayılan dizileri ve otomatik yükleyicileri tamamen devre dışı bırak
+      // 0. Eski varsayılan dizileri ve ID engellerini tamamen devre dışı bırak
       try {
         if (typeof SEED_STUDENTS !== 'undefined' && Array.isArray(SEED_STUDENTS)) {
           SEED_STUDENTS.length = 0;
+        }
+        if (typeof PERMANENTLY_DELETED_STUDENTS !== 'undefined' && PERMANENTLY_DELETED_STUDENTS) {
+          if (PERMANENTLY_DELETED_STUDENTS.ids && typeof PERMANENTLY_DELETED_STUDENTS.ids.clear === 'function') {
+            PERMANENTLY_DELETED_STUDENTS.ids.clear();
+          }
+          if (PERMANENTLY_DELETED_STUDENTS.nos && typeof PERMANENTLY_DELETED_STUDENTS.nos.clear === 'function') {
+            PERMANENTLY_DELETED_STUDENTS.nos.clear();
+          }
         }
       } catch(e) {}
       window.Store.autoSyncStaffAndClassTeachers = function() { return; };
@@ -443,7 +467,7 @@
           .replace(/[^a-z0-9]/g, '');
       };
 
-      // 1. ESKİ KURUMUN TÜM TALEBE İSİMLERİ VE ID'LERİ (KARA LİSTE - HİÇBİR TELEFONDA VEYA BİLGİSAYARDA ASLA GÖRÜNMEZ)
+      // 1. ESKİ KURUMUN TÜM TALEBE İSİMLERİ (KARA LİSTE - SADECE BU 63 İSİM ENGELLENİR)
       var OLD_INSTITUTION_STUDENT_NAMES = {
         'ardayusufsaygi': true,
         'asilmiracsoylu': true,
@@ -529,50 +553,84 @@
         return false;
       };
 
-      // 2. Cihaz Hafızasındaki Eski Kurum Talebelerini Anında Sil ve Kullanıcının Kendi Talebelerini Kurtar
+      // 2. Silinenler Sicilini (delMap) Temizle ve Kullanıcının Kendi Talebelerini Kurtar
+      window.Store.cleanPoisonedDeletedStudentIds = function() {
+        try {
+          var rawDel = localStorage.getItem(DEL_STUDENTS_KEY);
+          if (!rawDel) return {};
+          var delMap = JSON.parse(rawDel) || {};
+          var changed = false;
+          Object.keys(delMap).forEach(function(k) {
+            if (OLD_INSTITUTION_STUDENT_IDS[k] || (delMap[k] && delMap[k].deletedAt === '2026-01-01T00:00:00.000Z')) {
+              delete delMap[k];
+              changed = true;
+            }
+          });
+          if (changed) {
+            localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify(delMap));
+          }
+          return delMap;
+        } catch(e) {
+          return {};
+        }
+      };
+
       window.Store.purgeOldInstitutionStudentsNow = function() {
         try {
-          var delMap = this.getDeletedStudentIds ? this.getDeletedStudentIds() : {};
+          var delMap = this.cleanPoisonedDeletedStudentIds();
           var userStudentsByName = {};
           var userStudentsList = [];
 
-          var addIfValidUserStudent = function(st) {
-            if (!st || typeof st !== 'object' || !st.id) return;
+          var addIfValidUserStudent = function(st, ignoreDelMap) {
+            if (!st || typeof st !== 'object') return;
             if (window.Store.isOldInstitutionStudent(st)) return;
-            if (delMap[st.id] && delMap[st.id].isDeleted) return;
             var fullNorm = window.Store.normalizeSearchKey(((st.firstName || '') + ' ' + (st.lastName || '')).trim());
             if (!fullNorm) return;
-            // Eğer bu talebe eski ID'lerden birinin üzerine yazılmışsa yeni temiz ID ver
-            if (OLD_INSTITUTION_STUDENT_IDS[st.id]) {
-              st = Object.assign({}, st, { id: 'std_custom_' + fullNorm });
+
+            var cleanSt = Object.assign({}, st);
+            if (!cleanSt.id || OLD_INSTITUTION_STUDENT_IDS[cleanSt.id]) {
+              cleanSt.id = 'std_custom_' + fullNorm;
             }
+            if (!ignoreDelMap && delMap[cleanSt.id] && delMap[cleanSt.id].isDeleted) return;
+
+            cleanSt.isPassive = false;
+            cleanSt.status = 'active';
+            delete cleanSt.aktif;
+            delete cleanSt.active;
+
             if (!userStudentsByName[fullNorm]) {
-              userStudentsByName[fullNorm] = st;
-              userStudentsList.push(st);
+              userStudentsByName[fullNorm] = cleanSt;
+              userStudentsList.push(cleanSt);
             }
           };
 
-          // Önce ana öğrenci anahtarını tara
+          // A. Ana öğrenci anahtarını tara
           var rawMain = localStorage.getItem(STUDENTS_KEY);
           if (rawMain) {
             try {
               var parsedMain = JSON.parse(rawMain);
-              if (Array.isArray(parsedMain)) parsedMain.forEach(addIfValidUserStudent);
+              if (Array.isArray(parsedMain)) {
+                parsedMain.forEach(function(st) { addIfValidUserStudent(st, false); });
+              }
             } catch(e) {}
           }
 
-          // Eğer ana listede yoksa yedek anahtarlardan kullanıcının kendi kaydettiği talebeleri kurtar
+          // B. Yedek anahtarlardan kullanıcının kendi kaydettiği talebeleri kurtar
           var backupKeys = [
             'yoklama_students_backup_v1',
             'yoklama_students_backup_last',
-            'yoklama_students_backup_pre_cloud_sync'
+            'yoklama_students_backup_pre_cloud_sync',
+            'yoklama_students_backup_v2',
+            'yoklama_students'
           ];
           backupKeys.forEach(function(k) {
             try {
               var r = localStorage.getItem(k);
               if (r) {
                 var p = JSON.parse(r);
-                if (Array.isArray(p)) p.forEach(addIfValidUserStudent);
+                if (Array.isArray(p)) {
+                  p.forEach(function(st) { addIfValidUserStudent(st, false); });
+                }
               }
             } catch(e) {}
           });
@@ -583,32 +641,59 @@
               var snaps = JSON.parse(rawSnap);
               if (Array.isArray(snaps)) {
                 snaps.forEach(function(sn) {
-                  if (sn && Array.isArray(sn.students)) sn.students.forEach(addIfValidUserStudent);
+                  if (sn && Array.isArray(sn.students)) {
+                    sn.students.forEach(function(st) { addIfValidUserStudent(st, false); });
+                  }
                 });
               }
             }
           } catch(e) {}
 
-          // Temizlenmiş listeyi hem ana hafızaya hem yedeklere yaz (eski kurum öğrencileri tamamen yok olur)
-          localStorage.setItem(STUDENTS_KEY, JSON.stringify(userStudentsList));
-          localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(userStudentsList));
-          localStorage.setItem('yoklama_students_backup_last', JSON.stringify(userStudentsList));
-          localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify(userStudentsList));
-          localStorage.removeItem('yoklama_students_snapshots');
-
-          // Eski kurum öğrencilerinin ID'lerini silinenler siciline de işle
-          var delChanged = false;
-          Object.keys(OLD_INSTITUTION_STUDENT_IDS).forEach(function(oldId) {
-            if (!delMap[oldId] || !delMap[oldId].isDeleted) {
-              delMap[oldId] = { isDeleted: true, deletedAt: '2026-01-01T00:00:00.000Z' };
-              delChanged = true;
-            }
-          });
-          if (delChanged) {
-            localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify(delMap));
+          // C. Eğer index.html içine gömülü kurum talebe listesi varsa onları da ekle
+          if (Array.isArray(window.EMBEDDED_INSTITUTION_STUDENTS) && window.EMBEDDED_INSTITUTION_STUDENTS.length > 0) {
+            window.EMBEDDED_INSTITUTION_STUDENTS.forEach(function(st) {
+              addIfValidUserStudent(st, true);
+            });
           }
 
-          // Günlük görevler, yoklama ve Kur'an takibindeki eski kurum isimlerini temizle
+          // D. Eğer delMap yüzünden 0 öğrenci kaldıysa ama yedeklerde kullanıcı öğrencisi varsa delMap'i yoksayarak kurtar!
+          if (userStudentsList.length === 0) {
+            [STUDENTS_KEY].concat(backupKeys).forEach(function(k) {
+              try {
+                var r = localStorage.getItem(k);
+                if (r) {
+                  var p = JSON.parse(r);
+                  if (Array.isArray(p)) {
+                    p.forEach(function(st) { addIfValidUserStudent(st, true); });
+                  }
+                }
+              } catch(e) {}
+            });
+            if (userStudentsList.length > 0) {
+              localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify({}));
+            }
+          }
+
+          localStorage.setItem(STUDENTS_KEY, JSON.stringify(userStudentsList));
+          if (userStudentsList.length > 0) {
+            localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(userStudentsList));
+            localStorage.setItem('yoklama_students_backup_last', JSON.stringify(userStudentsList));
+            localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify(userStudentsList));
+          }
+
+          // Gömülü personel varsa ve cihazda henüz personel yoksa yükle
+          if (Array.isArray(window.EMBEDDED_INSTITUTION_STAFF) && window.EMBEDDED_INSTITUTION_STAFF.length > 0) {
+            try {
+              var curStaffRaw = localStorage.getItem(STAFF_KEY);
+              var curStaff = curStaffRaw ? JSON.parse(curStaffRaw) : [];
+              if (!Array.isArray(curStaff) || curStaff.length === 0) {
+                localStorage.setItem(STAFF_KEY, JSON.stringify(window.EMBEDDED_INSTITUTION_STAFF));
+                localStorage.setItem(CUST_STAFF_KEY, 'true');
+              }
+            } catch(e) {}
+          }
+
+          // Günlük görevler ve Kur'an takibindeki eski kurum isimlerini temizle
           try {
             var rawDuties = localStorage.getItem('irfaniye_daily_duties_v1');
             if (rawDuties && (rawDuties.indexOf('ARDA YUSUF SAYGI') !== -1 || rawDuties.indexOf('ASİL MİRAÇ SOYLU') !== -1)) {
@@ -639,30 +724,39 @@
         }
       };
 
-      // Sayfa yüklenir yüklenmez eski kurum talebelerini anında temizle!
+      // Sayfa yüklenir yüklenmez eski kurum talebelerini temizle ve kullanıcı talebelerini kurtar
       window.Store.purgeOldInstitutionStudentsNow();
 
-      // 3. Öğrenci Okuma & Kaydetme Metodlarını Kesin Korumalı Hale Getir (Asla SEED_STUDENTS'a dönmez)
+      // 3. Öğrenci Okuma & Kaydetme Metodlarını Kesin Korumalı Hale Getir
       window.Store.getAllStudents = function() {
         try {
-          var delMap = this.getDeletedStudentIds ? this.getDeletedStudentIds() : {};
+          var delMap = this.cleanPoisonedDeletedStudentIds();
           var raw = localStorage.getItem(STUDENTS_KEY);
           var list = [];
           if (raw) {
             var parsed = JSON.parse(raw);
             if (Array.isArray(parsed)) {
               list = parsed.filter(function(s) {
-                if (!s || typeof s !== 'object' || !s.id) return false;
+                if (!s || typeof s !== 'object') return false;
                 if (window.Store.isOldInstitutionStudent(s)) return false;
-                if (delMap[s.id] && delMap[s.id].isDeleted) return false;
+                if (s.id && delMap[s.id] && delMap[s.id].isDeleted) return false;
                 return true;
               });
-              if (list.length !== parsed.length) {
-                localStorage.setItem(STUDENTS_KEY, JSON.stringify(list));
-              }
+            }
+          }
+          if (list.length === 0 && Array.isArray(window.EMBEDDED_INSTITUTION_STUDENTS) && window.EMBEDDED_INSTITUTION_STUDENTS.length > 0) {
+            list = window.EMBEDDED_INSTITUTION_STUDENTS.filter(function(s) {
+              return s && !window.Store.isOldInstitutionStudent(s);
+            });
+            if (list.length > 0) {
+              localStorage.setItem(STUDENTS_KEY, JSON.stringify(list));
             }
           }
           list.forEach(function(s) {
+            var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+            if (!s.id || OLD_INSTITUTION_STUDENT_IDS[s.id]) {
+              s.id = 'std_custom_' + fullNorm;
+            }
             s.isPassive = false;
             s.status = 'active';
             delete s.aktif;
@@ -680,14 +774,22 @@
 
       window.Store.saveStudents = function(students) {
         if (!Array.isArray(students)) return;
-        var delMap = this.getDeletedStudentIds ? this.getDeletedStudentIds() : {};
+        var delMap = this.cleanPoisonedDeletedStudentIds();
         var nowIso = new Date().toISOString();
         var cleanList = students.filter(function(s) {
-          if (!s || typeof s !== 'object' || !s.id) return false;
+          if (!s || typeof s !== 'object') return false;
           if (window.Store.isOldInstitutionStudent(s)) return false;
-          if (delMap[s.id] && delMap[s.id].isDeleted) return false;
+          var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+          if (!fullNorm) return false;
+          if (!s.id || OLD_INSTITUTION_STUDENT_IDS[s.id]) {
+            s.id = 'std_custom_' + fullNorm;
+          }
+          if (delMap[s.id] && delMap[s.id].isDeleted) {
+            delete delMap[s.id];
+          }
           return true;
         });
+        localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify(delMap));
 
         cleanList.forEach(function(s) {
           s.updatedAt = nowIso;
@@ -702,13 +804,18 @@
 
         var sorted = this.sortStudentsByClassAndNo ? this.sortStudentsByClassAndNo(cleanList) : cleanList;
         localStorage.setItem(STUDENTS_KEY, JSON.stringify(sorted));
-        localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(sorted));
-        localStorage.setItem('yoklama_students_backup_last', JSON.stringify(sorted));
-        localStorage.setItem('yoklama_students_backup_timestamp', nowIso);
+        if (sorted.length > 0) {
+          localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(sorted));
+          localStorage.setItem('yoklama_students_backup_last', JSON.stringify(sorted));
+          localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify(sorted));
+          localStorage.setItem('yoklama_students_backup_timestamp', nowIso);
+        }
 
         this._lastStudentPushTime = Date.now();
         this._lastStudentEditTime = Date.now();
-        this.pushStudentsToCloud(sorted);
+        if (sorted.length > 0) {
+          this.pushStudentsToCloud(sorted);
+        }
 
         try {
           window.dispatchEvent(new CustomEvent('students-updated', { detail: sorted }));
@@ -716,8 +823,9 @@
       };
 
       window.Store.clearAllUserStudents = function() {
+        this._explicitClearAllStudents = true;
         var current = this.getAllStudents();
-        var delMap = this.getDeletedStudentIds ? this.getDeletedStudentIds() : {};
+        var delMap = this.cleanPoisonedDeletedStudentIds();
         var nowIso = new Date().toISOString();
         current.forEach(function(s) {
           if (s && s.id) {
@@ -728,16 +836,61 @@
         localStorage.setItem(STUDENTS_KEY, JSON.stringify([]));
         localStorage.setItem('yoklama_students_backup_v1', JSON.stringify([]));
         localStorage.setItem('yoklama_students_backup_last', JSON.stringify([]));
+        localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify([]));
         localStorage.removeItem('yoklama_students_snapshots');
         this.pushStudentsToCloud([]);
+        var self = this;
+        setTimeout(function() { self._explicitClearAllStudents = false; }, 5000);
       };
 
-      // 4. Bulut Talebe Senkronizasyon Motoru (Sadece Kullanıcının Kendi Kurum Talebelerini Telefonlara Aktarır)
+      // Aktif ekranları (özellikle Telefondaki Yoklama, Kur'an, Akademi ekranlarını) anında yenileme yardımcısı
+      window.Store.refreshActiveViewsAfterStudentSync = function() {
+        try {
+          if (window.AttendanceModule) {
+            if (typeof window.AttendanceModule.loadDailyDraft === 'function') {
+              window.AttendanceModule.loadDailyDraft();
+            }
+            if (document.getElementById('attendance-container') && typeof window.AttendanceModule.renderView === 'function') {
+              window.AttendanceModule.renderView();
+            }
+          }
+          if (window.QuranTrackerModule && document.getElementById('quran-tracker-container') && typeof window.QuranTrackerModule.renderView === 'function') {
+            window.QuranTrackerModule.renderView(true);
+          }
+          if (window.LeaveTrackerModule && document.getElementById('leave-tracker-container') && typeof window.LeaveTrackerModule.renderView === 'function') {
+            window.LeaveTrackerModule.renderView();
+          }
+          if (window.LeaveReturnModule && document.getElementById('leave-return-container') && typeof window.LeaveReturnModule.renderView === 'function') {
+            window.LeaveReturnModule.renderView();
+          }
+          if (window.App && document.getElementById('students-container') && !window.App.studentTableEditMode && typeof window.App.renderStudentsView === 'function') {
+            window.App.renderStudentsView();
+          }
+        } catch(e) {}
+      };
+
+      // 4. ÇİFT SUNUCULU BULUT TALEBE SENKRONİZASYON MOTORU (BOŞ TELEFONUN BULUTU SİLMESİ %100 ENGELLENDİ!)
       window.Store.pushStudentsToCloud = async function(optionalList) {
-        var cleanList = Array.isArray(optionalList)
-          ? optionalList.filter(function(s) { return !window.Store.isOldInstitutionStudent(s); })
-          : this.getAllStudents();
-        var delMap = this.getDeletedStudentIds ? this.getDeletedStudentIds() : {};
+        var rawList = Array.isArray(optionalList) ? optionalList : this.getAllStudents();
+        var cleanList = rawList.filter(function(s) {
+          return s && typeof s === 'object' && !window.Store.isOldInstitutionStudent(s);
+        });
+        cleanList.forEach(function(s) {
+          var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+          if (!s.id || OLD_INSTITUTION_STUDENT_IDS[s.id]) {
+            s.id = 'std_custom_' + fullNorm;
+          }
+          s.isPassive = false;
+          s.status = 'active';
+        });
+
+        // KRİTİK KORUMA: Eğer bu cihazda 0 talebe varsa (örn. yeni açılan personel telefonu),
+        // buluttaki yönetici talebe listesini ASLA boş diziyle ([] / 0 talebe) ezme!
+        if (cleanList.length === 0 && !this._explicitClearAllStudents) {
+          return { ok: false, skippedEmpty: true, count: 0 };
+        }
+
+        var delMap = this.cleanPoisonedDeletedStudentIds();
         var nowIso = new Date().toISOString();
         var payload = {
           students: cleanList,
@@ -745,49 +898,60 @@
           students_customized: true,
           updatedAt: nowIso
         };
-        try {
-          await fetch(BACKUP_FB + '/irfaniye_v11_students.json', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        } catch(e) {}
-        try {
-          await this.syncToCloud('irfaniye_data/students', cleanList);
-          await this.syncToCloud('irfaniye_data/deleted_student_ids', delMap);
-        } catch(e) {}
-        return true;
+
+        var urls = this.getAllCloudUrls();
+        var anyOk = false;
+        var lastStatus = 0;
+
+        for (var i = 0; i < urls.length; i++) {
+          var u = urls[i];
+          try {
+            var r1 = await fetch(u + '/irfaniye_v11_students.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            lastStatus = r1.status;
+            if (r1.ok) anyOk = true;
+          } catch(e) {}
+          try {
+            var r2 = await fetch(u + '/irfaniye_data/students.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(cleanList)
+            });
+            if (r2.ok) anyOk = true;
+          } catch(e) {}
+        }
+
+        return { ok: anyOk, count: cleanList.length, status: lastStatus };
       };
 
       window.Store.pullStudentsFromCloud = async function() {
         try {
-          this.purgeOldInstitutionStudentsNow();
-          var localClean = this.getAllStudents();
-          var delMap = this.getDeletedStudentIds ? this.getDeletedStudentIds() : {};
+          var beforeCount = this.getAllStudents().length;
+          var localClean = this.purgeOldInstitutionStudentsNow();
+          var urls = this.getAllCloudUrls();
 
-          var v11Data = null;
-          var legacyStudentsRaw = null;
+          var fetchJson = async function(fullUrl) {
+            try {
+              var r = await fetch(fullUrl + (fullUrl.indexOf('?') === -1 ? '?t=' : '&t=') + Date.now(), {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+              });
+              if (r.ok) return await r.json();
+            } catch(e) {}
+            return null;
+          };
 
-          try {
-            var r1 = await fetch(BACKUP_FB + '/irfaniye_v11_students.json?t=' + Date.now(), {
-              headers: { 'Accept': 'application/json' },
-              cache: 'no-store'
-            });
-            if (r1.ok) v11Data = await r1.json();
-          } catch(e) {}
+          var tasks = [];
+          urls.forEach(function(u) {
+            tasks.push(fetchJson(u + '/irfaniye_v11_students.json'));
+            tasks.push(fetchJson(u + '/irfaniye_data/students.json'));
+            tasks.push(fetchJson(u + '/irfaniye_data.json'));
+          });
 
-          try {
-            var r2 = await fetch(BACKUP_FB + '/irfaniye_data/students.json?t=' + Date.now(), {
-              headers: { 'Accept': 'application/json' },
-              cache: 'no-store'
-            });
-            if (r2.ok) legacyStudentsRaw = await r2.json();
-          } catch(e) {}
-
-          if (v11Data && v11Data.deleted_student_ids && typeof v11Data.deleted_student_ids === 'object') {
-            delMap = Object.assign({}, delMap, v11Data.deleted_student_ids);
-            localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify(delMap));
-          }
+          var results = await Promise.all(tasks);
 
           var toArr = function(val) {
             if (!val) return [];
@@ -796,52 +960,92 @@
             return [];
           };
 
-          var v11List = v11Data ? toArr(v11Data.students) : [];
-          var legacyList = toArr(legacyStudentsRaw);
-          var hadOldInLegacy = legacyList.some(function(s) { return window.Store.isOldInstitutionStudent(s); });
+          var cloudCandidateLists = [];
+          var hadOldInCloud = false;
 
-          // Hem v11 kanalındaki hem de bilgisayardan daha önce gönderilmiş irfaniye_data/students içindeki
-          // KULLANICIYA AİT talebeleri birleştir, eski kurum talebelerini (%100) çöpe at!
+          for (var i = 0; i < results.length; i += 3) {
+            var v11Obj = results[i];
+            var stdRaw = results[i + 1];
+            var fullData = results[i + 2];
+
+            if (v11Obj && v11Obj.students) {
+              var arr1 = toArr(v11Obj.students);
+              if (arr1.some(function(s) { return window.Store.isOldInstitutionStudent(s); })) hadOldInCloud = true;
+              cloudCandidateLists.push(arr1);
+            }
+            if (stdRaw) {
+              var arr2 = toArr(stdRaw);
+              if (arr2.some(function(s) { return window.Store.isOldInstitutionStudent(s); })) hadOldInCloud = true;
+              cloudCandidateLists.push(arr2);
+            }
+            if (fullData && fullData.students) {
+              var arr3 = toArr(fullData.students);
+              if (arr3.some(function(s) { return window.Store.isOldInstitutionStudent(s); })) hadOldInCloud = true;
+              cloudCandidateLists.push(arr3);
+            }
+          }
+
           var byName = {};
           var mergedClean = [];
 
           var addClean = function(st) {
-            if (!st || typeof st !== 'object' || !st.id) return;
+            if (!st || typeof st !== 'object') return;
             if (window.Store.isOldInstitutionStudent(st)) return;
-            if (delMap[st.id] && delMap[st.id].isDeleted) return;
             var fullNorm = window.Store.normalizeSearchKey(((st.firstName || '') + ' ' + (st.lastName || '')).trim());
             if (!fullNorm) return;
-            if (OLD_INSTITUTION_STUDENT_IDS[st.id]) {
-              st = Object.assign({}, st, { id: 'std_custom_' + fullNorm });
+
+            var cleanSt = Object.assign({}, st);
+            if (!cleanSt.id || OLD_INSTITUTION_STUDENT_IDS[cleanSt.id]) {
+              cleanSt.id = 'std_custom_' + fullNorm;
             }
+            cleanSt.isPassive = false;
+            cleanSt.status = 'active';
+            delete cleanSt.aktif;
+            delete cleanSt.active;
+
             if (!byName[fullNorm]) {
-              byName[fullNorm] = st;
-              mergedClean.push(st);
+              byName[fullNorm] = cleanSt;
+              mergedClean.push(cleanSt);
             } else {
               var existing = byName[fullNorm];
               var extTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
-              var newTime = st.updatedAt ? new Date(st.updatedAt).getTime() : 0;
+              var newTime = cleanSt.updatedAt ? new Date(cleanSt.updatedAt).getTime() : 0;
               if (newTime > extTime) {
                 var idx = mergedClean.indexOf(existing);
-                if (idx !== -1) mergedClean[idx] = st;
-                byName[fullNorm] = st;
+                if (idx !== -1) mergedClean[idx] = cleanSt;
+                byName[fullNorm] = cleanSt;
               }
             }
           };
 
-          // Önce yerel temiz öğrencileri, sonra v11 bulut öğrencilerini, sonra legacy buluttaki kullanıcı öğrencilerini ekle
+          // 1. Önce buluttaki tüm kanallardan gelen kullanıcı öğrencilerini ekle
+          cloudCandidateLists.forEach(function(list) {
+            list.forEach(addClean);
+          });
+          var cloudCleanCount = mergedClean.length;
+
+          // 2. Yerel temiz öğrencileri ve gömülü öğrencileri ekle
           localClean.forEach(addClean);
-          v11List.forEach(addClean);
-          legacyList.forEach(addClean);
+          if (Array.isArray(window.EMBEDDED_INSTITUTION_STUDENTS)) {
+            window.EMBEDDED_INSTITUTION_STUDENTS.forEach(addClean);
+          }
 
           var sortedClean = this.sortStudentsByClassAndNo ? this.sortStudentsByClassAndNo(mergedClean) : mergedClean;
-          localStorage.setItem(STUDENTS_KEY, JSON.stringify(sortedClean));
-          localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(sortedClean));
-          localStorage.setItem('yoklama_students_backup_last', JSON.stringify(sortedClean));
+          if (sortedClean.length > 0) {
+            localStorage.setItem(STUDENTS_KEY, JSON.stringify(sortedClean));
+            localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(sortedClean));
+            localStorage.setItem('yoklama_students_backup_last', JSON.stringify(sortedClean));
+            localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify(sortedClean));
+          }
 
-          // Eğer bulutta eski kurum öğrencileri kalmışsa veya yerel/birleşik liste buluttan daha güncelse bulutu da temizle!
-          if (hadOldInLegacy || sortedClean.length !== v11List.length || !v11Data) {
+          // SADECE bu cihazda gerçek talebe varsa (sortedClean.length > 0) ve bulutta eksikse buluta gönder!
+          // 0 talebeli bir telefon ASLA buluta boş liste gönderemez!
+          if (sortedClean.length > 0 && (hadOldInCloud || sortedClean.length > cloudCleanCount)) {
             await this.pushStudentsToCloud(sortedClean);
+          }
+
+          if (sortedClean.length !== beforeCount || sortedClean.length > 0) {
+            this.refreshActiveViewsAfterStudentSync();
           }
 
           return sortedClean;
@@ -852,20 +1056,41 @@
 
       var origApplyFullCloudSync = window.Store.applyFullCloudSync;
       window.Store.applyFullCloudSync = function(cloudData) {
+        var existingLocal = this.getAllStudents();
         if (cloudData && typeof cloudData === 'object') {
-          if (cloudData.students) {
-            var arr = Array.isArray(cloudData.students)
-              ? cloudData.students
-              : (typeof cloudData.students === 'object' ? Object.values(cloudData.students).filter(Boolean) : []);
-            cloudData = Object.assign({}, cloudData, {
-              students: arr.filter(function(s) { return !window.Store.isOldInstitutionStudent(s); })
+          var copy = Object.assign({}, cloudData);
+          // Buluttan gelen bozuk deleted_student_ids haritasının talebeleri silmesini engelle
+          delete copy.deleted_student_ids;
+          if (copy.students) {
+            var arr = Array.isArray(copy.students)
+              ? copy.students
+              : (typeof copy.students === 'object' ? Object.values(copy.students).filter(Boolean) : []);
+            var cleanArr = arr.filter(function(s) { return s && !window.Store.isOldInstitutionStudent(s); });
+            cleanArr.forEach(function(s) {
+              var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+              if (!s.id || OLD_INSTITUTION_STUDENT_IDS[s.id]) {
+                s.id = 'std_custom_' + fullNorm;
+              }
             });
+            // Eğer buluttaki students boşsa ama yerelde talebe varsa yereli ezme!
+            if (cleanArr.length === 0 && existingLocal.length > 0) {
+              copy.students = existingLocal;
+            } else {
+              copy.students = cleanArr;
+            }
+          } else if (existingLocal.length > 0) {
+            copy.students = existingLocal;
           }
+          cloudData = copy;
         }
         if (typeof origApplyFullCloudSync === 'function') {
           try { origApplyFullCloudSync.call(this, cloudData); } catch(e) {}
         }
-        this.purgeOldInstitutionStudentsNow();
+        var afterList = this.purgeOldInstitutionStudentsNow();
+        if (afterList.length === 0 && existingLocal.length > 0 && !this._explicitClearAllStudents) {
+          localStorage.setItem(STUDENTS_KEY, JSON.stringify(existingLocal));
+        }
+        this.refreshActiveViewsAfterStudentSync();
       };
 
       window.Store.getDeletedStaffIds = function() {
@@ -883,38 +1108,33 @@
       };
 
       window.Store.syncToCloud = async function(endpoint, data) {
-        var baseUrl = this.getFirebaseUrl();
-        var backupUrl = BACKUP_FB;
         var cleanEndpoint = (endpoint || '').replace(/^\/+/, '').replace(/^kurs_data\//, 'irfaniye_data/');
-        if (cleanEndpoint === 'irfaniye_data/students' && Array.isArray(data)) {
-          data = data.filter(function(s) { return !window.Store.isOldInstitutionStudent(s); });
+        if (cleanEndpoint === 'irfaniye_data/students') {
+          if (Array.isArray(data)) {
+            data = data.filter(function(s) { return s && !window.Store.isOldInstitutionStudent(s); });
+          }
+          // Boş öğrenci listesinin bulutu ezmesini engelle
+          if ((!Array.isArray(data) || data.length === 0) && !this._explicitClearAllStudents) {
+            return false;
+          }
         }
         var bodyStr = JSON.stringify(data);
+        var urls = this.getAllCloudUrls();
         var anyOk = false;
-        if (backupUrl) {
+        for (var i = 0; i < urls.length; i++) {
           try {
-            var r2 = await fetch(backupUrl + '/' + cleanEndpoint + '.json', {
+            var r = await fetch(urls[i] + '/' + cleanEndpoint + '.json', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: bodyStr
             });
-            if (r2.ok) anyOk = true;
-          } catch(e) {}
-        }
-        if (baseUrl && baseUrl !== backupUrl) {
-          try {
-            var r1 = await fetch(baseUrl + '/' + cleanEndpoint + '.json', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: bodyStr
-            });
-            if (r1.ok) anyOk = true;
+            if (r.ok) anyOk = true;
           } catch(e) {}
         }
         return anyOk;
       };
 
-      // Özel korumalı bulut kanalı: Eski sekmeler veya TV ekranları bu kanalı asla ezemez!
+      // Özel korumalı personel bulut kanalı (Her iki Firebase sunucusuna da yazar)
       window.Store.pushStaffAuthToCloud = async function() {
         var staffList = this.getStaff();
         var delMap = this.getDeletedStaffIds();
@@ -926,13 +1146,16 @@
           staff_customized: isCust,
           updatedAt: nowIso
         };
-        try {
-          await fetch(BACKUP_FB + '/irfaniye_v10_auth.json', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-        } catch(e) {}
+        var urls = this.getAllCloudUrls();
+        for (var i = 0; i < urls.length; i++) {
+          try {
+            await fetch(urls[i] + '/irfaniye_v10_auth.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          } catch(e) {}
+        }
         try {
           await this.syncToCloud('irfaniye_data/staff', staffList);
           await this.syncToCloud('irfaniye_data/deleted_staff_ids', delMap);
@@ -944,12 +1167,23 @@
 
       window.Store.pullStaffAuthFromCloud = async function() {
         try {
-          var r = await fetch(BACKUP_FB + '/irfaniye_v10_auth.json?t=' + Date.now(), {
-            headers: { 'Accept': 'application/json' },
-            cache: 'no-store'
-          });
-          if (!r.ok) return false;
-          var authData = await r.json();
+          var urls = this.getAllCloudUrls();
+          var authData = null;
+          for (var i = 0; i < urls.length; i++) {
+            try {
+              var r = await fetch(urls[i] + '/irfaniye_v10_auth.json?t=' + Date.now(), {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+              });
+              if (r.ok) {
+                var d = await r.json();
+                if (d && typeof d === 'object') {
+                  authData = d;
+                  if (Array.isArray(d.staff) && d.staff.length > 0) break;
+                }
+              }
+            } catch(e) {}
+          }
 
           var sessRaw = sessionStorage.getItem('irfaniye_active_session') || localStorage.getItem('irfaniye_active_session');
           var isSuperAdminDevice = false;
@@ -1031,48 +1265,41 @@
       };
 
       window.Store.syncFromCloud = async function() {
-        this.purgeOldInstitutionStudentsNow();
+        var localBefore = this.purgeOldInstitutionStudentsNow();
+        // Eğer bu cihazda (Yönetici bilgisayarı) talebeler kayıtlıysa, önce buluta gönder ki telefonlar hemen alabilsin!
+        if (localBefore.length > 0) {
+          await this.pushStudentsToCloud(localBefore);
+        }
+
         await Promise.all([
           this.pullStaffAuthFromCloud(),
           this.pullStudentsFromCloud()
         ]);
 
-        var baseUrl = this.getFirebaseUrl();
-        var backupUrl = BACKUP_FB;
-        var pData = null, bData = null;
-        if (backupUrl) {
+        var urls = this.getAllCloudUrls();
+        var mergedCloudData = {};
+        for (var i = 0; i < urls.length; i++) {
           try {
-            var r2 = await fetch(backupUrl + '/irfaniye_data.json?t=' + Date.now(), { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
-            if (r2.ok) bData = await r2.json();
+            var r = await fetch(urls[i] + '/irfaniye_data.json?t=' + Date.now(), { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (r.ok) {
+              var d = await r.json();
+              if (d && typeof d === 'object') {
+                var prevStudents = mergedCloudData.students;
+                mergedCloudData = Object.assign({}, d, mergedCloudData);
+                if ((!prevStudents || prevStudents.length === 0) && d.students) {
+                  mergedCloudData.students = d.students;
+                }
+              }
+            }
           } catch(e) {}
-        }
-        if (baseUrl && baseUrl !== backupUrl) {
-          try {
-            var r1 = await fetch(baseUrl + '/irfaniye_data.json?t=' + Date.now(), { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
-            if (r1.ok) pData = await r1.json();
-          } catch(e) {}
-        }
-
-        var cloudData = null;
-        if (pData && bData) {
-          cloudData = Object.assign({}, pData, bData);
-        } else {
-          cloudData = bData || pData;
         }
 
         var savedStaffBeforeSync = localStorage.getItem(STAFF_KEY);
         var savedCustBeforeSync = localStorage.getItem(CUST_STAFF_KEY);
         var savedDelBeforeSync = localStorage.getItem(DEL_STAFF_KEY);
 
-        if (cloudData) {
-          if (cloudData.deleted_staff_ids && typeof cloudData.deleted_staff_ids === 'object') {
-            var mDel = Object.assign({}, this.getDeletedStaffIds(), cloudData.deleted_staff_ids);
-            localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(mDel));
-          }
-          if (cloudData.staff_customized === true) {
-            localStorage.setItem(CUST_STAFF_KEY, 'true');
-          }
-          this.applyFullCloudSync(cloudData);
+        if (Object.keys(mergedCloudData).length > 0) {
+          this.applyFullCloudSync(mergedCloudData);
         }
 
         if (savedCustBeforeSync === 'true') localStorage.setItem(CUST_STAFF_KEY, 'true');
@@ -1092,6 +1319,7 @@
           this.pullStudentsFromCloud()
         ]);
 
+        this.refreshActiveViewsAfterStudentSync();
         return { success: true, message: 'Güncel veriler senkronize edildi.' };
       };
 
@@ -1116,6 +1344,9 @@
                 return filtered;
               }
             }
+          }
+          if (Array.isArray(window.EMBEDDED_INSTITUTION_STAFF) && window.EMBEDDED_INSTITUTION_STAFF.length > 0) {
+            return window.EMBEDDED_INSTITUTION_STAFF;
           }
           if (isCust || delMap['__ALL_DEFAULTS_CLEARED__']) {
             localStorage.setItem(STAFF_KEY, JSON.stringify([]));
@@ -1439,7 +1670,7 @@
         return null;
       };
 
-      // Telefondan giren tüm personel ve yöneticiler doğrudan kurumun kendi talebelerini görür (Eski kurum talebeleri %100 hariç)
+      // Telefondan giren tüm personel ve yöneticiler doğrudan kurumun tüm aktif talebelerini görür
       window.Store.getStudentsForActiveUser = function(includePassive) {
         return this.getAllStudents();
       };
@@ -1449,33 +1680,114 @@
         return true;
       };
 
-      // Sayfa açılışında buluttaki temiz öğrenci listesini çek ve ekranı tazele
+      // Sayfa açılışında: Eğer bu cihazda (Yönetici bilgisayarı) talebeler varsa hemen buluta gönder;
+      // eğer telefonsa buluttan çek ve ekranı anında tazele!
       setTimeout(function() {
+        var currentLocal = window.Store.getAllStudents();
+        if (currentLocal.length > 0) {
+          window.Store.pushStudentsToCloud(currentLocal);
+          window.Store.pushStaffAuthToCloud();
+        }
         window.Store.pullStudentsFromCloud().then(function() {
-          if (window.App && window.App.currentSession && typeof window.App.renderMainContent === 'function') {
-            window.App.renderMainContent();
-          }
+          window.Store.refreshActiveViewsAfterStudentSync();
         }).catch(function() {});
-      }, 150);
+      }, 100);
+
+      // Her 8 saniyede bir yönetici bilgisayarındaki listeyi bulutla canlı tut ve telefonları güncelle
+      setInterval(function() {
+        var list = window.Store.getAllStudents();
+        if (list.length > 0 && window.Store.isCurrentUserAdmin && window.Store.isCurrentUserAdmin()) {
+          window.Store.pushStudentsToCloud(list);
+        } else if (list.length === 0) {
+          window.Store.pullStudentsFromCloud();
+        }
+      }, 8000);
     })();
   </script>
 
-  <script src="js/attendance.js?v=11.1"></script>
-  <script src="js/leave-tracker.js?v=11.1"></script>
-  <script src="js/leave-return.js?v=11.1"></script>
-  <script src="js/quran-tracker.js?v=11.1"></script>
-  <script src="js/performance.js?v=11.1"></script>
-  <script src="js/omr-scanner.js?v=11.1"></script>
-  <script src="js/test-results.js?v=11.1"></script>
-  <script src="js/mock-exam.js?v=11.1"></script>
-  <script src="js/leaderboard.js?v=11.1"></script>
-  <script src="js/parent-portal.js?v=11.1"></script>
-  <script src="js/app.js?v=11.1"></script>
+  <script src="js/attendance.js?v=11.2"></script>
+  <script src="js/leave-tracker.js?v=11.2"></script>
+  <script src="js/leave-return.js?v=11.2"></script>
+  <script src="js/quran-tracker.js?v=11.2"></script>
+  <script src="js/performance.js?v=11.2"></script>
+  <script src="js/omr-scanner.js?v=11.2"></script>
+  <script src="js/test-results.js?v=11.2"></script>
+  <script src="js/mock-exam.js?v=11.2"></script>
+  <script src="js/leaderboard.js?v=11.2"></script>
+  <script src="js/parent-portal.js?v=11.2"></script>
+  <script src="js/app.js?v=11.2"></script>
 
-  <!-- v11.1 APP MOTORU: Telefonda ve Bilgisayarda Kendi Talebelerinizi Anında Gösterme & Eşitleme -->
+  <!-- v11.2 APP MOTORU: Telefonda ve Bilgisayarda Kendi Talebelerinizi Anında Gösterme & Eşitleme -->
   <script>
     (function() {
       if (!window.App || !window.Store) return;
+
+      // 0. Yoklama Modülü (AttendanceModule) 0 Talebe Gösterdiğinde Otomatik Buluttan Çekme ve Yenileme Butonu
+      if (window.AttendanceModule) {
+        var origRenderStudentRows = window.AttendanceModule.renderStudentRows;
+        window.AttendanceModule.renderStudentRows = function() {
+          var totalInStore = window.Store.getAllStudents().length;
+          if (totalInStore === 0 && !this._autoPullingNow) {
+            var self = this;
+            this._autoPullingNow = true;
+            window.Store.pullStudentsFromCloud().then(function(pulled) {
+              self._autoPullingNow = false;
+              if (pulled && pulled.length > 0) {
+                self.selectedClasses = [];
+                self.currentHoca = 'ALL';
+                self.statusFilter = 'ALL';
+                self.loadDailyDraft();
+                self.renderView();
+              }
+            }).catch(function() {
+              self._autoPullingNow = false;
+            });
+          }
+          if (typeof origRenderStudentRows === 'function') {
+            origRenderStudentRows.apply(this, arguments);
+          }
+          var container = document.getElementById('attendance-students-container');
+          if (container && window.Store.getAllStudents().length === 0) {
+            container.innerHTML = `
+              <div class="py-10 px-4 text-center space-y-3">
+                <div class="text-3xl">📲</div>
+                <div class="font-black text-slate-800 text-sm">
+                  Talebe Listesi Buluttan Eşitleniyor...
+                </div>
+                <div class="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Yönetici bilgisayarında kayıtlı olan talebe listesini bu telefona çekmek için aşağıdaki butona dokununuz.
+                  (Yönetici bilgisayarında <strong>"Öğrenciler"</strong> sekmesindeki <strong>"📲 Talebeleri Telefonlara Şimdi Eşitle"</strong> butonuna basıldığından emin olunuz.)
+                </div>
+                <div class="pt-1 flex justify-center gap-2 flex-wrap">
+                  <button type="button" onclick="window.App.forcePullStudentsOnPhone()"
+                    class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md transition flex items-center gap-1.5 cursor-pointer active:scale-95">
+                    <span>🔄</span>
+                    <span>Yönetici Talebe Listesini Şimdi Çek</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+        };
+      }
+
+      window.App.forcePullStudentsOnPhone = async function() {
+        this.showToast('Yönetici talebe listesi buluttan çekiliyor...', 'info');
+        var list = await window.Store.pullStudentsFromCloud();
+        if (list && list.length > 0) {
+          if (window.AttendanceModule) {
+            window.AttendanceModule.selectedClasses = [];
+            window.AttendanceModule.currentHoca = 'ALL';
+            window.AttendanceModule.statusFilter = 'ALL';
+            window.AttendanceModule.loadDailyDraft();
+            window.AttendanceModule.renderView();
+          }
+          this.renderMainContent();
+          this.showToast('✅ ' + list.length + ' talebe başarıyla telefona yüklendi!', 'success');
+        } else {
+          this.showToast('Henüz bulutta talebe bulunamadı. Lütfen yönetici bilgisayarında "Talebeleri Telefonlara Şimdi Eşitle" butonuna basınız.', 'warning');
+        }
+      };
 
       // 1. Mobil ve Bilgisayar Girişinde Personel + Kendi Talebelerinizi Anında Çekme
       window.App.handleUserLogin = async function(event) {
@@ -1506,7 +1818,7 @@
               window.Store.pullStaffAuthFromCloud(),
               window.Store.pullStudentsFromCloud()
             ]),
-            new Promise(function(resolve) { setTimeout(resolve, 2000); })
+            new Promise(function(resolve) { setTimeout(resolve, 2500); })
           ]);
         } catch(e) {}
 
@@ -1549,8 +1861,17 @@
         if (session.role === 'superadmin' || session.staffId === 'admin_root') {
           this.activeTab = 'ogrenciler';
           this.showToast('👑 Hoş geldiniz Sayın ' + session.name + '! Yönetim Paneli açıldı.', 'success');
+          // Yönetici giriş yaptığında bilgisayardaki talebe listesini otomatik buluta yükle
+          if (window.Store.getAllStudents().length > 0) {
+            window.Store.pushStudentsToCloud();
+          }
         } else if (session.role === 'staff') {
           this.activeTab = 'yoklama';
+          if (window.AttendanceModule) {
+            window.AttendanceModule.selectedClasses = [];
+            window.AttendanceModule.currentHoca = 'ALL';
+            window.AttendanceModule.statusFilter = 'ALL';
+          }
           this.showToast('Hoş geldiniz Sayın ' + session.name, 'success');
         } else if (session.role === 'parent') {
           this.showToast('Hoş geldiniz Sayın Veli', 'success');
@@ -1561,13 +1882,11 @@
 
         // Arka planda bulut talebe senkronizasyonunu tamamla ve ekranı yenile
         window.Store.pullStudentsFromCloud().then(function() {
-          if (window.App && typeof window.App.renderMainContent === 'function') {
-            window.App.renderMainContent();
-          }
+          window.Store.refreshActiveViewsAfterStudentSync();
         }).catch(function() {});
       };
 
-      // 2. Excel'den Toplu Yapıştırma Motoru (Sekme, Noktalı Virgül veya Boşluk Ayırıcı Destekli + Anında Telefona Eşitleme)
+      // 2. Excel'den Toplu Yapıştırma Motoru
       window.App.handleBulkPasteImport = async function() {
         if (!this.canManageStudents()) {
           this.showToast('Yetkisiz işlem!', 'error');
@@ -1597,7 +1916,6 @@
             parts = line.split(/\s{2,}/).map(function(p) { return p.trim(); });
           }
 
-          // Başlık satırını atla
           var firstNorm = window.Store.normalizeSearchKey(parts[0] || '');
           var secondNorm = window.Store.normalizeSearchKey(parts[1] || '');
           if (firstNorm === 'okulno' || firstNorm === 'no' || firstNorm === 'ogrencino' || secondNorm === 'adsoyad' || secondNorm === 'adi' || secondNorm === 'isim') {
@@ -1673,16 +1991,17 @@
         this.renderStudentsView();
       };
 
-      // 3. Öğrenciler Ekranına "Talebeleri Telefonlara Şimdi Eşitle" ve "Tüm Talebeleri Sıfırla" Butonları Ekleme
+      // 3. Öğrenciler Ekranına "Talebeleri Telefonlara Şimdi Eşitle" ve "Talebeleri Gömmeli index.html İndir" Butonları Ekleme
       var origRenderStudentsView = window.App.renderStudentsView;
       window.App.renderStudentsView = function() {
         window.Store.purgeOldInstitutionStudentsNow();
         if (typeof origRenderStudentsView === 'function') {
           origRenderStudentsView.apply(this, arguments);
         }
+        var currentStudents = window.Store.getAllStudents();
         // Yönetici bilgisayarında Öğrenciler sekmesi açıldığında temiz listeyi otomatik buluta da gönder
-        if (window.Store.isCurrentUserAdmin && window.Store.isCurrentUserAdmin()) {
-          window.Store.pushStudentsToCloud();
+        if (currentStudents.length > 0) {
+          window.Store.pushStudentsToCloud(currentStudents);
         }
         var container = document.getElementById('students-container');
         if (!container) return;
@@ -1690,7 +2009,7 @@
         if (!canEdit) return;
         if (document.getElementById('v11-student-cloud-bar')) return;
 
-        var studentCount = window.Store.getAllStudents().length;
+        var studentCount = currentStudents.length;
         var bar = document.createElement('div');
         bar.id = 'v11-student-cloud-bar';
         bar.className = 'bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-xl p-3.5 mb-4 flex flex-wrap items-center justify-between gap-3 shadow-xs';
@@ -1699,10 +2018,10 @@
             <span class="text-2xl">📲</span>
             <div>
               <div class="font-black text-emerald-950 text-xs sm:text-sm">
-                Kurumunuzun Aktif Talebe Listesi (${studentCount} Talebe) • Eski Kurum Talebeleri Silindi
+                Kurumunuzun Aktif Talebe Listesi (${studentCount} Talebe) • Telefonlarla Canlı Eşitleme
               </div>
               <div class="text-[11px] text-emerald-800">
-                Burada kayıtlı olan talebeleriniz tüm personellerin telefonlarında (Yoklama, Kur'an, İzin vb.) otomatik görünür.
+                Buradaki talebelerinizi personel telefonlarına göndermek için <strong>"📲 Talebeleri Telefonlara Şimdi Eşitle"</strong> butonuna basınız.
               </div>
             </div>
           </div>
@@ -1712,6 +2031,11 @@
               <span>📲 Talebeleri Telefonlara Şimdi Eşitle</span>
             </button>
             ${studentCount > 0 ? `
+              <button type="button" onclick="window.App.downloadEmbeddedIndexHtml()"
+                class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+                title="Talebelerinizi ve personelinizi doğrudan index.html dosyasının içine gömer ve indirir">
+                <span>📥 Talebeleri Gömmeli index.html İndir</span>
+              </button>
               <button type="button" onclick="window.App.clearAllStudentsConfirm()"
                 class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">
                 <span>🗑️ Tüm Talebeleri Sil</span>
@@ -1725,18 +2049,59 @@
       window.App.syncStudentsToPhonesNow = async function() {
         window.Store.purgeOldInstitutionStudentsNow();
         var cleanStudents = window.Store.getAllStudents();
-        this.showToast('Talebeleriniz ve personel listesi telefonlara aktarılıyor...', 'info');
-        await Promise.all([
+        if (cleanStudents.length === 0) {
+          this.showToast('Gönderilecek kayıtlı talebe bulunamadı.', 'warning');
+          return;
+        }
+        this.showToast('Talebeleriniz (' + cleanStudents.length + ' kişi) ve personel listesi telefonlara aktarılıyor...', 'info');
+        var results = await Promise.all([
           window.Store.pushStudentsToCloud(cleanStudents),
           window.Store.pushStaffAuthToCloud()
         ]);
-        this.showToast('✅ ' + cleanStudents.length + ' talebeniz tüm telefonlara başarıyla eşitledi! Eski kurum isimleri tamamen temizlendi.', 'success');
+        var pushRes = results[0];
+        if (pushRes && pushRes.ok) {
+          this.showToast('✅ ' + cleanStudents.length + ' talebeniz tüm telefonlara başarıyla eşitlendi! Şimdi telefondan girip görebilirsiniz.', 'success');
+        } else {
+          this.showToast('⚠️ Bulut sunucusu yanıt vermedi, talebeleriniz gömülü index.html olarak indiriliyor...', 'warning');
+          await this.downloadEmbeddedIndexHtml();
+        }
+      };
+
+      // Talebeleri ve Personeli doğrudan index.html içine gömüp indiren %100 Kesin Çözüm Motoru
+      window.App.downloadEmbeddedIndexHtml = async function() {
+        try {
+          var cleanStudents = window.Store.getAllStudents();
+          var cleanStaff = window.Store.getStaff();
+          var res = await fetch(window.location.pathname + '?raw=' + Date.now(), { cache: 'no-store' });
+          var htmlText = await res.text();
+          if (!htmlText || htmlText.indexOf('/*__EMBEDDED_STUDENTS_START__*/') === -1) {
+            this.showToast('Sayfa kaynağı okunamadı.', 'error');
+            return;
+          }
+          var replacement = '/*__EMBEDDED_STUDENTS_START__*/\n' +
+            '    window.EMBEDDED_INSTITUTION_STUDENTS = ' + JSON.stringify(cleanStudents) + ';\n' +
+            '    window.EMBEDDED_INSTITUTION_STAFF = ' + JSON.stringify(cleanStaff) + ';\n' +
+            '    /*__EMBEDDED_STUDENTS_END__*/';
+          var updatedHtml = htmlText.replace(
+            /\/\*__EMBEDDED_STUDENTS_START__\*\/[\s\S]*?\/\*__EMBEDDED_STUDENTS_END__\*\//,
+            replacement
+          );
+          var blob = new Blob([updatedHtml], { type: 'text/html;charset=utf-8' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'index.html';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          this.showToast('✅ ' + cleanStudents.length + ' talebenizin gömülü olduğu yeni index.html indirildi! Bu dosyayı GitHub\'a yüklediğinizde tüm telefonlarda %100 görünür.', 'success');
+        } catch(e) {
+          this.showToast('İndirme hatası: ' + e.message, 'error');
+        }
       };
 
       window.App.clearAllStudentsConfirm = async function() {
         if (confirm('Listedeki TÜM talebeleri silip sıfırlamak istediğinizden emin misiniz?')) {
           window.Store.clearAllUserStudents();
-          await window.Store.pushStudentsToCloud([]);
           this.showToast('✅ Tüm talebe listesi sıfırlandı! Şimdi kendi talebelerinizi ekleyebilirsiniz.', 'success');
           this.renderStudentsView();
         }
@@ -1754,7 +2119,9 @@
 
         var staffList = window.Store.getStaff();
         window.Store.pushStaffAuthToCloud();
-        window.Store.pushStudentsToCloud();
+        if (window.Store.getAllStudents().length > 0) {
+          window.Store.pushStudentsToCloud();
+        }
 
         container.innerHTML = `
           <div class="max-w-5xl mx-auto space-y-6">
@@ -1954,7 +2321,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js?v=11.1').then(function(reg) {
+        navigator.serviceWorker.register('./sw.js?v=11.2').then(function(reg) {
           if (reg) {
             reg.update();
           }
