@@ -1,5 +1,5 @@
-// sw.js - İrfaniye Akademi PWA Service Worker (v11.3 - Telefon Talebe Listesi Eşitleme & Eski Talebe Temizliği)
-const CACHE_NAME = 'irfaniye-takip-cache-v11.3';
+// sw.js - İrfaniye Akademi PWA Service Worker (v11.4 - 30 Talebe Tam Liste & Eski Talebe Temizliği)
+const CACHE_NAME = 'irfaniye-takip-cache-v11.4';
 
 // Statik temel dosyalar (HTML ve JS dosyaları KESİNLİKLE buraya eklenmez, daima taze çekilir!)
 const STATIC_ASSETS = [

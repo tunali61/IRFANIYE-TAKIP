@@ -9,10 +9,10 @@
   <title>İrfaniye Akademi</title>
   <meta name="description" content="İrfaniye Akademi Öğrenci Bilgi ve Takip Portalı">
 
-  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v11.3 - KESİN TALEBE LİSTESİ MOTORU) -->
+  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v11.4 - 30 TALEBE TAM LİSTE MOTORU) -->
   <script>
     (function() {
-      var CURRENT_BUILD = '20261019_v11.3_IRFANIYE_AKADEMI';
+      var CURRENT_BUILD = '20261019_v11.4_IRFANIYE_AKADEMI';
       var savedBuild = localStorage.getItem('irfaniye_app_build_version');
 
       // Kullanıcının dilediğinde manuel de tetikleyebileceği evrensel sıfırlama fonksiyonu
@@ -36,7 +36,7 @@
           console.warn('Cache purge error:', e);
         }
         setTimeout(function() {
-          window.location.href = window.location.pathname + '?v=11.3&t=' + Date.now();
+          window.location.href = window.location.pathname + '?v=11.4&t=' + Date.now();
         }, 200);
       };
 
@@ -386,18 +386,34 @@
       class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-900/95 hover:bg-slate-900 text-amber-300 hover:text-amber-200 border-2 border-amber-400 shadow-2xl text-xs font-black backdrop-blur transition-all active:scale-95 cursor-pointer"
       title="Eski önbelleği temizleyip en yeni sistemi zorla yükler">
       <span class="text-sm">🔄</span>
-      <span>Önbelleği Temizle (v11.3)</span>
+      <span>Önbelleği Temizle (v11.4)</span>
     </button>
   </div>
 
-  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v11.3 Sürüm İmzası) -->
-  <script src="js/hadisler.js?v=11.3"></script>
-  <script src="js/store.js?v=11.3"></script>
+  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v11.4 Sürüm İmzası) -->
+  <script src="js/hadisler.js?v=11.4"></script>
+  <script src="js/store.js?v=11.4"></script>
 
-  <!-- v11.3 STORE MOTORU: Eski kurumun kalan 5 talebesi dahil TÜM eski verileri %100 siler ve kendi kurum talebelerinizi doğrudan gösterir -->
+  <!-- v11.4 STORE MOTORU: Eski kurumun kalan 5 talebesi dahil TÜM eski verileri %100 siler ve 30 kurum talebenizi doğrudan gösterir -->
   <script>
     /*__EMBEDDED_STUDENTS_START__*/
     window.EMBEDDED_INSTITUTION_STUDENTS = [
+      { id: 'std_custom_yusufberatorman', studentNo: '1', firstName: 'YUSUF BERAT', lastName: 'ORMAN', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'EMRE KORKMAZ', yatakhane: '-', password: '123', familyCode: 'ORMAN2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_ahmeterturk', studentNo: '2', firstName: 'AHMET', lastName: 'ERTÜRK', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'ERTÜRK2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_ahmetkemalunal', studentNo: '3', firstName: 'AHMET KEMAL', lastName: 'ÜNAL', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA KÜÇÜK', yatakhane: '-', password: '123', familyCode: 'ÜNAL2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_arifemirulus', studentNo: '4', firstName: 'ARİF EMİR', lastName: 'ULUS', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'EMRE KORKMAZ', yatakhane: '-', password: '123', familyCode: 'ULUS2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_kayragaliperbil', studentNo: '5', firstName: 'KAYRA GALİP', lastName: 'ERBİL', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'AGİT BERAT MEKE', yatakhane: '-', password: '123', familyCode: 'ERBİL2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_melihcakar', studentNo: '6', firstName: 'MELİH', lastName: 'ÇAKAR', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'ÇAKAR2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_metinersen', studentNo: '7', firstName: 'METİN', lastName: 'ERSEN', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'ERSEN2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_mustafacetin', studentNo: '8', firstName: 'MUSTAFA', lastName: 'ÇETİN', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'ÇETİN2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_osmansoydanoglu', studentNo: '9', firstName: 'OSMAN', lastName: 'SOYDANOĞLU', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'SOYDANOĞLU2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_omerakpinar', studentNo: '10', firstName: 'ÖMER', lastName: 'AKPINAR', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA KÜÇÜK', yatakhane: '-', password: '123', familyCode: 'AKPINAR2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_omerselimunlu', studentNo: '11', firstName: 'ÖMER SELİM', lastName: 'ÜNLÜ', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA KÜÇÜK', yatakhane: '-', password: '123', familyCode: 'ÜNLÜ2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_omertalhabakar', studentNo: '12', firstName: 'ÖMER TALHA', lastName: 'BAKAR', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'BAKAR2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_selimozer', studentNo: '13', firstName: 'SELİM', lastName: 'ÖZER', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'ÖZER2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_talhapehlivan', studentNo: '14', firstName: 'TALHA', lastName: 'PEHLİVAN', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'EMRE KORKMAZ', yatakhane: '-', password: '123', familyCode: 'PEHLİVAN2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_yavuzselimkocabas', studentNo: '15', firstName: 'YAVUZ SELİM', lastName: 'KOCABAŞ', className: '8-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA SOYMAZ', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'KOCABAŞ2026', isPassive: false, status: 'active' },
+      { id: 'std_custom_musabtunahantuncel', studentNo: '16', firstName: 'MUSAB TUNAHAN', lastName: 'TUNCEL', className: '7-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA KÜÇÜK', dahiliHoca: 'EMRE KORKMAZ', yatakhane: '-', password: '123', familyCode: 'TUNCEL2026', isPassive: false, status: 'active' },
       { id: 'std_custom_ruzgaryurek', studentNo: '17', firstName: 'RÜZGAR', lastName: 'YÜREK', className: '7-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA KÜÇÜK', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'YÜREK2026', isPassive: false, status: 'active' },
       { id: 'std_custom_tunahanergelen', studentNo: '18', firstName: 'TUNAHAN', lastName: 'ERGELEN', className: '7-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'MUSTAFA KÜÇÜK', dahiliHoca: 'MUSTAFA ŞAHİN', yatakhane: '-', password: '123', familyCode: 'ERGELEN2026', isPassive: false, status: 'active' },
       { id: 'std_custom_ahmeteminkarakas', studentNo: '19', firstName: 'AHMET EMİN', lastName: 'KARAKAŞ', className: '6-A', school: '-', seviye: 'Seviye 1', etutHocasi: 'EMRE KORKMAZ', dahiliHoca: 'EMRE KORKMAZ', yatakhane: '-', password: '123', familyCode: 'KARAKAŞ2026', isPassive: false, status: 'active' },
@@ -1303,19 +1319,19 @@
     })();
   </script>
 
-  <script src="js/attendance.js?v=11.3"></script>
-  <script src="js/leave-tracker.js?v=11.3"></script>
-  <script src="js/leave-return.js?v=11.3"></script>
-  <script src="js/quran-tracker.js?v=11.3"></script>
-  <script src="js/performance.js?v=11.3"></script>
-  <script src="js/omr-scanner.js?v=11.3"></script>
-  <script src="js/test-results.js?v=11.3"></script>
-  <script src="js/mock-exam.js?v=11.3"></script>
-  <script src="js/leaderboard.js?v=11.3"></script>
-  <script src="js/parent-portal.js?v=11.3"></script>
-  <script src="js/app.js?v=11.3"></script>
+  <script src="js/attendance.js?v=11.4"></script>
+  <script src="js/leave-tracker.js?v=11.4"></script>
+  <script src="js/leave-return.js?v=11.4"></script>
+  <script src="js/quran-tracker.js?v=11.4"></script>
+  <script src="js/performance.js?v=11.4"></script>
+  <script src="js/omr-scanner.js?v=11.4"></script>
+  <script src="js/test-results.js?v=11.4"></script>
+  <script src="js/mock-exam.js?v=11.4"></script>
+  <script src="js/leaderboard.js?v=11.4"></script>
+  <script src="js/parent-portal.js?v=11.4"></script>
+  <script src="js/app.js?v=11.4"></script>
 
-  <!-- v11.3 APP MOTORU: Telefonda ve Bilgisayarda Kendi Talebelerinizi Anında Gösterme & Eşitleme -->
+  <!-- v11.4 APP MOTORU: Telefonda ve Bilgisayarda Kendi 30 Talebenizi Anında Gösterme & Eşitleme -->
   <script>
     (function() {
       if (!window.App || !window.Store) return;
@@ -1807,7 +1823,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-        navigator.serviceWorker.register('./sw.js?v=11.3').then(function(reg) {
+        navigator.serviceWorker.register('./sw.js?v=11.4').then(function(reg) {
           if (reg) {
             reg.update();
           }
