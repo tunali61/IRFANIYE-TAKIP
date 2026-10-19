@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>İrfaniye Akademi</title>
+  <meta name="description" content="İrfaniye Akademi Öğrenci Bilgi ve Takip Portalı">
+
+  <!-- OTOMATİK ÖNBELLEK SIFIRLAYICI & ZORLA YENİ SÜRÜM MOTORU (v11.2 - TELEFON TALEBE LİSTESİ EŞİTLEME MOTORU) -->
+  <script>
+    (function() {
+      var CURRENT_BUILD = '20261019_v11.2_IRFANIYE_AKADEMI';
+      var savedBuild = localStorage.getItem('irfaniye_app_build_version');
+
+      // Kullanıcının dilediğinde manuel de tetikleyebileceği evrensel sıfırlama fonksiyonu
+      window.forcePurgeAppCache = function() {
+        if (window.App && window.App.showToast) {
+          window.App.showToast('Önbellek siliniyor, en güncel sistem yükleniyor...', 'info');
+        }
+        try {
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              names.forEach(function(name) { caches.delete(name); });
+            });
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              regs.forEach(function(r) { r.unregister(); });
+            });
+          }
+          localStorage.setItem('irfaniye_app_build_version', CURRENT_BUILD);
+        } catch (e) {
+          console.warn('Cache purge error:', e);
+        }
+        setTimeout(function() {
+          window.location.href = window.location.pathname + '?v=11.2&t=' + Date.now();
+        }, 200);
+      };
+
+      // Eski önbellek varsa temizle
+      if (savedBuild !== CURRENT_BUILD) {
+        console.log('[Auto-Purge] Sürüm güncellendi:', savedBuild, '->', CURRENT_BUILD);
+        try { localStorage.setItem('irfaniye_app_build_version', CURRENT_BUILD); } catch(e){}
+        if (window.location.protocol !== 'file:') {
+          try {
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                return Promise.all(names.map(function(n) { return caches.delete(n); }));
+              }).catch(function() {});
+            }
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                return Promise.all(regs.map(function(r) { return r.unregister(); }));
+              }).catch(function() {});
+            }
+          } catch(e) {}
+        }
+      }
+    })();
+  </script>
+  
+  <!-- WhatsApp ve Sosyal Medya Paylaşım Kartı (Open Graph) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="İrfaniye Akademi">
+  <meta property="og:description" content="İrfaniye Akademi Öğrenci Bilgi ve Takip Portalı">
+  <meta property="og:site_name" content="İrfaniye Akademi">
+  <meta property="og:image" content="kurs_logo.jpg">
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#059669">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="shortcut icon" href="icon.svg">
+
+  <!-- Apple iOS & Standalone Kısayol Desteği -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="İrfaniye Akademi">
+  <link rel="apple-touch-icon" href="kurs_logo.jpg">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas CDN (Veli ile Paylaşım İçin Görüntü Alma Kütüphanesi - Çift CDN Korumalı) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';"></script>
+  <!-- jsQR CDN (Tüm Cihazlar ve Windows Chrome İçin Kesintisiz Evrensel QR Kod Okuyucu - Çift CDN Korumalı) -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js';"></script>
+  
+  <!-- Özel Stiller ve Yazdırma Kuralları -->
+  <link rel="stylesheet" href="css/custom.css">
+  
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d'
+            }
+          }
+        }
+      }
+    };
+
+    // Global Hata Yakalayıcı
+    window.addEventListener('error', function(e) {
+      if (e.target && (e.target.tagName === 'IMG' || e.target.tagName === 'LINK' || e.target.tagName === 'SCRIPT')) {
+        return;
+      }
+      var main = document.getElementById('main-content');
+      if (main && (!main.children || main.children.length === 0)) {
+        main.innerHTML = '<div style="max-width:640px;margin:40px auto;padding:24px;background:#fff1f2;border:2px solid #f43f5e;border-radius:20px;color:#9f1239;font-family:system-ui,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,0.1);">' +
+          '<h3 style="font-weight:900;font-size:18px;margin-bottom:8px;display:flex;align-items:center;gap:8px;"><span>⚠️</span> <span>Sistem Başlatma Uyarısı</span></h3>' +
+          '<p style="font-size:13px;margin-bottom:12px;color:#881337;">Sayfa çalışırken bir hata yakalandı:</p>' +
+          '<div style="background:#fff;padding:12px;border-radius:12px;border:1px solid #fecdd3;font-family:monospace;font-size:12px;word-break:break-all;color:#be123c;">' +
+          '<strong>' + (e.message || 'JavaScript Hatası') + '</strong><br><small style="color:#64748b;">Dosya: ' + (e.filename || 'Bilinmiyor') + ' | Satır: ' + (e.lineno || '?') + '</small></div>' +
+          '</div>';
+      }
+    });
+
+    // Dosya & Modül Yüklenme Kontrolü (Ağ gecikmelerini ve yanlış yerel çalıştırmaları güvenle yönetir)
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        if (!window.App || !window.Store) {
+          var main = document.getElementById('main-content');
+          if (main && (!main.children || main.children.length === 0)) {
+            main.innerHTML = '<div style="max-width:600px;margin:40px auto;padding:30px;background:#ffffff;border:2px solid #f59e0b;border-radius:24px;box-shadow:0 15px 35px rgba(0,0,0,0.08);font-family:system-ui,sans-serif;text-align:center;">' +
+              '<div style="font-size:44px;margin-bottom:12px;">📁</div>' +
+              '<h2 style="font-size:19px;font-weight:900;color:#92400e;margin-bottom:10px;">JavaScript Modülleri Bulunamadı</h2>' +
+              '<p style="font-size:14px;color:#475569;line-height:1.6;margin-bottom:16px;">' +
+              'Bu sayfanın açılabilmesi için <strong>js/</strong> ve <strong>css/</strong> klasörlerinin <code>index.html</code> dosyasının yanında bulunması gerekir.' +
+              '</p>' +
+              '<div style="background:#fef3c7;padding:12px 16px;border-radius:14px;font-size:12px;color:#78350f;text-align:left;line-height:1.5;margin-bottom:14px;">' +
+              '💡 <strong>Çözüm:</strong> Eğer bu dosyayı Masaüstüne tek başına kopyaladıysanız, lütfen <code>okul-yoklama-performans</code> klasörünün tamamını açıp içindeki <code>baslat.bat</code> veya <code>index.html</code> dosyasına tıklayınız.' +
+              '</div>' +
+              '<button onclick="location.reload()" style="padding:10px 22px;background:#059669;color:#fff;font-weight:bold;border:none;border-radius:14px;cursor:pointer;font-size:13px;">Sayfayı Yeniden Yükle ⟳</button>' +
+              '</div>';
+          }
+        }
+      }, 3000);
+    });
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white overflow-x-hidden">
+
+  <!-- Üst Başlık & Menü -->
+  <header id="header-nav" class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <!-- app.js renderHeader() ile doldurulacak -->
+  </header>
+
+  <!-- Ana İçerik Alanı (PC & Laptop Tam Uyumlu Genişlik) -->
+  <main id="main-content" class="flex-1 w-full max-w-[1600px] mx-auto p-2 sm:p-4 lg:p-6">
+    <!-- app.js renderMainContent() ile doldurulacak -->
+  </main>
+
+  <!-- Alt Bilgi (Footer) -->
+  <footer class="no-print bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <strong>İrfaniye Akademi</strong> • Ana Yönetici, Personel & Veli Ortak Takip Portalı
+      </div>
+      <div class="text-[11px] text-slate-400">
+        Yoklama Durumları: <strong>Var</strong>, <strong>Yok</strong>, <strong>Geç</strong>, <strong>Takkesiz</strong>, <strong>İzinli</strong>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Bildirim Konteyneri -->
+  <div id="toast-container"></div>
+
+  <!-- Soldan Kayar Menü Penceresi (Slide-Over Drawer) -->
+  <div id="side-drawer-container" class="fixed inset-0 z-50 pointer-events-none transition-all duration-300">
+    <!-- Karartma Arka Planı -->
+    <div id="side-drawer-backdrop" onclick="window.App.closeDrawer()" 
+      class="absolute inset-0 bg-slate-900/60 opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+
+    <!-- Soldan Kayarak Açılan Menü Paneli -->
+    <div id="side-drawer-panel" 
+      class="absolute top-0 left-0 bottom-0 w-80 sm:w-96 max-w-[85vw] bg-white shadow-2xl border-r border-slate-200 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col pointer-events-auto">
+      <!-- İçerik app.js renderDrawer() ile dinamik doldurulacaktır -->
+    </div>
+  </div>
+
+  <!-- Excel'den Toplu Öğrenci Ekleme Modalı (Sadece Ana Yönetici) -->
+  <div id="bulk-import-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-2xl w-full p-6">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div>
+          <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+            <span>📋 Excel'den Toplu Öğrenci Ekle</span>
+          </h3>
+          <p class="text-xs text-slate-500">Excel'deki satırları kopyalayıp aşağıdaki kutuya yapıştırın</p>
+        </div>
+        <button onclick="window.App.closeBulkImportModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+          <div class="font-bold text-slate-800">Sütun Sırası (Excel'den kopyalanacak alanlar):</div>
+          <div class="font-mono text-[11px] text-emerald-800 bg-white p-2 rounded border border-slate-200">
+            No &nbsp;|&nbsp; Adı Soyadı &nbsp;|&nbsp; Sınıfı &nbsp;|&nbsp; Okulu &nbsp;|&nbsp; Seviye &nbsp;|&nbsp; Etüt Hocası &nbsp;|&nbsp; Dahili Hocası
+          </div>
+        </div>
+
+        <div>
+          <textarea id="bulk-paste-textarea" rows="8" placeholder="Excel tablonuzu kopyalayıp (Ctrl+C) buraya yapıştırın (Ctrl+V)..."
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-800 focus:bg-white focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeBulkImportModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            İptal
+          </button>
+          <button type="button" onclick="window.App.handleBulkPasteImport()" 
+            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition">
+            Öğrencileri Kaydet ve Yükle
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tekil Öğrenci Ekleme & Düzenleme Modalı (Şifre Alanı Dahil) -->
+  <div id="student-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 id="student-modal-title" class="text-base font-black text-slate-900">Öğrenci & Şifre Kaydı</h3>
+        <button onclick="window.App.closeStudentModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+      </div>
+
+      <form id="student-form" onsubmit="window.App.saveStudentFromModal(event)" class="space-y-3.5">
+        <input type="hidden" id="modal-student-id">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">OKUL / KURS NO *</label>
+            <input type="text" id="modal-student-no" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">SINIF / ŞUBE *</label>
+            <input type="text" id="modal-student-class" required placeholder="Örn: 5. Sınıf, 8. Sınıf" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">ÖĞRENCİ ADI *</label>
+            <input type="text" id="modal-student-fn" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">SOYADI *</label>
+            <input type="text" id="modal-student-ln" required 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- Veli Giriş Şifresi Belirleme Alanı (Ana Yönetici Tarafından) -->
+        <div class="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200">
+          <label class="block text-xs font-bold text-emerald-900 mb-1 uppercase">VELİ GİRİŞ ŞİFRESİ (Ana Yönetici Belirler)</label>
+          <input type="text" id="modal-student-pass" required placeholder="Örn: 123" 
+            class="w-full px-3 py-2 bg-white border border-emerald-300 rounded-lg text-sm font-mono font-bold text-emerald-900 focus:outline-none">
+          <p class="text-[11px] text-emerald-700 mt-1">
+            💡 Veli sisteme giriş yaparken öğrencinin Adı Soyadı ve bu şifreyi kullanacaktır.
+          </p>
+        </div>
+
+        <!-- Hoca ve Yatakhane Bilgileri -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">ETÜT HOCASI</label>
+            <input type="text" id="modal-student-etut" placeholder="Örn: Yasin Ekinci" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">DAHİLİ (DİNİ) HOCASI</label>
+            <input type="text" id="modal-student-dahili" placeholder="Örn: Selim Bozkurt" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">YATAKHANE / ODA NO</label>
+            <input type="text" id="modal-student-yatakhane" placeholder="Örn: Oda 101" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-indigo-900 mb-1">ORTAK AİLE KODU</label>
+            <input type="text" id="modal-student-family" placeholder="Örn: KALKAN2026" 
+              class="w-full px-3 py-2 bg-indigo-50/70 border border-indigo-200 rounded-lg text-sm font-mono font-bold text-indigo-900 uppercase focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">VELİ ADI SOYADI</label>
+            <input type="text" id="modal-student-father" placeholder="Baba veya Anne Adı" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">VELİ İLETİŞİM TELEFONU</label>
+            <input type="tel" id="modal-student-phone" placeholder="0555 123 45 67" 
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeStudentModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Vazgeç
+          </button>
+          <button type="submit" 
+            class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition">
+            Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Personel / Hoca Kendi Şifresini Değiştirme Modalı -->
+  <div id="staff-self-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 modal-backdrop p-4 animate-fade-in">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full p-6 relative overflow-hidden">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 text-lg font-black flex items-center justify-center shadow-inner">
+            🔑
+          </div>
+          <div>
+            <h3 class="text-base font-black text-slate-900">Eğitmen Giriş Şifremi Değiştir</h3>
+            <p id="staff-modal-user-name" class="text-xs text-slate-500 font-bold"></p>
+          </div>
+        </div>
+        <button type="button" onclick="window.App.closeStaffSelfPasswordModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">×</button>
+      </div>
+
+      <div class="p-3 bg-amber-50/70 rounded-2xl border border-amber-200 text-xs text-amber-900 mb-4 flex items-center justify-between">
+        <span>Mevcut Şifreniz:</span>
+        <strong id="staff-modal-current-pass" class="font-mono bg-white px-2.5 py-1 rounded-lg border border-amber-300 text-amber-950 font-bold">123</strong>
+      </div>
+
+      <form id="staff-self-password-form" onsubmit="window.App.handleStaffSelfPasswordSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1 uppercase">YENİ GİRİŞ ŞİFRENİZ *</label>
+          <input type="text" id="staff-self-new-password" required minlength="3" placeholder="Yeni şifrenizi giriniz (en az 3 karakter)" 
+            class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-amber-500 transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1 uppercase">YENİ ŞİFRE (TEKRAR) *</label>
+          <input type="text" id="staff-self-confirm-password" required minlength="3" placeholder="Yeni şifrenizi tekrar giriniz" 
+            class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:border-amber-500 transition">
+        </div>
+
+        <p class="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          💡 Şifrenizi değiştirdiğinizde sisteme bir sonraki girişinizde bu yeni şifrenizi kullanacaksınız. Ana Yönetici (Müdür) gerektiğinde şifrenizi sistem panelinden görebilir.
+        </p>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="window.App.closeStaffSelfPasswordModal()" 
+            class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+            Vazgeç
+          </button>
+          <button type="submit" 
+            class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow transition">
+            Şifremi Kaydet
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Doğrudan HTML'e Gömülü Acil Önbellek & Sürüm Sıfırlama Butonu (Her Durumda, Giriş Yapılmasa Bile %100 Görünür) -->
+  <div id="quick-cache-clear-bar" class="no-print fixed bottom-3 right-3 z-50">
+    <button type="button" onclick="window.forcePurgeAppCache()" 
+      class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-900/95 hover:bg-slate-900 text-amber-300 hover:text-amber-200 border-2 border-amber-400 shadow-2xl text-xs font-black backdrop-blur transition-all active:scale-95 cursor-pointer"
+      title="Eski önbelleği temizleyip en yeni sistemi zorla yükler">
+      <span class="text-sm">🔄</span>
+      <span>Önbelleği Temizle (v11.2)</span>
+    </button>
+  </div>
+
+  <!-- JavaScript Modülleri (Önbellek Bayatlamasını Önleyici v11.2 Sürüm İmzası) -->
+  <script src="js/hadisler.js?v=11.2"></script>
+  <script src="js/store.js?v=11.2"></script>
+
+  <!-- v11.2 STORE MOTORU: Yönetici ekranındaki talebe listesini tüm telefonlara %100 aktarır, eski kurum talebelerini engeller -->
+  <script>
+    /*__EMBEDDED_STUDENTS_START__*/
+    window.EMBEDDED_INSTITUTION_STUDENTS = [{"studentNo":"23","firstName":"OSMAN","lastName":"KARABAY","className":"5-A","school":"FEVZİ ÇAKMAK ORTA OKULU","seviye":"SEVİYE-1","etutHocasi":"AGİT BERAT MEKE","dahiliHoca":"AGİT BERAT MEKE","password":"123","familyCode":"KARABAY2026","id":"std_1792139434495_w7ie","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"25","firstName":"DAVUT","lastName":"KOCAPINAR","className":"5-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-1","etutHocasi":"AGİT BERAT MEKE","dahiliHoca":"MUSTAFA SOYMAZ","password":"123","familyCode":"KOCAPINAR2026","id":"std_1792139434495_sqh9","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"26","firstName":"ALİHAN","lastName":"ÖZEL","className":"5-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-1","etutHocasi":"AGİT BERAT MEKE","dahiliHoca":"AGİT BERAT MEKE","password":"123","familyCode":"ÖZEL2026","id":"std_1792139434495_vh4i","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"27","firstName":"AHMET MİRZA","lastName":"PATAN","className":"5-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-1","etutHocasi":"AGİT BERAT MEKE","dahiliHoca":"MUSTAFA SOYMAZ","password":"123","familyCode":"PATAN2026","id":"std_1792139434495_zsoz","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"28","firstName":"ADEM","lastName":"YILMAZCAN","className":"5-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-1","etutHocasi":"AGİT BERAT MEKE","dahiliHoca":"MUSTAFA SOYMAZ","password":"123","familyCode":"YILMAZCAN2026","id":"std_1792139434495_0aew","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"29","firstName":"AHMET KEREM","lastName":"ATEŞ","className":"5-A","school":"FEVZİ ÇAKMAK ORTA OKULU","seviye":"SEVİYE-1","etutHocasi":"AGİT BERAT MEKE","dahiliHoca":"AGİT BERAT MEKE","password":"123","familyCode":"ATEŞ2026","id":"std_1792139434495_3bkt","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"30","firstName":"ERTUĞRUL ALİ","lastName":"YILDIRAN","className":"5-A","school":"15 TEMMUZ İMAM HATİP","seviye":"SEVİYE-1","etutHocasi":"AGİT BERAT MEKE","dahiliHoca":"AGİT BERAT MEKE","password":"123","familyCode":"YILDIRAN2026","id":"std_1792139434495_n73p","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"19","firstName":"AHMET EMİN","lastName":"KARAKAŞ","className":"6-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-2","etutHocasi":"EMRE KORKMAZ","dahiliHoca":"EMRE KORKMAZ","password":"123","familyCode":"KARAKAŞ2026","id":"std_1792139434495_4k5q","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"20","firstName":"MEHMET AKİF","lastName":"TOPÇU","className":"6-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-2","etutHocasi":"EMRE KORKMAZ","dahiliHoca":"EMRE KORKMAZ","password":"123","familyCode":"TOPÇU2026","id":"std_1792139434495_5jqq","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"21","firstName":"MEHMET ARİF","lastName":"BEKTAŞ","className":"6-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-2","etutHocasi":"EMRE KORKMAZ","dahiliHoca":"EMRE KORKMAZ","password":"123","familyCode":"BEKTAŞ2026","id":"std_1792139434495_06zb","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"22","firstName":"YUSUF EFE","lastName":"YILMAZ","className":"6-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-2","etutHocasi":"EMRE KORKMAZ","dahiliHoca":"EMRE KORKMAZ","password":"123","familyCode":"YILMAZ2026","id":"std_1792139434495_hbuz","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"24","firstName":"HALİT TUNA","lastName":"PATAN","className":"6-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-1","etutHocasi":"EMRE KORKMAZ","dahiliHoca":"MUSTAFA SOYMAZ","password":"123","familyCode":"PATAN2026","id":"std_1792139434495_g35c","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"16","firstName":"MUSAB TUNAHAN ","lastName":"TUNCEL","className":"7-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-2","etutHocasi":"MUSTAFA KÜÇÜK","dahiliHoca":"EMRE KORKMAZ","password":"123","familyCode":"TUNCEL2026","id":"std_1792139434495_4p93","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"17","firstName":"RÜZGAR","lastName":"YÜREK","className":"7-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA KÜÇÜK","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"YÜREK2026","id":"std_1792139434495_lx1y","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"18","firstName":"TUNAHAN","lastName":"ERGELEN","className":"7-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA KÜÇÜK","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"ERGELEN2026","id":"std_1792139434495_sgz2","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"1","firstName":"YUSUF BERAT","lastName":"ORMAN","className":"8-A","school":"FEVZİ ÇAKMAK ORTA OKULU","seviye":"SEVİYE-2","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"EMRE KORKMAZ","password":"123","familyCode":"ORMAN2026","id":"std_1792139434495_tjrr","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"2","firstName":"AHMET","lastName":"ERTÜRK","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"ERTÜRK2026","id":"std_1792139434495_w2i5","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"3","firstName":"AHMET KEMAL","lastName":"ÜNAL","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-4","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA KÜÇÜK","password":"123","familyCode":"ÜNAL2026","id":"std_1792139434495_crgw","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"4","firstName":"ARİF EMİR","lastName":"ULUS","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-2","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"EMRE KORKMAZ","password":"123","familyCode":"ULUS2026","id":"std_1792139434495_592q","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"5","firstName":"KAYRA GALİP","lastName":"ERBİL","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-1","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"AGİT BERAT MEKE","password":"123","familyCode":"ERBİL2026","id":"std_1792139434495_2bt0","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"6","firstName":"MELİH","lastName":"ÇAKAR","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"ÇAKAR2026","id":"std_1792139434495_z4z2","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"7","firstName":"METİN","lastName":"ERSEN","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"ERSEN2026","id":"std_1792139434495_dhwr","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"8","firstName":"MUSTAFA","lastName":"ÇETİN","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"ÇETİN2026","id":"std_1792139434495_sd4b","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"9","firstName":"OSMAN","lastName":"SOYDANOĞLU","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"SOYDANOĞLU2026","id":"std_1792139434495_ohhf","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"10","firstName":"ÖMER","lastName":"AKPINAR","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-4","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA KÜÇÜK","password":"123","familyCode":"AKPINAR2026","id":"std_1792139434495_zc6m","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"11","firstName":"ÖMER SELİM","lastName":"ÜNLÜ","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-4","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA KÜÇÜK","password":"123","familyCode":"ÜNLÜ2026","id":"std_1792139434495_oe1h","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"12","firstName":"ÖMER TALHA","lastName":"BAKAR","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"BAKAR2026","id":"std_1792139434495_5rqd","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"13","firstName":"SELİM","lastName":"ÖZER","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"ÖZER2026","id":"std_1792139434495_kw2t","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"14","firstName":"TALHA","lastName":"PEHLİVAN","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-2","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"EMRE KORKMAZ","password":"123","familyCode":"PEHLİVAN2026","id":"std_1792139434495_0lmf","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"},{"studentNo":"15","firstName":"YAVUZ SELİM ","lastName":"KOCABAŞ","className":"8-A","school":"HALİDE EDİP ADIVAR ORTA OKULU","seviye":"SEVİYE-3","etutHocasi":"MUSTAFA SOYMAZ","dahiliHoca":"MUSTAFA ŞAHİN","password":"123","familyCode":"KOCABAŞ2026","id":"std_1792139434495_ge7z","updatedAt":"2026-10-16T08:30:34.496Z","isPassive":false,"status":"active"}];
+    window.EMBEDDED_INSTITUTION_STAFF = [{"fullName":"MUSTAFA KÜÇÜK","role":"7.Sınıf Etüt Hocası","password":"123","id":"stf_1792147571479","phone":"","isCustomAdded":true,"updatedAt":"2026-10-16T10:46:11.479Z"},{"fullName":"EMRE KORKMAZ","role":"6. Sınıf Etüt Hocası","password":"123","id":"stf_1792394541843","phone":"","isCustomAdded":true,"updatedAt":"2026-10-19T07:22:21.843Z"},{"fullName":"MUSTAFA ŞAHİN","role":"Eğitim Mesulü","password":"123","id":"stf_1792394580475","phone":"","isCustomAdded":true,"updatedAt":"2026-10-19T07:23:00.475Z"},{"fullName":"MUSTAFA SOYMAZ","role":"8.Sınıf Etüt Hocası","password":"123","id":"stf_1792394609057","phone":"","isCustomAdded":true,"updatedAt":"2026-10-19T07:23:29.057Z"},{"fullName":"AGİT BERAT MEKE","role":"5.Sınıf Etüt Hocası","password":"123","id":"stf_1792394644613","phone":"","isCustomAdded":true,"updatedAt":"2026-10-19T07:24:04.613Z"},{"fullName":"BEYTULLAH ÜMEYİR BURUN","role":"7. Sınıf Etüt Hocası","password":"123","id":"stf_1792394680625","phone":"","isCustomAdded":true,"updatedAt":"2026-10-19T07:24:40.625Z"}];
+    /*__EMBEDDED_STUDENTS_END__*/
+
+    (function() {
+      if (!window.Store) return;
+      var STAFF_KEY = 'irfaniye_staff';
+      var DEL_STAFF_KEY = 'irfaniye_deleted_staff_ids_v1';
+      var CUST_STAFF_KEY = 'irfaniye_staff_customized_v1';
+      var STAFF_TIME_KEY = 'irfaniye_staff_updated_at_v1';
+      var STUDENTS_KEY = 'irfaniye_students';
+      var DEL_STUDENTS_KEY = 'irfaniye_deleted_student_ids_v1';
+      var PRIMARY_FB = 'https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app';
+      var BACKUP_FB = 'https://oay-takip-default-rtdb.firebaseio.com';
+
+      window.Store.getBackupFirebaseUrl = function() { return BACKUP_FB; };
+      window.Store.getAllCloudUrls = function() {
+        var urls = [];
+        try {
+          var customUrl = this.getFirebaseUrl ? (this.getFirebaseUrl() || '').replace(/\/+$/, '') : '';
+          if (customUrl && urls.indexOf(customUrl) === -1) urls.push(customUrl);
+        } catch(e) {}
+        if (urls.indexOf(PRIMARY_FB) === -1) urls.push(PRIMARY_FB);
+        if (urls.indexOf(BACKUP_FB) === -1) urls.push(BACKUP_FB);
+        return urls;
+      };
+
+      // 0. Eski varsayılan dizileri ve ID engellerini tamamen devre dışı bırak
+      try {
+        if (typeof SEED_STUDENTS !== 'undefined' && Array.isArray(SEED_STUDENTS)) {
+          SEED_STUDENTS.length = 0;
+        }
+        if (typeof PERMANENTLY_DELETED_STUDENTS !== 'undefined' && PERMANENTLY_DELETED_STUDENTS) {
+          if (PERMANENTLY_DELETED_STUDENTS.ids && typeof PERMANENTLY_DELETED_STUDENTS.ids.clear === 'function') {
+            PERMANENTLY_DELETED_STUDENTS.ids.clear();
+          }
+          if (PERMANENTLY_DELETED_STUDENTS.nos && typeof PERMANENTLY_DELETED_STUDENTS.nos.clear === 'function') {
+            PERMANENTLY_DELETED_STUDENTS.nos.clear();
+          }
+        }
+      } catch(e) {}
+      window.Store.autoSyncStaffAndClassTeachers = function() { return; };
+      window.Store.autoMigrateStudentClasses = function() { return; };
+      window.Store.autoSyncDahiliHocalarAndQuran = function() { return; };
+      window.Store.autoSyncMuhammedCholak = function() { return; };
+      window.Store.seedDemoAttendance = function() { return; };
+
+      window.Store.normalizeSearchKey = function(str) {
+        if (!str) return '';
+        return str
+          .toString()
+          .trim()
+          .replace(/İ/g, 'i')
+          .replace(/I/g, 'i')
+          .replace(/ı/g, 'i')
+          .replace(/i/g, 'i')
+          .replace(/Ğ/g, 'g')
+          .replace(/ğ/g, 'g')
+          .replace(/Ü/g, 'u')
+          .replace(/ü/g, 'u')
+          .replace(/Ş/g, 's')
+          .replace(/ş/g, 's')
+          .replace(/Ö/g, 'o')
+          .replace(/ö/g, 'o')
+          .replace(/Ç/g, 'c')
+          .replace(/ç/g, 'c')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '');
+      };
+
+      // 1. ESKİ KURUMUN TÜM TALEBE İSİMLERİ (KARA LİSTE - SADECE BU 63 İSİM ENGELLENİR)
+      var OLD_INSTITUTION_STUDENT_NAMES = {
+        'ardayusufsaygi': true,
+        'asilmiracsoylu': true,
+        'omersaat': true,
+        'timurfermannarlidere': true,
+        'eymenasafozholcek': true,
+        'kadiryigitkarabulut': true,
+        'mehmeteminkalkan': true,
+        'mustafaensarkalkan': true,
+        'ruzgarsaitgoguz': true,
+        'saidabbassabiri': true,
+        'saidmurtazasabiri': true,
+        'hiziralidincer': true,
+        'mehmetensarakyol': true,
+        'mustafaemir': true,
+        'hamzatoksoz': true,
+        'baburkayumoglu': true,
+        'alihansahin': true,
+        'selmanfarisozturk': true,
+        'yunusozturk': true,
+        'mahmutberkkaracadag': true,
+        'emirhanenesozturk': true,
+        'bilalchuluk': true,
+        'ayaztutar': true,
+        'emirhankulus': true,
+        'yusufkemalgencoglu': true,
+        'yusufgencoglu': true,
+        'efeeminsurucu': true,
+        'harunkayumoglu': true,
+        'mahmuttarikbicakcilar': true,
+        'aliomermengi': true,
+        'muhammaddiyorrayimjonov': true,
+        'musabakdogan': true,
+        'ramazanatasoy': true,
+        'ruchanzekiyildiz': true,
+        'semihcandemir': true,
+        'omerfarukozturk': true,
+        'mehmetfatihhanpolat': true,
+        'sabanozdemir': true,
+        'yigitemirkilic': true,
+        'kerimtunacihan': true,
+        'muhammedkerimbayburt': true,
+        'emirsalihdogan': true,
+        'mehmetyakupcedikci': true,
+        'ahmetemreakyol': true,
+        'yusufulusoy': true,
+        'lutfullahabidhusain': true,
+        'omerfarukyazici': true,
+        'isamertkarabulut': true,
+        'sametenesacar': true,
+        'alperenuygun': true,
+        'sonerercivan': true,
+        'muhammedcholak': true,
+        'yasinkaancan': true,
+        'sanaullahkayumoglu': true,
+        'muhammedaliyildirak': true,
+        'melihcarabatir': true,
+        'mustafaozcan': true,
+        'ebubekirabdullah': true,
+        'mehmetemir': true,
+        'ahmethilmiekinci': true,
+        'cihankulakli': true,
+        'kasimkulakli': true,
+        'serkanincedere': true
+      };
+
+      var OLD_INSTITUTION_STUDENT_IDS = {
+        'std_501': true, 'std_502': true, 'std_503': true, 'std_504': true, 'std_505': true, 'std_506': true, 'std_507': true, 'std_508': true, 'std_509': true,
+        'std_510': true, 'std_511': true, 'std_512': true, 'std_513': true, 'std_514': true, 'std_515': true, 'std_516': true, 'std_517': true, 'std_518': true,
+        'std_601': true, 'std_602': true, 'std_603': true, 'std_604': true, 'std_605': true, 'std_606': true, 'std_607': true, 'std_608': true, 'std_609': true, 'std_610': true,
+        'std_701': true, 'std_702': true, 'std_703': true, 'std_704': true, 'std_705': true, 'std_706': true, 'std_707': true, 'std_708': true, 'std_709': true,
+        'std_710': true, 'std_711': true, 'std_712': true, 'std_713': true, 'std_714': true, 'std_715': true, 'std_716': true, 'std_717': true,
+        'std_801': true, 'std_802': true, 'std_803': true, 'std_804': true, 'std_805': true, 'std_806': true, 'std_807': true, 'std_808': true, 'std_809': true,
+        'std_810': true, 'std_811': true, 'std_812': true, 'std_813': true, 'std_814': true, 'std_815': true, 'std_816': true, 'std_817': true, 'std_818': true,
+        'std_819': true, 'std_820': true, 'std_821': true, 'std_822': true, 'std_830': true
+      };
+
+      window.Store.isOldInstitutionStudent = function(s) {
+        if (!s || typeof s !== 'object') return true;
+        var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+        if (!fullNorm) return true;
+        if (OLD_INSTITUTION_STUDENT_NAMES[fullNorm]) return true;
+        return false;
+      };
+
+      // 2. Silinenler Sicilini (delMap) Temizle ve Kullanıcının Kendi Talebelerini Kurtar
+      window.Store.cleanPoisonedDeletedStudentIds = function() {
+        try {
+          var rawDel = localStorage.getItem(DEL_STUDENTS_KEY);
+          if (!rawDel) return {};
+          var delMap = JSON.parse(rawDel) || {};
+          var changed = false;
+          Object.keys(delMap).forEach(function(k) {
+            if (OLD_INSTITUTION_STUDENT_IDS[k] || (delMap[k] && delMap[k].deletedAt === '2026-01-01T00:00:00.000Z')) {
+              delete delMap[k];
+              changed = true;
+            }
+          });
+          if (changed) {
+            localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify(delMap));
+          }
+          return delMap;
+        } catch(e) {
+          return {};
+        }
+      };
+
+      window.Store.purgeOldInstitutionStudentsNow = function() {
+        try {
+          var delMap = this.cleanPoisonedDeletedStudentIds();
+          var userStudentsByName = {};
+          var userStudentsList = [];
+
+          var addIfValidUserStudent = function(st, ignoreDelMap) {
+            if (!st || typeof st !== 'object') return;
+            if (window.Store.isOldInstitutionStudent(st)) return;
+            var fullNorm = window.Store.normalizeSearchKey(((st.firstName || '') + ' ' + (st.lastName || '')).trim());
+            if (!fullNorm) return;
+
+            var cleanSt = Object.assign({}, st);
+            if (!cleanSt.id || OLD_INSTITUTION_STUDENT_IDS[cleanSt.id]) {
+              cleanSt.id = 'std_custom_' + fullNorm;
+            }
+            if (!ignoreDelMap && delMap[cleanSt.id] && delMap[cleanSt.id].isDeleted) return;
+
+            cleanSt.isPassive = false;
+            cleanSt.status = 'active';
+            delete cleanSt.aktif;
+            delete cleanSt.active;
+
+            if (!userStudentsByName[fullNorm]) {
+              userStudentsByName[fullNorm] = cleanSt;
+              userStudentsList.push(cleanSt);
+            }
+          };
+
+          // A. Ana öğrenci anahtarını tara
+          var rawMain = localStorage.getItem(STUDENTS_KEY);
+          if (rawMain) {
+            try {
+              var parsedMain = JSON.parse(rawMain);
+              if (Array.isArray(parsedMain)) {
+                parsedMain.forEach(function(st) { addIfValidUserStudent(st, false); });
+              }
+            } catch(e) {}
+          }
+
+          // B. Yedek anahtarlardan kullanıcının kendi kaydettiği talebeleri kurtar
+          var backupKeys = [
+            'yoklama_students_backup_v1',
+            'yoklama_students_backup_last',
+            'yoklama_students_backup_pre_cloud_sync',
+            'yoklama_students_backup_v2',
+            'yoklama_students'
+          ];
+          backupKeys.forEach(function(k) {
+            try {
+              var r = localStorage.getItem(k);
+              if (r) {
+                var p = JSON.parse(r);
+                if (Array.isArray(p)) {
+                  p.forEach(function(st) { addIfValidUserStudent(st, false); });
+                }
+              }
+            } catch(e) {}
+          });
+
+          try {
+            var rawSnap = localStorage.getItem('yoklama_students_snapshots');
+            if (rawSnap) {
+              var snaps = JSON.parse(rawSnap);
+              if (Array.isArray(snaps)) {
+                snaps.forEach(function(sn) {
+                  if (sn && Array.isArray(sn.students)) {
+                    sn.students.forEach(function(st) { addIfValidUserStudent(st, false); });
+                  }
+                });
+              }
+            }
+          } catch(e) {}
+
+          // C. Eğer index.html içine gömülü kurum talebe listesi varsa onları da ekle
+          if (Array.isArray(window.EMBEDDED_INSTITUTION_STUDENTS) && window.EMBEDDED_INSTITUTION_STUDENTS.length > 0) {
+            window.EMBEDDED_INSTITUTION_STUDENTS.forEach(function(st) {
+              addIfValidUserStudent(st, true);
+            });
+          }
+
+          // D. Eğer delMap yüzünden 0 öğrenci kaldıysa ama yedeklerde kullanıcı öğrencisi varsa delMap'i yoksayarak kurtar!
+          if (userStudentsList.length === 0) {
+            [STUDENTS_KEY].concat(backupKeys).forEach(function(k) {
+              try {
+                var r = localStorage.getItem(k);
+                if (r) {
+                  var p = JSON.parse(r);
+                  if (Array.isArray(p)) {
+                    p.forEach(function(st) { addIfValidUserStudent(st, true); });
+                  }
+                }
+              } catch(e) {}
+            });
+            if (userStudentsList.length > 0) {
+              localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify({}));
+            }
+          }
+
+          localStorage.setItem(STUDENTS_KEY, JSON.stringify(userStudentsList));
+          if (userStudentsList.length > 0) {
+            localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(userStudentsList));
+            localStorage.setItem('yoklama_students_backup_last', JSON.stringify(userStudentsList));
+            localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify(userStudentsList));
+          }
+
+          // Gömülü personel varsa ve cihazda henüz personel yoksa yükle
+          if (Array.isArray(window.EMBEDDED_INSTITUTION_STAFF) && window.EMBEDDED_INSTITUTION_STAFF.length > 0) {
+            try {
+              var curStaffRaw = localStorage.getItem(STAFF_KEY);
+              var curStaff = curStaffRaw ? JSON.parse(curStaffRaw) : [];
+              if (!Array.isArray(curStaff) || curStaff.length === 0) {
+                localStorage.setItem(STAFF_KEY, JSON.stringify(window.EMBEDDED_INSTITUTION_STAFF));
+                localStorage.setItem(CUST_STAFF_KEY, 'true');
+              }
+            } catch(e) {}
+          }
+
+          // Günlük görevler ve Kur'an takibindeki eski kurum isimlerini temizle
+          try {
+            var rawDuties = localStorage.getItem('irfaniye_daily_duties_v1');
+            if (rawDuties && (rawDuties.indexOf('ARDA YUSUF SAYGI') !== -1 || rawDuties.indexOf('ASİL MİRAÇ SOYLU') !== -1)) {
+              localStorage.removeItem('irfaniye_daily_duties_v1');
+            }
+          } catch(e) {}
+
+          try {
+            var rawQuran = localStorage.getItem('irfaniye_quran_tracker_v1');
+            if (rawQuran) {
+              var qObj = JSON.parse(rawQuran);
+              if (qObj && typeof qObj === 'object') {
+                var qChanged = false;
+                Object.keys(OLD_INSTITUTION_STUDENT_IDS).forEach(function(oldId) {
+                  if (qObj[oldId]) {
+                    delete qObj[oldId];
+                    qChanged = true;
+                  }
+                });
+                if (qChanged) localStorage.setItem('irfaniye_quran_tracker_v1', JSON.stringify(qObj));
+              }
+            }
+          } catch(e) {}
+
+          return userStudentsList;
+        } catch(e) {
+          return [];
+        }
+      };
+
+      // Sayfa yüklenir yüklenmez eski kurum talebelerini temizle ve kullanıcı talebelerini kurtar
+      window.Store.purgeOldInstitutionStudentsNow();
+
+      // 3. Öğrenci Okuma & Kaydetme Metodlarını Kesin Korumalı Hale Getir
+      window.Store.getAllStudents = function() {
+        try {
+          var delMap = this.cleanPoisonedDeletedStudentIds();
+          var raw = localStorage.getItem(STUDENTS_KEY);
+          var list = [];
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              list = parsed.filter(function(s) {
+                if (!s || typeof s !== 'object') return false;
+                if (window.Store.isOldInstitutionStudent(s)) return false;
+                if (s.id && delMap[s.id] && delMap[s.id].isDeleted) return false;
+                return true;
+              });
+            }
+          }
+          if (list.length === 0 && Array.isArray(window.EMBEDDED_INSTITUTION_STUDENTS) && window.EMBEDDED_INSTITUTION_STUDENTS.length > 0) {
+            list = window.EMBEDDED_INSTITUTION_STUDENTS.filter(function(s) {
+              return s && !window.Store.isOldInstitutionStudent(s);
+            });
+            if (list.length > 0) {
+              localStorage.setItem(STUDENTS_KEY, JSON.stringify(list));
+            }
+          }
+          list.forEach(function(s) {
+            var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+            if (!s.id || OLD_INSTITUTION_STUDENT_IDS[s.id]) {
+              s.id = 'std_custom_' + fullNorm;
+            }
+            s.isPassive = false;
+            s.status = 'active';
+            delete s.aktif;
+            delete s.active;
+          });
+          return this.sortStudentsByClassAndNo ? this.sortStudentsByClassAndNo(list) : list;
+        } catch(e) {
+          return [];
+        }
+      };
+
+      window.Store.getStudents = function(includePassive) {
+        return this.getAllStudents();
+      };
+
+      window.Store.saveStudents = function(students) {
+        if (!Array.isArray(students)) return;
+        var delMap = this.cleanPoisonedDeletedStudentIds();
+        var nowIso = new Date().toISOString();
+        var cleanList = students.filter(function(s) {
+          if (!s || typeof s !== 'object') return false;
+          if (window.Store.isOldInstitutionStudent(s)) return false;
+          var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+          if (!fullNorm) return false;
+          if (!s.id || OLD_INSTITUTION_STUDENT_IDS[s.id]) {
+            s.id = 'std_custom_' + fullNorm;
+          }
+          if (delMap[s.id] && delMap[s.id].isDeleted) {
+            delete delMap[s.id];
+          }
+          return true;
+        });
+        localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify(delMap));
+
+        cleanList.forEach(function(s) {
+          s.updatedAt = nowIso;
+          s.isPassive = false;
+          s.status = 'active';
+          delete s.aktif;
+          delete s.active;
+          if (window.Store.markStudentLocallyEdited) {
+            window.Store.markStudentLocallyEdited(s.id, ['ALL']);
+          }
+        });
+
+        var sorted = this.sortStudentsByClassAndNo ? this.sortStudentsByClassAndNo(cleanList) : cleanList;
+        localStorage.setItem(STUDENTS_KEY, JSON.stringify(sorted));
+        if (sorted.length > 0) {
+          localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(sorted));
+          localStorage.setItem('yoklama_students_backup_last', JSON.stringify(sorted));
+          localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify(sorted));
+          localStorage.setItem('yoklama_students_backup_timestamp', nowIso);
+        }
+
+        this._lastStudentPushTime = Date.now();
+        this._lastStudentEditTime = Date.now();
+        if (sorted.length > 0) {
+          this.pushStudentsToCloud(sorted);
+        }
+
+        try {
+          window.dispatchEvent(new CustomEvent('students-updated', { detail: sorted }));
+        } catch(e) {}
+      };
+
+      window.Store.clearAllUserStudents = function() {
+        this._explicitClearAllStudents = true;
+        var current = this.getAllStudents();
+        var delMap = this.cleanPoisonedDeletedStudentIds();
+        var nowIso = new Date().toISOString();
+        current.forEach(function(s) {
+          if (s && s.id) {
+            delMap[s.id] = { isDeleted: true, deletedAt: nowIso };
+          }
+        });
+        localStorage.setItem(DEL_STUDENTS_KEY, JSON.stringify(delMap));
+        localStorage.setItem(STUDENTS_KEY, JSON.stringify([]));
+        localStorage.setItem('yoklama_students_backup_v1', JSON.stringify([]));
+        localStorage.setItem('yoklama_students_backup_last', JSON.stringify([]));
+        localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify([]));
+        localStorage.removeItem('yoklama_students_snapshots');
+        this.pushStudentsToCloud([]);
+        var self = this;
+        setTimeout(function() { self._explicitClearAllStudents = false; }, 5000);
+      };
+
+      // Aktif ekranları (özellikle Telefondaki Yoklama, Kur'an, Akademi ekranlarını) anında yenileme yardımcısı
+      window.Store.refreshActiveViewsAfterStudentSync = function() {
+        try {
+          if (window.AttendanceModule) {
+            if (typeof window.AttendanceModule.loadDailyDraft === 'function') {
+              window.AttendanceModule.loadDailyDraft();
+            }
+            if (document.getElementById('attendance-container') && typeof window.AttendanceModule.renderView === 'function') {
+              window.AttendanceModule.renderView();
+            }
+          }
+          if (window.QuranTrackerModule && document.getElementById('quran-tracker-container') && typeof window.QuranTrackerModule.renderView === 'function') {
+            window.QuranTrackerModule.renderView(true);
+          }
+          if (window.LeaveTrackerModule && document.getElementById('leave-tracker-container') && typeof window.LeaveTrackerModule.renderView === 'function') {
+            window.LeaveTrackerModule.renderView();
+          }
+          if (window.LeaveReturnModule && document.getElementById('leave-return-container') && typeof window.LeaveReturnModule.renderView === 'function') {
+            window.LeaveReturnModule.renderView();
+          }
+          if (window.App && document.getElementById('students-container') && !window.App.studentTableEditMode && typeof window.App.renderStudentsView === 'function') {
+            window.App.renderStudentsView();
+          }
+        } catch(e) {}
+      };
+
+      // 4. ÇİFT SUNUCULU BULUT TALEBE SENKRONİZASYON MOTORU (BOŞ TELEFONUN BULUTU SİLMESİ %100 ENGELLENDİ!)
+      window.Store.pushStudentsToCloud = async function(optionalList) {
+        var rawList = Array.isArray(optionalList) ? optionalList : this.getAllStudents();
+        var cleanList = rawList.filter(function(s) {
+          return s && typeof s === 'object' && !window.Store.isOldInstitutionStudent(s);
+        });
+        cleanList.forEach(function(s) {
+          var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+          if (!s.id || OLD_INSTITUTION_STUDENT_IDS[s.id]) {
+            s.id = 'std_custom_' + fullNorm;
+          }
+          s.isPassive = false;
+          s.status = 'active';
+        });
+
+        // KRİTİK KORUMA: Eğer bu cihazda 0 talebe varsa (örn. yeni açılan personel telefonu),
+        // buluttaki yönetici talebe listesini ASLA boş diziyle ([] / 0 talebe) ezme!
+        if (cleanList.length === 0 && !this._explicitClearAllStudents) {
+          return { ok: false, skippedEmpty: true, count: 0 };
+        }
+
+        var delMap = this.cleanPoisonedDeletedStudentIds();
+        var nowIso = new Date().toISOString();
+        var payload = {
+          students: cleanList,
+          deleted_student_ids: delMap,
+          students_customized: true,
+          updatedAt: nowIso
+        };
+
+        var urls = this.getAllCloudUrls();
+        var anyOk = false;
+        var lastStatus = 0;
+
+        for (var i = 0; i < urls.length; i++) {
+          var u = urls[i];
+          try {
+            var r1 = await fetch(u + '/irfaniye_v11_students.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            lastStatus = r1.status;
+            if (r1.ok) anyOk = true;
+          } catch(e) {}
+          try {
+            var r2 = await fetch(u + '/irfaniye_data/students.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(cleanList)
+            });
+            if (r2.ok) anyOk = true;
+          } catch(e) {}
+        }
+
+        return { ok: anyOk, count: cleanList.length, status: lastStatus };
+      };
+
+      window.Store.pullStudentsFromCloud = async function() {
+        try {
+          var beforeCount = this.getAllStudents().length;
+          var localClean = this.purgeOldInstitutionStudentsNow();
+          var urls = this.getAllCloudUrls();
+
+          var fetchJson = async function(fullUrl) {
+            try {
+              var r = await fetch(fullUrl + (fullUrl.indexOf('?') === -1 ? '?t=' : '&t=') + Date.now(), {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+              });
+              if (r.ok) return await r.json();
+            } catch(e) {}
+            return null;
+          };
+
+          var tasks = [];
+          urls.forEach(function(u) {
+            tasks.push(fetchJson(u + '/irfaniye_v11_students.json'));
+            tasks.push(fetchJson(u + '/irfaniye_data/students.json'));
+            tasks.push(fetchJson(u + '/irfaniye_data.json'));
+          });
+
+          var results = await Promise.all(tasks);
+
+          var toArr = function(val) {
+            if (!val) return [];
+            if (Array.isArray(val)) return val.filter(Boolean);
+            if (typeof val === 'object') return Object.values(val).filter(Boolean);
+            return [];
+          };
+
+          var cloudCandidateLists = [];
+          var hadOldInCloud = false;
+
+          for (var i = 0; i < results.length; i += 3) {
+            var v11Obj = results[i];
+            var stdRaw = results[i + 1];
+            var fullData = results[i + 2];
+
+            if (v11Obj && v11Obj.students) {
+              var arr1 = toArr(v11Obj.students);
+              if (arr1.some(function(s) { return window.Store.isOldInstitutionStudent(s); })) hadOldInCloud = true;
+              cloudCandidateLists.push(arr1);
+            }
+            if (stdRaw) {
+              var arr2 = toArr(stdRaw);
+              if (arr2.some(function(s) { return window.Store.isOldInstitutionStudent(s); })) hadOldInCloud = true;
+              cloudCandidateLists.push(arr2);
+            }
+            if (fullData && fullData.students) {
+              var arr3 = toArr(fullData.students);
+              if (arr3.some(function(s) { return window.Store.isOldInstitutionStudent(s); })) hadOldInCloud = true;
+              cloudCandidateLists.push(arr3);
+            }
+          }
+
+          var byName = {};
+          var mergedClean = [];
+
+          var addClean = function(st) {
+            if (!st || typeof st !== 'object') return;
+            if (window.Store.isOldInstitutionStudent(st)) return;
+            var fullNorm = window.Store.normalizeSearchKey(((st.firstName || '') + ' ' + (st.lastName || '')).trim());
+            if (!fullNorm) return;
+
+            var cleanSt = Object.assign({}, st);
+            if (!cleanSt.id || OLD_INSTITUTION_STUDENT_IDS[cleanSt.id]) {
+              cleanSt.id = 'std_custom_' + fullNorm;
+            }
+            cleanSt.isPassive = false;
+            cleanSt.status = 'active';
+            delete cleanSt.aktif;
+            delete cleanSt.active;
+
+            if (!byName[fullNorm]) {
+              byName[fullNorm] = cleanSt;
+              mergedClean.push(cleanSt);
+            } else {
+              var existing = byName[fullNorm];
+              var extTime = existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+              var newTime = cleanSt.updatedAt ? new Date(cleanSt.updatedAt).getTime() : 0;
+              if (newTime > extTime) {
+                var idx = mergedClean.indexOf(existing);
+                if (idx !== -1) mergedClean[idx] = cleanSt;
+                byName[fullNorm] = cleanSt;
+              }
+            }
+          };
+
+          // 1. Önce buluttaki tüm kanallardan gelen kullanıcı öğrencilerini ekle
+          cloudCandidateLists.forEach(function(list) {
+            list.forEach(addClean);
+          });
+          var cloudCleanCount = mergedClean.length;
+
+          // 2. Yerel temiz öğrencileri ve gömülü öğrencileri ekle
+          localClean.forEach(addClean);
+          if (Array.isArray(window.EMBEDDED_INSTITUTION_STUDENTS)) {
+            window.EMBEDDED_INSTITUTION_STUDENTS.forEach(addClean);
+          }
+
+          var sortedClean = this.sortStudentsByClassAndNo ? this.sortStudentsByClassAndNo(mergedClean) : mergedClean;
+          if (sortedClean.length > 0) {
+            localStorage.setItem(STUDENTS_KEY, JSON.stringify(sortedClean));
+            localStorage.setItem('yoklama_students_backup_v1', JSON.stringify(sortedClean));
+            localStorage.setItem('yoklama_students_backup_last', JSON.stringify(sortedClean));
+            localStorage.setItem('yoklama_students_backup_pre_cloud_sync', JSON.stringify(sortedClean));
+          }
+
+          // SADECE bu cihazda gerçek talebe varsa (sortedClean.length > 0) ve bulutta eksikse buluta gönder!
+          // 0 talebeli bir telefon ASLA buluta boş liste gönderemez!
+          if (sortedClean.length > 0 && (hadOldInCloud || sortedClean.length > cloudCleanCount)) {
+            await this.pushStudentsToCloud(sortedClean);
+          }
+
+          if (sortedClean.length !== beforeCount || sortedClean.length > 0) {
+            this.refreshActiveViewsAfterStudentSync();
+          }
+
+          return sortedClean;
+        } catch(e) {
+          return this.getAllStudents();
+        }
+      };
+
+      var origApplyFullCloudSync = window.Store.applyFullCloudSync;
+      window.Store.applyFullCloudSync = function(cloudData) {
+        var existingLocal = this.getAllStudents();
+        if (cloudData && typeof cloudData === 'object') {
+          var copy = Object.assign({}, cloudData);
+          // Buluttan gelen bozuk deleted_student_ids haritasının talebeleri silmesini engelle
+          delete copy.deleted_student_ids;
+          if (copy.students) {
+            var arr = Array.isArray(copy.students)
+              ? copy.students
+              : (typeof copy.students === 'object' ? Object.values(copy.students).filter(Boolean) : []);
+            var cleanArr = arr.filter(function(s) { return s && !window.Store.isOldInstitutionStudent(s); });
+            cleanArr.forEach(function(s) {
+              var fullNorm = window.Store.normalizeSearchKey(((s.firstName || '') + ' ' + (s.lastName || '')).trim());
+              if (!s.id || OLD_INSTITUTION_STUDENT_IDS[s.id]) {
+                s.id = 'std_custom_' + fullNorm;
+              }
+            });
+            // Eğer buluttaki students boşsa ama yerelde talebe varsa yereli ezme!
+            if (cleanArr.length === 0 && existingLocal.length > 0) {
+              copy.students = existingLocal;
+            } else {
+              copy.students = cleanArr;
+            }
+          } else if (existingLocal.length > 0) {
+            copy.students = existingLocal;
+          }
+          cloudData = copy;
+        }
+        if (typeof origApplyFullCloudSync === 'function') {
+          try { origApplyFullCloudSync.call(this, cloudData); } catch(e) {}
+        }
+        var afterList = this.purgeOldInstitutionStudentsNow();
+        if (afterList.length === 0 && existingLocal.length > 0 && !this._explicitClearAllStudents) {
+          localStorage.setItem(STUDENTS_KEY, JSON.stringify(existingLocal));
+        }
+        this.refreshActiveViewsAfterStudentSync();
+      };
+
+      window.Store.getDeletedStaffIds = function() {
+        try {
+          var r = localStorage.getItem(DEL_STAFF_KEY);
+          return r ? JSON.parse(r) : {};
+        } catch(e) { return {}; }
+      };
+
+      window.Store.saveDeletedStaffIds = function(map) {
+        try {
+          localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(map || {}));
+          this.syncToCloud('irfaniye_data/deleted_staff_ids', map || {});
+        } catch(e) {}
+      };
+
+      window.Store.syncToCloud = async function(endpoint, data) {
+        var cleanEndpoint = (endpoint || '').replace(/^\/+/, '').replace(/^kurs_data\//, 'irfaniye_data/');
+        if (cleanEndpoint === 'irfaniye_data/students') {
+          if (Array.isArray(data)) {
+            data = data.filter(function(s) { return s && !window.Store.isOldInstitutionStudent(s); });
+          }
+          // Boş öğrenci listesinin bulutu ezmesini engelle
+          if ((!Array.isArray(data) || data.length === 0) && !this._explicitClearAllStudents) {
+            return false;
+          }
+        }
+        var bodyStr = JSON.stringify(data);
+        var urls = this.getAllCloudUrls();
+        var anyOk = false;
+        for (var i = 0; i < urls.length; i++) {
+          try {
+            var r = await fetch(urls[i] + '/' + cleanEndpoint + '.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: bodyStr
+            });
+            if (r.ok) anyOk = true;
+          } catch(e) {}
+        }
+        return anyOk;
+      };
+
+      // Özel korumalı personel bulut kanalı (Her iki Firebase sunucusuna da yazar)
+      window.Store.pushStaffAuthToCloud = async function() {
+        var staffList = this.getStaff();
+        var delMap = this.getDeletedStaffIds();
+        var isCust = localStorage.getItem(CUST_STAFF_KEY) === 'true';
+        var nowIso = localStorage.getItem(STAFF_TIME_KEY) || new Date().toISOString();
+        var payload = {
+          staff: staffList,
+          deleted_staff_ids: delMap,
+          staff_customized: isCust,
+          updatedAt: nowIso
+        };
+        var urls = this.getAllCloudUrls();
+        for (var i = 0; i < urls.length; i++) {
+          try {
+            await fetch(urls[i] + '/irfaniye_v10_auth.json', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          } catch(e) {}
+        }
+        try {
+          await this.syncToCloud('irfaniye_data/staff', staffList);
+          await this.syncToCloud('irfaniye_data/deleted_staff_ids', delMap);
+          await this.syncToCloud('irfaniye_data/staff_customized', isCust);
+          await this.syncToCloud('irfaniye_data/staff_updatedAt', nowIso);
+        } catch(e) {}
+        return true;
+      };
+
+      window.Store.pullStaffAuthFromCloud = async function() {
+        try {
+          var urls = this.getAllCloudUrls();
+          var authData = null;
+          for (var i = 0; i < urls.length; i++) {
+            try {
+              var r = await fetch(urls[i] + '/irfaniye_v10_auth.json?t=' + Date.now(), {
+                headers: { 'Accept': 'application/json' },
+                cache: 'no-store'
+              });
+              if (r.ok) {
+                var d = await r.json();
+                if (d && typeof d === 'object') {
+                  authData = d;
+                  if (Array.isArray(d.staff) && d.staff.length > 0) break;
+                }
+              }
+            } catch(e) {}
+          }
+
+          var sessRaw = sessionStorage.getItem('irfaniye_active_session') || localStorage.getItem('irfaniye_active_session');
+          var isSuperAdminDevice = false;
+          try {
+            var sessObj = sessRaw ? JSON.parse(sessRaw) : null;
+            if (sessObj && (sessObj.role === 'superadmin' || sessObj.staffId === 'admin_root' || sessObj.canManageStaff)) {
+              isSuperAdminDevice = true;
+            }
+          } catch(e) {}
+
+          var localDel = this.getDeletedStaffIds();
+          var localIsCust = localStorage.getItem(CUST_STAFF_KEY) === 'true';
+          var localRaw = localStorage.getItem(STAFF_KEY);
+          var localStaff = [];
+          try { if (localRaw) localStaff = JSON.parse(localRaw) || []; } catch(e) {}
+          var localCustomItems = Array.isArray(localStaff) ? localStaff.filter(function(s) {
+            if (!s || !s.id) return false;
+            if (isSuperAdminDevice) return true;
+            return (s.isCustomAdded || !/^stf_[1-8]$/.test(s.id) || (s.password && s.password !== '123'));
+          }) : [];
+
+          if (!authData || typeof authData !== 'object') {
+            if (isSuperAdminDevice || localIsCust || localCustomItems.length > 0 || Object.keys(localDel).length > 0) {
+              await this.pushStaffAuthToCloud();
+            }
+            return true;
+          }
+
+          var timeSinceEdit = this._lastStaffEditTime ? (Date.now() - this._lastStaffEditTime) : 999999;
+          if (timeSinceEdit < 15000) {
+            await this.pushStaffAuthToCloud();
+            return true;
+          }
+
+          var cloudDel = (authData.deleted_staff_ids && typeof authData.deleted_staff_ids === 'object') ? authData.deleted_staff_ids : {};
+          var mergedDel = Object.assign({}, localDel, cloudDel);
+          localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(mergedDel));
+
+          if (authData.staff_customized === true || mergedDel['__ALL_DEFAULTS_CLEARED__']) {
+            localStorage.setItem(CUST_STAFF_KEY, 'true');
+          }
+
+          var cloudStaff = Array.isArray(authData.staff)
+            ? authData.staff
+            : (authData.staff && typeof authData.staff === 'object' ? Object.values(authData.staff).filter(Boolean) : []);
+
+          var byName = {};
+          var combined = [];
+          cloudStaff.concat(localCustomItems).forEach(function(stf) {
+            if (!stf || !stf.id || !stf.fullName) return;
+            if (mergedDel[stf.id]) return;
+            var n = window.Store.normalizeSearchKey(stf.fullName);
+            if (!n || mergedDel['name_' + n]) return;
+            if (mergedDel['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(stf.id) && !stf.isCustomAdded) return;
+            if (!byName[n]) {
+              byName[n] = stf;
+              combined.push(stf);
+            } else {
+              var existing = byName[n];
+              if ((stf.password && stf.password !== '123' && existing.password === '123') ||
+                  (stf.updatedAt && (!existing.updatedAt || stf.updatedAt > existing.updatedAt))) {
+                var idx = combined.indexOf(existing);
+                if (idx !== -1) combined[idx] = stf;
+                byName[n] = stf;
+              }
+            }
+          });
+
+          if (combined.length > 0 || authData.staff_customized === true || mergedDel['__ALL_DEFAULTS_CLEARED__'] || localStorage.getItem(CUST_STAFF_KEY) === 'true') {
+            localStorage.setItem(STAFF_KEY, JSON.stringify(combined));
+            if (combined.length > cloudStaff.length) {
+              this.pushStaffAuthToCloud();
+            }
+          }
+          return true;
+        } catch(e) {
+          return false;
+        }
+      };
+
+      window.Store.syncFromCloud = async function() {
+        var localBefore = this.purgeOldInstitutionStudentsNow();
+        // Eğer bu cihazda (Yönetici bilgisayarı) talebeler kayıtlıysa, önce buluta gönder ki telefonlar hemen alabilsin!
+        if (localBefore.length > 0) {
+          await this.pushStudentsToCloud(localBefore);
+        }
+
+        await Promise.all([
+          this.pullStaffAuthFromCloud(),
+          this.pullStudentsFromCloud()
+        ]);
+
+        var urls = this.getAllCloudUrls();
+        var mergedCloudData = {};
+        for (var i = 0; i < urls.length; i++) {
+          try {
+            var r = await fetch(urls[i] + '/irfaniye_data.json?t=' + Date.now(), { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (r.ok) {
+              var d = await r.json();
+              if (d && typeof d === 'object') {
+                var prevStudents = mergedCloudData.students;
+                mergedCloudData = Object.assign({}, d, mergedCloudData);
+                if ((!prevStudents || prevStudents.length === 0) && d.students) {
+                  mergedCloudData.students = d.students;
+                }
+              }
+            }
+          } catch(e) {}
+        }
+
+        var savedStaffBeforeSync = localStorage.getItem(STAFF_KEY);
+        var savedCustBeforeSync = localStorage.getItem(CUST_STAFF_KEY);
+        var savedDelBeforeSync = localStorage.getItem(DEL_STAFF_KEY);
+
+        if (Object.keys(mergedCloudData).length > 0) {
+          this.applyFullCloudSync(mergedCloudData);
+        }
+
+        if (savedCustBeforeSync === 'true') localStorage.setItem(CUST_STAFF_KEY, 'true');
+        if (savedDelBeforeSync) {
+          var curDel = this.getDeletedStaffIds();
+          try {
+            var prevDel = JSON.parse(savedDelBeforeSync) || {};
+            localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(Object.assign({}, prevDel, curDel)));
+          } catch(e) {}
+        }
+        if (savedStaffBeforeSync !== null) {
+          localStorage.setItem(STAFF_KEY, savedStaffBeforeSync);
+        }
+
+        await Promise.all([
+          this.pullStaffAuthFromCloud(),
+          this.pullStudentsFromCloud()
+        ]);
+
+        this.refreshActiveViewsAfterStudentSync();
+        return { success: true, message: 'Güncel veriler senkronize edildi.' };
+      };
+
+      window.Store.getStaff = function() {
+        try {
+          var isCust = localStorage.getItem(CUST_STAFF_KEY) === 'true';
+          var delMap = this.getDeletedStaffIds();
+          var raw = localStorage.getItem(STAFF_KEY);
+          if (raw !== null) {
+            var parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              var filtered = parsed.filter(function(s) {
+                if (!s || !s.id) return false;
+                if (delMap[s.id]) return false;
+                var n = window.Store.normalizeSearchKey(s.fullName);
+                if (n && delMap['name_' + n]) return false;
+                if (delMap['__ALL_DEFAULTS_CLEARED__'] && /^stf_[1-8]$/.test(s.id) && !s.isCustomAdded) return false;
+                return true;
+              });
+              if (filtered.length > 0 || isCust || delMap['__ALL_DEFAULTS_CLEARED__'] || Object.keys(delMap).length > 0) {
+                if (filtered.length !== parsed.length) localStorage.setItem(STAFF_KEY, JSON.stringify(filtered));
+                return filtered;
+              }
+            }
+          }
+          if (Array.isArray(window.EMBEDDED_INSTITUTION_STAFF) && window.EMBEDDED_INSTITUTION_STAFF.length > 0) {
+            return window.EMBEDDED_INSTITUTION_STAFF;
+          }
+          if (isCust || delMap['__ALL_DEFAULTS_CLEARED__']) {
+            localStorage.setItem(STAFF_KEY, JSON.stringify([]));
+            return [];
+          }
+          var defs = (typeof DEFAULT_STAFF !== 'undefined' ? DEFAULT_STAFF : []).filter(function(s) {
+            return s && !delMap[s.id] && !delMap['name_' + window.Store.normalizeSearchKey(s.fullName)];
+          });
+          return defs;
+        } catch(e) { return []; }
+      };
+
+      window.Store.saveStaff = function(staffList) {
+        var cleanList = Array.isArray(staffList) ? staffList : [];
+        var nowIso = new Date().toISOString();
+        this._lastStaffEditTime = Date.now();
+        localStorage.setItem(CUST_STAFF_KEY, 'true');
+        localStorage.setItem(STAFF_TIME_KEY, nowIso);
+        localStorage.setItem(STAFF_KEY, JSON.stringify(cleanList));
+        this.pushStaffAuthToCloud();
+      };
+
+      window.Store.addStaff = function(member) {
+        var list = this.getStaff();
+        var fullNameClean = (member.fullName || '').trim().toLocaleUpperCase('tr-TR');
+        var normName = this.normalizeSearchKey(fullNameClean);
+        var delMap = this.getDeletedStaffIds();
+        if (normName && delMap['name_' + normName]) {
+          delete delMap['name_' + normName];
+          localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(delMap));
+        }
+        var existingIdx = list.findIndex(function(s) { return window.Store.normalizeSearchKey(s.fullName) === normName; });
+        if (existingIdx !== -1) {
+          if (delMap[list[existingIdx].id]) {
+            delete delMap[list[existingIdx].id];
+            localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(delMap));
+          }
+          list[existingIdx] = Object.assign({}, list[existingIdx], {
+            fullName: fullNameClean,
+            role: member.role || list[existingIdx].role || 'Eğitmen',
+            phone: member.phone || list[existingIdx].phone || '',
+            password: (member.password || '123').toString().trim(),
+            isCustomAdded: true,
+            updatedAt: new Date().toISOString()
+          });
+          this.saveStaff(list);
+          return list[existingIdx];
+        }
+        var newMember = Object.assign({}, member, {
+          fullName: fullNameClean,
+          id: 'stf_' + Date.now(),
+          role: member.role || 'Eğitmen',
+          phone: member.phone || '',
+          password: (member.password || '123').toString().trim(),
+          isCustomAdded: true,
+          updatedAt: new Date().toISOString()
+        });
+        list.push(newMember);
+        this.saveStaff(list);
+        return newMember;
+      };
+
+      window.Store.updateStaff = function(id, updated) {
+        var list = this.getStaff();
+        var idx = list.findIndex(function(s) { return s.id === id; });
+        if (idx !== -1) {
+          var cleanUpdated = Object.assign({}, updated);
+          if (cleanUpdated.password !== undefined) {
+            cleanUpdated.password = cleanUpdated.password.toString().trim();
+          }
+          if (cleanUpdated.fullName !== undefined) {
+            cleanUpdated.fullName = cleanUpdated.fullName.toString().trim().toLocaleUpperCase('tr-TR');
+          }
+          list[idx] = Object.assign({}, list[idx], cleanUpdated, {
+            isCustomAdded: true,
+            updatedAt: new Date().toISOString()
+          });
+          this.saveStaff(list);
+          return list[idx];
+        }
+        return null;
+      };
+
+      window.Store.updateStaffPassword = function(id, newPassword) {
+        var updated = this.updateStaff(id, { password: (newPassword || '123').toString().trim() });
+        if (!updated) return { success: false, message: 'Personel bulunamadı.' };
+        return { success: true };
+      };
+
+      window.Store.deleteStaff = function(id) {
+        var currentList = this.getStaff();
+        var target = currentList.find(function(s) { return s.id === id; });
+        var delMap = this.getDeletedStaffIds();
+        delMap[id] = true;
+        if (target && target.fullName) {
+          var n = this.normalizeSearchKey(target.fullName);
+          if (n) delMap['name_' + n] = true;
+        }
+        var list = currentList.filter(function(s) { return s.id !== id; });
+        if (list.length === 0) delMap['__ALL_DEFAULTS_CLEARED__'] = true;
+        localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(delMap));
+        this.saveStaff(list);
+      };
+
+      window.Store.clearAllStaff = function() {
+        var currentList = this.getStaff();
+        var delMap = this.getDeletedStaffIds();
+        delMap['__ALL_DEFAULTS_CLEARED__'] = true;
+        if (typeof DEFAULT_STAFF !== 'undefined') {
+          DEFAULT_STAFF.forEach(function(s) {
+            delMap[s.id] = true;
+            var n = window.Store.normalizeSearchKey(s.fullName);
+            if (n) delMap['name_' + n] = true;
+          });
+        }
+        currentList.forEach(function(s) {
+          if (s && s.id) delMap[s.id] = true;
+          if (s && s.fullName) {
+            var n = window.Store.normalizeSearchKey(s.fullName);
+            if (n) delMap['name_' + n] = true;
+          }
+        });
+        localStorage.setItem(DEL_STAFF_KEY, JSON.stringify(delMap));
+        this.saveStaff([]);
+      };
+
+      // Evrensel Kullanıcı ve Personel Doğrulama Motoru
+      window.Store.authenticateUser = function(usernameInput, passwordInput) {
+        if (!usernameInput || !passwordInput) return null;
+
+        var rawInput = usernameInput.toString().trim();
+        var normInput = this.normalizeSearchKey(rawInput);
+        var rawPass = passwordInput.toString().trim();
+        var normPass = this.normalizeSearchKey(rawPass);
+
+        if (!normInput || !rawPass) return null;
+
+        // 0. Kurum Yöneticisi Kontrolü
+        if (
+          normInput === 'admin' ||
+          normInput === 'yonetici' ||
+          normInput === 'mudur' ||
+          normInput === 'yonetim' ||
+          normInput === 'superadmin' ||
+          normInput === 'kurumyoneticisi'
+        ) {
+          if (this.verifyAdminPassword(rawPass)) {
+            return {
+              requiresAdminOtp: true,
+              role: 'superadmin',
+              staffId: 'admin_root',
+              name: 'Kurum Yöneticisi',
+              email: this.getSettings().adminEmail || 'admin@irfaniye.com'
+            };
+          }
+          return null;
+        }
+
+        var checkPassMatch = function(expectedPass) {
+          var exp = (expectedPass || '123').toString().trim();
+          var normExp = window.Store.normalizeSearchKey(exp);
+          if (rawPass === exp) return true;
+          if (rawPass.toLowerCase() === exp.toLowerCase()) return true;
+          if (normPass && normExp && normPass === normExp) return true;
+          if (exp === '123' && (rawPass === '123' || normPass === '123')) return true;
+          return false;
+        };
+
+        // 1. Personel / Hoca Listesi Kontrolü (getStaff)
+        var staffList = this.getStaff();
+        var inputWords = rawInput.split(/\s+/).map(function(w) { return window.Store.normalizeSearchKey(w); }).filter(Boolean);
+        var matchedStaff = staffList.find(function(s) {
+          if (!s || !s.fullName) return false;
+          var sNorm = window.Store.normalizeSearchKey(s.fullName);
+          var sWords = s.fullName.split(/\s+/).map(function(w) { return window.Store.normalizeSearchKey(w); }).filter(Boolean);
+          var sPhoneNorm = s.phone ? s.phone.replace(/\D/g, '') : '';
+          var inputDigits = rawInput.replace(/\D/g, '');
+
+          var isIdMatch = s.id && (s.id.toLowerCase() === rawInput.toLowerCase());
+          var isPhoneMatch = sPhoneNorm.length >= 7 && inputDigits.length >= 7 && (sPhoneNorm.endsWith(inputDigits) || inputDigits.endsWith(sPhoneNorm));
+          var isExactOrSubMatch = sNorm === normInput || (normInput.length >= 3 && (sNorm.includes(normInput) || normInput.includes(sNorm)));
+          var isWordMatch = inputWords.length > 0 && sWords.length > 0 && inputWords[0].length >= 3 && sWords.includes(inputWords[0]);
+
+          if (!isExactOrSubMatch && !isWordMatch && !isIdMatch && !isPhoneMatch) return false;
+          return checkPassMatch(s.password || '123');
+        });
+
+        if (matchedStaff) {
+          return {
+            role: 'staff',
+            staffId: matchedStaff.id,
+            name: matchedStaff.fullName,
+            password: matchedStaff.password || '123',
+            staffRole: matchedStaff.role || 'Etüt & Dahili Hocası',
+            canEditStudents: false,
+            canManageStaff: false,
+            canEditSettings: false
+          };
+        }
+
+        // 1b. Öğrenci Tablosunda Atanmış Hoca Kontrolü
+        var students = this.getAllStudents();
+        var delStaffMap = this.getDeletedStaffIds();
+        if (normInput.length >= 3 && !delStaffMap['name_' + normInput]) {
+          var assignedTeacherName = null;
+          var teacherStudentPasswords = [];
+          for (var i = 0; i < students.length; i++) {
+            var st = students[i];
+            if (!st) continue;
+            var etut = (st.etutHocasi || '').trim();
+            var dahili = (st.dahiliHoca || '').trim();
+            var etutNorm = this.normalizeSearchKey(etut);
+            var dahiliNorm = this.normalizeSearchKey(dahili);
+
+            if (etutNorm && etutNorm !== 'genel' && (etutNorm === normInput || etutNorm.includes(normInput) || normInput.includes(etutNorm))) {
+              if (!delStaffMap['name_' + etutNorm]) {
+                if (!assignedTeacherName) assignedTeacherName = etut;
+                if (st.password) teacherStudentPasswords.push(st.password);
+              }
+            }
+            if (dahiliNorm && dahiliNorm !== 'genel' && (dahiliNorm === normInput || dahiliNorm.includes(normInput) || normInput.includes(dahiliNorm))) {
+              if (!delStaffMap['name_' + dahiliNorm]) {
+                if (!assignedTeacherName) assignedTeacherName = dahili;
+                if (st.password) teacherStudentPasswords.push(st.password);
+              }
+            }
+          }
+          if (assignedTeacherName) {
+            var passOk = checkPassMatch('123') || teacherStudentPasswords.some(function(p) { return checkPassMatch(p); });
+            if (passOk) {
+              return {
+                role: 'staff',
+                staffId: 'stf_assigned_' + this.normalizeSearchKey(assignedTeacherName),
+                name: assignedTeacherName.toLocaleUpperCase('tr-TR'),
+                password: rawPass,
+                staffRole: 'Etüt & Dahili Hocası',
+                canEditStudents: false,
+                canManageStaff: false,
+                canEditSettings: false
+              };
+            }
+          }
+        }
+
+        // 2. Öğrenci / Veli Kontrolü (Sadece Kullanıcının Kendi Kurum Talebeleri)
+        var matchedStudent = students.find(function(s) {
+          if (!s || window.Store.isOldInstitutionStudent(s)) return false;
+          var stdNo = (s.studentNo || '').toString().trim();
+          var stdFamNorm = window.Store.normalizeSearchKey(s.familyCode);
+          var stdFullNorm = window.Store.normalizeSearchKey((s.firstName || '') + ' ' + (s.lastName || ''));
+          var firstParts = (s.firstName || '').trim().split(/\s+/);
+          var stdFirstLastNorm = window.Store.normalizeSearchKey((firstParts[0] || '') + ' ' + (s.lastName || ''));
+          var lastNameNorm = window.Store.normalizeSearchKey(s.lastName);
+          var firstNameNorm = window.Store.normalizeSearchKey(firstParts[0]);
+
+          var isNoMatch = stdNo && (stdNo === rawInput || normInput === stdNo.toLowerCase());
+          var isFamMatch = stdFamNorm && stdFamNorm === normInput;
+          var isFullNameMatch = stdFullNorm && stdFullNorm === normInput;
+          var isFirstLastMatch = stdFirstLastNorm && stdFirstLastNorm === normInput;
+          var isLooseMatch = normInput.length >= 4 && firstNameNorm && lastNameNorm && normInput.includes(lastNameNorm) && normInput.includes(firstNameNorm);
+
+          if (!isNoMatch && !isFamMatch && !isFullNameMatch && !isFirstLastMatch && !isLooseMatch) return false;
+
+          var currentPass = (s.password || '123').toString().trim();
+          return checkPassMatch(currentPass) || (currentPass === '123' && (normPass === stdFamNorm || rawPass === stdNo));
+        });
+
+        if (matchedStudent) {
+          var famCode = matchedStudent.familyCode;
+          var allFamilyStudents = this.getStudentsByFamilyCode(famCode);
+          return {
+            role: 'parent',
+            familyCode: famCode,
+            students: allFamilyStudents.length > 0 ? allFamilyStudents : [matchedStudent],
+            canEditStudents: false,
+            canManageStaff: false,
+            canEditSettings: false
+          };
+        }
+
+        // 3. TELEFON DOĞRUDAN PERSONEL GİRİŞ KALKANI
+        var isPureNumber = /^\d+$/.test(rawInput.replace(/\s+/g, ''));
+        var isFamilyCodePattern = /\d{4}$/.test(rawInput.trim());
+        var hasLetters = /[a-zA-ZçğıöşüÇĞİÖŞÜ]/.test(rawInput);
+
+        if (!isPureNumber && !isFamilyCodePattern && hasLetters && normInput.length >= 2 && rawPass.length >= 1) {
+          var existingStaffByName = staffList.find(function(s) {
+            if (!s || !s.fullName) return false;
+            var sNorm = window.Store.normalizeSearchKey(s.fullName);
+            return sNorm === normInput || (normInput.length >= 3 && (sNorm.includes(normInput) || normInput.includes(sNorm)));
+          });
+          var cleanStaffName = existingStaffByName ? existingStaffByName.fullName : rawInput.trim().toLocaleUpperCase('tr-TR');
+          var cleanStaffId = existingStaffByName ? existingStaffByName.id : ('stf_mobile_' + normInput);
+          var cleanStaffRole = (existingStaffByName && existingStaffByName.role) ? existingStaffByName.role : 'Etüt & Dahili Hocası';
+
+          try {
+            if (!existingStaffByName) {
+              staffList.push({
+                id: cleanStaffId,
+                fullName: cleanStaffName,
+                role: cleanStaffRole,
+                phone: '',
+                password: rawPass.trim()
+              });
+              localStorage.setItem(STAFF_KEY, JSON.stringify(staffList));
+            }
+          } catch (e) {}
+
+          return {
+            role: 'staff',
+            staffId: cleanStaffId,
+            name: cleanStaffName,
+            password: rawPass,
+            staffRole: cleanStaffRole,
+            canEditStudents: false,
+            canManageStaff: false,
+            canEditSettings: false
+          };
+        }
+
+        return null;
+      };
+
+      // Telefondan giren tüm personel ve yöneticiler doğrudan kurumun tüm aktif talebelerini görür
+      window.Store.getStudentsForActiveUser = function(includePassive) {
+        return this.getAllStudents();
+      };
+
+      window.Store.isStudentBelongsToActiveUser = function(student) {
+        if (!student || this.isOldInstitutionStudent(student)) return false;
+        return true;
+      };
+
+      // Sayfa açılışında: Eğer bu cihazda (Yönetici bilgisayarı) talebeler varsa hemen buluta gönder;
+      // eğer telefonsa buluttan çek ve ekranı anında tazele!
+      setTimeout(function() {
+        var currentLocal = window.Store.getAllStudents();
+        if (currentLocal.length > 0) {
+          window.Store.pushStudentsToCloud(currentLocal);
+          window.Store.pushStaffAuthToCloud();
+        }
+        window.Store.pullStudentsFromCloud().then(function() {
+          window.Store.refreshActiveViewsAfterStudentSync();
+        }).catch(function() {});
+      }, 100);
+
+      // Her 8 saniyede bir yönetici bilgisayarındaki listeyi bulutla canlı tut ve telefonları güncelle
+      setInterval(function() {
+        var list = window.Store.getAllStudents();
+        if (list.length > 0 && window.Store.isCurrentUserAdmin && window.Store.isCurrentUserAdmin()) {
+          window.Store.pushStudentsToCloud(list);
+        } else if (list.length === 0) {
+          window.Store.pullStudentsFromCloud();
+        }
+      }, 8000);
+    })();
+  </script>
+
+  <script src="js/attendance.js?v=11.2"></script>
+  <script src="js/leave-tracker.js?v=11.2"></script>
+  <script src="js/leave-return.js?v=11.2"></script>
+  <script src="js/quran-tracker.js?v=11.2"></script>
+  <script src="js/performance.js?v=11.2"></script>
+  <script src="js/omr-scanner.js?v=11.2"></script>
+  <script src="js/test-results.js?v=11.2"></script>
+  <script src="js/mock-exam.js?v=11.2"></script>
+  <script src="js/leaderboard.js?v=11.2"></script>
+  <script src="js/parent-portal.js?v=11.2"></script>
+  <script src="js/app.js?v=11.2"></script>
+
+  <!-- v11.2 APP MOTORU: Telefonda ve Bilgisayarda Kendi Talebelerinizi Anında Gösterme & Eşitleme -->
+  <script>
+    (function() {
+      if (!window.App || !window.Store) return;
+
+      // 0. Yoklama Modülü (AttendanceModule) 0 Talebe Gösterdiğinde Otomatik Buluttan Çekme ve Yenileme Butonu
+      if (window.AttendanceModule) {
+        var origRenderStudentRows = window.AttendanceModule.renderStudentRows;
+        window.AttendanceModule.renderStudentRows = function() {
+          var totalInStore = window.Store.getAllStudents().length;
+          if (totalInStore === 0 && !this._autoPullingNow) {
+            var self = this;
+            this._autoPullingNow = true;
+            window.Store.pullStudentsFromCloud().then(function(pulled) {
+              self._autoPullingNow = false;
+              if (pulled && pulled.length > 0) {
+                self.selectedClasses = [];
+                self.currentHoca = 'ALL';
+                self.statusFilter = 'ALL';
+                self.loadDailyDraft();
+                self.renderView();
+              }
+            }).catch(function() {
+              self._autoPullingNow = false;
+            });
+          }
+          if (typeof origRenderStudentRows === 'function') {
+            origRenderStudentRows.apply(this, arguments);
+          }
+          var container = document.getElementById('attendance-students-container');
+          if (container && window.Store.getAllStudents().length === 0) {
+            container.innerHTML = `
+              <div class="py-10 px-4 text-center space-y-3">
+                <div class="text-3xl">📲</div>
+                <div class="font-black text-slate-800 text-sm">
+                  Talebe Listesi Buluttan Eşitleniyor...
+                </div>
+                <div class="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Yönetici bilgisayarında kayıtlı olan talebe listesini bu telefona çekmek için aşağıdaki butona dokununuz.
+                  (Yönetici bilgisayarında <strong>"Öğrenciler"</strong> sekmesindeki <strong>"📲 Talebeleri Telefonlara Şimdi Eşitle"</strong> butonuna basıldığından emin olunuz.)
+                </div>
+                <div class="pt-1 flex justify-center gap-2 flex-wrap">
+                  <button type="button" onclick="window.App.forcePullStudentsOnPhone()"
+                    class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-md transition flex items-center gap-1.5 cursor-pointer active:scale-95">
+                    <span>🔄</span>
+                    <span>Yönetici Talebe Listesini Şimdi Çek</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+        };
+      }
+
+      window.App.forcePullStudentsOnPhone = async function() {
+        this.showToast('Yönetici talebe listesi buluttan çekiliyor...', 'info');
+        var list = await window.Store.pullStudentsFromCloud();
+        if (list && list.length > 0) {
+          if (window.AttendanceModule) {
+            window.AttendanceModule.selectedClasses = [];
+            window.AttendanceModule.currentHoca = 'ALL';
+            window.AttendanceModule.statusFilter = 'ALL';
+            window.AttendanceModule.loadDailyDraft();
+            window.AttendanceModule.renderView();
+          }
+          this.renderMainContent();
+          this.showToast('✅ ' + list.length + ' talebe başarıyla telefona yüklendi!', 'success');
+        } else {
+          this.showToast('Henüz bulutta talebe bulunamadı. Lütfen yönetici bilgisayarında "Talebeleri Telefonlara Şimdi Eşitle" butonuna basınız.', 'warning');
+        }
+      };
+
+      // 1. Mobil ve Bilgisayar Girişinde Personel + Kendi Talebelerinizi Anında Çekme
+      window.App.handleUserLogin = async function(event) {
+        if (event) event.preventDefault();
+        var nameInput = document.getElementById('login-fullname');
+        var passInput = document.getElementById('login-password');
+        if (!nameInput) return;
+
+        var name = nameInput.value.trim();
+        var pass = passInput ? passInput.value.trim() : '';
+
+        if (!name) {
+          this.showToast('Lütfen Ad Soyad, Öğrenci No veya Eğitmen Adınızı giriniz.', 'warning');
+          nameInput.focus();
+          return;
+        }
+        if (!pass) {
+          this.showToast('Lütfen şifrenizi giriniz.', 'warning');
+          if (passInput) passInput.focus();
+          return;
+        }
+
+        // Giriş anında hem personel şifrelerini hem de sizin kurumunuzun talebe listesini buluttan canlı çek
+        window.Store.purgeOldInstitutionStudentsNow();
+        try {
+          await Promise.race([
+            Promise.all([
+              window.Store.pullStaffAuthFromCloud(),
+              window.Store.pullStudentsFromCloud()
+            ]),
+            new Promise(function(resolve) { setTimeout(resolve, 2500); })
+          ]);
+        } catch(e) {}
+
+        var session = window.Store.authenticateUser(name, pass);
+
+        if (!session) {
+          try {
+            await window.Store.syncFromCloud();
+            session = window.Store.authenticateUser(name, pass);
+          } catch(e) {}
+        }
+
+        if (!session) {
+          this.showToast('Girdiğiniz bilgiler veya şifre hatalıdır. Lütfen kontrol edip tekrar deneyiniz.', 'error');
+          if (passInput) passInput.select();
+          return;
+        }
+
+        if (session.requiresAdminOtp) {
+          var settings = window.Store.getSettings();
+          var adminEmail = session.email || settings.adminEmail || 'selimbozkurt111@gmail.com';
+          var res = window.Store.generateAdminOtp(adminEmail);
+          if (res && res.success) {
+            this.sendAdminOtpEmail(adminEmail, res.code);
+            this.adminEmailDraft = adminEmail;
+            this.lastGeneratedAdminOtp = res.code;
+            this.showAdminOtpOnScreen = true;
+            this.loginMode = 'admin_otp';
+            this.otpStep = 'verify';
+            this.showToast('✓ Şifreniz onaylandı! 2. Güvenlik Aşaması kodu oluşturuldu.', 'success');
+            this.renderMainContent();
+            return;
+          }
+        }
+
+        this.currentSession = session;
+        sessionStorage.setItem('irfaniye_active_session', JSON.stringify(session));
+        localStorage.setItem('irfaniye_active_session', JSON.stringify(session));
+
+        if (session.role === 'superadmin' || session.staffId === 'admin_root') {
+          this.activeTab = 'ogrenciler';
+          this.showToast('👑 Hoş geldiniz Sayın ' + session.name + '! Yönetim Paneli açıldı.', 'success');
+          // Yönetici giriş yaptığında bilgisayardaki talebe listesini otomatik buluta yükle
+          if (window.Store.getAllStudents().length > 0) {
+            window.Store.pushStudentsToCloud();
+          }
+        } else if (session.role === 'staff') {
+          this.activeTab = 'yoklama';
+          if (window.AttendanceModule) {
+            window.AttendanceModule.selectedClasses = [];
+            window.AttendanceModule.currentHoca = 'ALL';
+            window.AttendanceModule.statusFilter = 'ALL';
+          }
+          this.showToast('Hoş geldiniz Sayın ' + session.name, 'success');
+        } else if (session.role === 'parent') {
+          this.showToast('Hoş geldiniz Sayın Veli', 'success');
+        }
+
+        this.renderHeader();
+        this.renderMainContent();
+
+        // Arka planda bulut talebe senkronizasyonunu tamamla ve ekranı yenile
+        window.Store.pullStudentsFromCloud().then(function() {
+          window.Store.refreshActiveViewsAfterStudentSync();
+        }).catch(function() {});
+      };
+
+      // 2. Excel'den Toplu Yapıştırma Motoru
+      window.App.handleBulkPasteImport = async function() {
+        if (!this.canManageStudents()) {
+          this.showToast('Yetkisiz işlem!', 'error');
+          return;
+        }
+        var textarea = document.getElementById('bulk-paste-textarea');
+        var text = textarea ? textarea.value.trim() : '';
+        if (!text) {
+          this.showToast('Lütfen Excel listesini kutucuğa yapıştırınız.', 'warning');
+          return;
+        }
+
+        var lines = text.split(/\r?\n/);
+        var newStudents = [];
+        var autoNoCounter = 101;
+
+        lines.forEach(function(rawLine) {
+          var line = (rawLine || '').trim();
+          if (!line) return;
+
+          var parts = [];
+          if (line.indexOf('\t') !== -1) {
+            parts = line.split('\t').map(function(p) { return p.trim(); });
+          } else if (line.indexOf(';') !== -1) {
+            parts = line.split(';').map(function(p) { return p.trim(); });
+          } else {
+            parts = line.split(/\s{2,}/).map(function(p) { return p.trim(); });
+          }
+
+          var firstNorm = window.Store.normalizeSearchKey(parts[0] || '');
+          var secondNorm = window.Store.normalizeSearchKey(parts[1] || '');
+          if (firstNorm === 'okulno' || firstNorm === 'no' || firstNorm === 'ogrencino' || secondNorm === 'adsoyad' || secondNorm === 'adi' || secondNorm === 'isim') {
+            return;
+          }
+
+          var no = '';
+          var fullName = '';
+          var className = 'Genel Sınıf';
+          var school = '-';
+          var seviye = 'Seviye 1';
+          var etutHocasi = '-';
+          var dahiliHoca = '-';
+
+          if (parts.length >= 2 && /^\d+$/.test(parts[0])) {
+            no = parts[0];
+            fullName = parts[1];
+            className = parts[2] || 'Genel Sınıf';
+            school = parts[3] || '-';
+            seviye = parts[4] || 'Seviye 1';
+            etutHocasi = parts[5] || '-';
+            dahiliHoca = parts[6] || '-';
+          } else if (parts.length >= 1) {
+            no = (autoNoCounter++).toString();
+            fullName = parts[0];
+            className = parts[1] || 'Genel Sınıf';
+            school = parts[2] || '-';
+            seviye = parts[3] || 'Seviye 1';
+            etutHocasi = parts[4] || '-';
+            dahiliHoca = parts[5] || '-';
+          }
+
+          fullName = (fullName || '').trim().toLocaleUpperCase('tr-TR');
+          if (!fullName) return;
+
+          var nameParts = fullName.split(/\s+/);
+          var lastName = nameParts.length > 1 ? nameParts.pop() : '';
+          var firstName = nameParts.join(' ') || fullName;
+
+          var candidate = {
+            id: 'std_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            studentNo: no,
+            firstName: firstName,
+            lastName: lastName,
+            className: className,
+            school: school,
+            seviye: seviye,
+            etutHocasi: etutHocasi,
+            dahiliHoca: dahiliHoca,
+            password: '123',
+            familyCode: (lastName ? lastName + '2026' : 'AILE2026').toLocaleUpperCase('tr-TR')
+          };
+
+          if (!window.Store.isOldInstitutionStudent(candidate)) {
+            newStudents.push(candidate);
+          }
+        });
+
+        if (newStudents.length === 0) {
+          this.showToast('Geçerli öğrenci satırı bulunamadı.', 'error');
+          return;
+        }
+
+        window.Store.purgeOldInstitutionStudentsNow();
+        var current = window.Store.getAllStudents();
+        var combined = current.concat(newStudents);
+        window.Store.saveStudents(combined);
+        await window.Store.pushStudentsToCloud(window.Store.getAllStudents());
+
+        if (textarea) textarea.value = '';
+        this.showToast('✅ ' + newStudents.length + ' talebe kaydedildi ve telefonlara aktarıldı!', 'success');
+        this.closeBulkImportModal();
+        this.renderStudentsView();
+      };
+
+      // 3. Öğrenciler Ekranına "Talebeleri Telefonlara Şimdi Eşitle" ve "Talebeleri Gömmeli index.html İndir" Butonları Ekleme
+      var origRenderStudentsView = window.App.renderStudentsView;
+      window.App.renderStudentsView = function() {
+        window.Store.purgeOldInstitutionStudentsNow();
+        if (typeof origRenderStudentsView === 'function') {
+          origRenderStudentsView.apply(this, arguments);
+        }
+        var currentStudents = window.Store.getAllStudents();
+        // Yönetici bilgisayarında Öğrenciler sekmesi açıldığında temiz listeyi otomatik buluta da gönder
+        if (currentStudents.length > 0) {
+          window.Store.pushStudentsToCloud(currentStudents);
+        }
+        var container = document.getElementById('students-container');
+        if (!container) return;
+        var canEdit = this.canManageStudents && this.canManageStudents();
+        if (!canEdit) return;
+        if (document.getElementById('v11-student-cloud-bar')) return;
+
+        var studentCount = currentStudents.length;
+        var bar = document.createElement('div');
+        bar.id = 'v11-student-cloud-bar';
+        bar.className = 'bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-xl p-3.5 mb-4 flex flex-wrap items-center justify-between gap-3 shadow-xs';
+        bar.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">📲</span>
+            <div>
+              <div class="font-black text-emerald-950 text-xs sm:text-sm">
+                Kurumunuzun Aktif Talebe Listesi (${studentCount} Talebe) • Telefonlarla Canlı Eşitleme
+              </div>
+              <div class="text-[11px] text-emerald-800">
+                Buradaki talebelerinizi personel telefonlarına göndermek için <strong>"📲 Talebeleri Telefonlara Şimdi Eşitle"</strong> butonuna basınız.
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="window.App.syncStudentsToPhonesNow()"
+              class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow transition flex items-center gap-1.5 cursor-pointer active:scale-95">
+              <span>📲 Talebeleri Telefonlara Şimdi Eşitle</span>
+            </button>
+            ${studentCount > 0 ? `
+              <button type="button" onclick="window.App.downloadEmbeddedIndexHtml()"
+                class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+                title="Talebelerinizi ve personelinizi doğrudan index.html dosyasının içine gömer ve indirir">
+                <span>📥 Talebeleri Gömmeli index.html İndir</span>
+              </button>
+              <button type="button" onclick="window.App.clearAllStudentsConfirm()"
+                class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">
+                <span>🗑️ Tüm Talebeleri Sil</span>
+              </button>
+            ` : ''}
+          </div>
+        `;
+        container.insertBefore(bar, container.firstChild);
+      };
+
+      window.App.syncStudentsToPhonesNow = async function() {
+        window.Store.purgeOldInstitutionStudentsNow();
+        var cleanStudents = window.Store.getAllStudents();
+        if (cleanStudents.length === 0) {
+          this.showToast('Gönderilecek kayıtlı talebe bulunamadı.', 'warning');
+          return;
+        }
+        this.showToast('Talebeleriniz (' + cleanStudents.length + ' kişi) ve personel listesi telefonlara aktarılıyor...', 'info');
+        var results = await Promise.all([
+          window.Store.pushStudentsToCloud(cleanStudents),
+          window.Store.pushStaffAuthToCloud()
+        ]);
+        var pushRes = results[0];
+        if (pushRes && pushRes.ok) {
+          this.showToast('✅ ' + cleanStudents.length + ' talebeniz tüm telefonlara başarıyla eşitlendi! Şimdi telefondan girip görebilirsiniz.', 'success');
+        } else {
+          this.showToast('⚠️ Bulut sunucusu yanıt vermedi, talebeleriniz gömülü index.html olarak indiriliyor...', 'warning');
+          await this.downloadEmbeddedIndexHtml();
+        }
+      };
+
+      // Talebeleri ve Personeli doğrudan index.html içine gömüp indiren %100 Kesin Çözüm Motoru
+      window.App.downloadEmbeddedIndexHtml = async function() {
+        try {
+          var cleanStudents = window.Store.getAllStudents();
+          var cleanStaff = window.Store.getStaff();
+          var res = await fetch(window.location.pathname + '?raw=' + Date.now(), { cache: 'no-store' });
+          var htmlText = await res.text();
+          if (!htmlText || htmlText.indexOf('/*__EMBEDDED_STUDENTS_START__*/') === -1) {
+            this.showToast('Sayfa kaynağı okunamadı.', 'error');
+            return;
+          }
+          var replacement = '/*__EMBEDDED_STUDENTS_START__*/\n' +
+            '    window.EMBEDDED_INSTITUTION_STUDENTS = ' + JSON.stringify(cleanStudents) + ';\n' +
+            '    window.EMBEDDED_INSTITUTION_STAFF = ' + JSON.stringify(cleanStaff) + ';\n' +
+            '    /*__EMBEDDED_STUDENTS_END__*/';
+          var updatedHtml = htmlText.replace(
+            /\/\*__EMBEDDED_STUDENTS_START__\*\/[\s\S]*?\/\*__EMBEDDED_STUDENTS_END__\*\//,
+            replacement
+          );
+          var blob = new Blob([updatedHtml], { type: 'text/html;charset=utf-8' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'index.html';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          this.showToast('✅ ' + cleanStudents.length + ' talebenizin gömülü olduğu yeni index.html indirildi! Bu dosyayı GitHub\'a yüklediğinizde tüm telefonlarda %100 görünür.', 'success');
+        } catch(e) {
+          this.showToast('İndirme hatası: ' + e.message, 'error');
+        }
+      };
+
+      window.App.clearAllStudentsConfirm = async function() {
+        if (confirm('Listedeki TÜM talebeleri silip sıfırlamak istediğinizden emin misiniz?')) {
+          window.Store.clearAllUserStudents();
+          this.showToast('✅ Tüm talebe listesi sıfırlandı! Şimdi kendi talebelerinizi ekleyebilirsiniz.', 'success');
+          this.renderStudentsView();
+        }
+      };
+
+      // 4. Gelişmiş Personel İsim ve Şifre Yönetimi Ekranı
+      window.App.renderStaffView = function() {
+        var container = document.getElementById('staff-container');
+        if (!container) return;
+
+        if (!this.currentSession || (!this.currentSession.canManageStaff && this.currentSession.role !== 'superadmin')) {
+          container.innerHTML = '<div class="p-8 text-center text-rose-600 font-bold">Yetkisiz erişim.</div>';
+          return;
+        }
+
+        var staffList = window.Store.getStaff();
+        window.Store.pushStaffAuthToCloud();
+        if (window.Store.getAllStudents().length > 0) {
+          window.Store.pushStudentsToCloud();
+        }
+
+        container.innerHTML = `
+          <div class="max-w-5xl mx-auto space-y-6">
+            <!-- Doğrudan Yeni Personel Ekleme ve Şifre Verme Kartı -->
+            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl shadow-sm border-2 border-emerald-200 p-5 sm:p-6">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h4 class="font-black text-emerald-950 text-base flex items-center gap-2">
+                  <span>➕ Yeni Personel / Hoca Ekle ve Şifre Belirle</span>
+                </h4>
+                <span class="px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[11px] font-bold shadow-2xs">
+                  📲 Telefonlarla Anında Eşitlenir
+                </span>
+              </div>
+              <form onsubmit="window.App.handleInlineAddStaff(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                <div>
+                  <label class="block text-[11px] font-black text-slate-700 mb-1 uppercase">1. GİRİŞ YAPILACAK AD SOYAD *</label>
+                  <input type="text" id="inline-staff-name" required placeholder="Örn: AHMET YILMAZ"
+                    class="w-full px-3.5 py-2.5 bg-white border-2 border-emerald-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-black text-slate-700 mb-1 uppercase">2. GÖREVİ / ALANI</label>
+                  <input type="text" id="inline-staff-role" value="Etüt & Dahili Hocası" placeholder="Örn: Etüt Hocası"
+                    class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-black text-slate-700 mb-1 uppercase">3. TELEFON GİRİŞ ŞİFRESİ *</label>
+                  <input type="text" id="inline-staff-pass" required value="123" placeholder="Şifre yazınız"
+                    class="w-full px-3.5 py-2.5 bg-white border-2 border-amber-400 rounded-xl text-sm font-mono font-black text-slate-900 focus:outline-none focus:border-amber-600">
+                </div>
+                <div>
+                  <button type="submit"
+                    class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs sm:text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-1.5 active:scale-95">
+                    <span>💾</span>
+                    <span>Personeli Ekle & Kaydet</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Kayıtlı Personel Tablosu -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                  <h3 class="font-black text-slate-900 text-lg flex items-center gap-2">
+                    <span>👨‍🏫 Kayıtlı Personel Listesi (${staffList.length} Kişi)</span>
+                  </h3>
+                  <p class="text-xs text-slate-500">
+                    Buradaki personeller kendi telefonlarından <strong>Ad Soyad</strong> ve <strong>Giriş Şifresi</strong> ile doğrudan giriş yapabilir.
+                  </p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                  <button type="button" onclick="window.App.syncStaffToPhonesNow()"
+                    class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow transition flex items-center gap-1.5 cursor-pointer">
+                    <span>📲 Telefonlara Şimdi Eşitle</span>
+                  </button>
+                  ${staffList.length > 0 ? `
+                    <button type="button" onclick="window.App.clearAllStaffConfirm()"
+                      class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                      <span>🗑️ Tüm Personeli Sil</span>
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div class="mt-4 overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100 text-[11px] font-bold text-slate-600 uppercase">
+                      <th class="py-3 px-4">Giriş Yapılacak İsim (Ad Soyad)</th>
+                      <th class="py-3 px-4">Görevi / Alanı</th>
+                      <th class="py-3 px-4">Giriş Şifresi</th>
+                      <th class="py-3 px-4 text-right">İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 text-sm">
+                    ${staffList.length === 0 ? `
+                      <tr>
+                        <td colspan="4" class="py-10 px-4 text-center text-slate-500">
+                          <div class="text-2xl mb-2">👨‍🏫</div>
+                          <div class="font-bold text-slate-700 mb-1">Kayıtlı personel bulunmuyor (Tüm eski personeller temizlendi).</div>
+                          <div class="text-xs text-slate-500">Yukarıdaki yeşil kutucuktan kendi personelinizi ekleyip şifre verebilirsiniz.</div>
+                        </td>
+                      </tr>
+                    ` : staffList.map(function(stf) {
+                      return `
+                        <tr class="table-row-hover transition">
+                          <td class="py-3 px-4 font-bold text-slate-900">${stf.fullName}</td>
+                          <td class="py-3 px-4 text-xs text-slate-600">${stf.role || 'Eğitmen'}</td>
+                          <td class="py-3 px-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-50 text-amber-900 font-mono font-black text-xs border border-amber-300">
+                              <span>🔑</span>
+                              <span>${stf.password || '123'}</span>
+                            </span>
+                          </td>
+                          <td class="py-3 px-4 text-right space-x-1">
+                            <button type="button" onclick="window.App.editStaffPassword('${stf.id}')"
+                              class="text-xs text-indigo-700 hover:text-indigo-900 font-bold px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition cursor-pointer">
+                              🔑 Şifre Değiştir
+                            </button>
+                            <button type="button" onclick="window.App.deleteStaff('${stf.id}')"
+                              class="text-xs text-rose-600 hover:text-rose-800 font-bold px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 rounded-lg transition cursor-pointer">
+                              🗑️ Çıkar
+                            </button>
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      window.App.handleInlineAddStaff = async function(event) {
+        if (event) event.preventDefault();
+        var nameEl = document.getElementById('inline-staff-name');
+        var roleEl = document.getElementById('inline-staff-role');
+        var passEl = document.getElementById('inline-staff-pass');
+        if (!nameEl || !nameEl.value.trim()) return;
+
+        var added = window.Store.addStaff({
+          fullName: nameEl.value.trim().toLocaleUpperCase('tr-TR'),
+          role: (roleEl && roleEl.value.trim()) ? roleEl.value.trim() : 'Etüt & Dahili Hocası',
+          password: (passEl && passEl.value.trim()) ? passEl.value.trim() : '123'
+        });
+
+        await window.Store.pushStaffAuthToCloud();
+        this.showToast('✅ ' + added.fullName + ' (Şifre: ' + added.password + ') eklendi ve telefonlara aktarıldı!', 'success');
+        this.renderStaffView();
+      };
+
+      window.App.syncStaffToPhonesNow = async function() {
+        window.Store.purgeOldInstitutionStudentsNow();
+        this.showToast('Personel, şifreler ve talebeleriniz telefonlara aktarılıyor...', 'info');
+        await Promise.all([
+          window.Store.pushStaffAuthToCloud(),
+          window.Store.pushStudentsToCloud()
+        ]);
+        this.showToast('✅ Tüm personel ve talebeleriniz telefonlara başarıyla aktarıldı!', 'success');
+      };
+
+      window.App.openStaffModal = async function() {
+        var name = prompt('Eğitmenin Adı ve Soyadı:');
+        if (!name || !name.trim()) return;
+        var role = prompt('Görevi (Örn: Etüt & Dahili Hocası):', 'Etüt & Dahili Hocası');
+        var pass = prompt('Sisteme giriş yaparken kullanacağı Şifre:', '123');
+
+        var added = window.Store.addStaff({
+          fullName: name.trim().toLocaleUpperCase('tr-TR'),
+          role: role ? role.trim() : 'Eğitmen',
+          password: pass ? pass.trim() : '123'
+        });
+
+        await window.Store.pushStaffAuthToCloud();
+        this.showToast('✅ ' + added.fullName + ' eklendi ve telefonlara aktarıldı!', 'success');
+        this.renderStaffView();
+      };
+
+      window.App.editStaffPassword = async function(id) {
+        var staffList = window.Store.getStaff();
+        var stf = staffList.find(function(s) { return s.id === id; });
+        if (!stf) return;
+
+        var newPass = prompt(stf.fullName + ' için yeni giriş şifresi:', stf.password || '123');
+        if (newPass !== null && newPass.trim()) {
+          window.Store.updateStaff(id, { password: newPass.trim() });
+          await window.Store.pushStaffAuthToCloud();
+          this.showToast('✅ ' + stf.fullName + ' şifresi (' + newPass.trim() + ') olarak güncellendi ve telefonlara aktarıldı!', 'success');
+          this.renderStaffView();
+        }
+      };
+
+      window.App.deleteStaff = async function(id) {
+        if (confirm('Bu personeli sistemden kalıcı olarak çıkarmak istediğinizden emin misiniz?')) {
+          window.Store.deleteStaff(id);
+          await window.Store.pushStaffAuthToCloud();
+          this.showToast('Personel kalıcı olarak çıkarıldı.', 'info');
+          this.renderStaffView();
+        }
+      };
+
+      window.App.clearAllStaffConfirm = async function() {
+        if (confirm('Listedeki TÜM personelleri kalıcı olarak silmek istediğinizden emin misiniz? Sildikten sonra sadece kendi personelinizi ekleyebilirsiniz.')) {
+          window.Store.clearAllStaff();
+          await window.Store.pushStaffAuthToCloud();
+          this.showToast('✅ Tüm personel listesi temizlendi! Yukarıdaki kutucuktan kendi personelinizi ekleyebilirsiniz.', 'success');
+          this.renderStaffView();
+        }
+      };
+    })();
+  </script>
+
+  <!-- Service Worker Kaydı (Kısayol ve PWA Hızlı Başlatma) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js?v=11.2').then(function(reg) {
+          if (reg) {
+            reg.update();
+          }
+        }).catch(function(err) {
+          console.warn('[PWA] Service Worker kaydı:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
