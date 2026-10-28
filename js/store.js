@@ -735,7 +735,7 @@ class DataStore {
   }
 
   getBackupFirebaseUrl() {
-    return 'https://oay-takip-default-rtdb.firebaseio.com';
+    return 'https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app';
   }
 
   isCloudEnabled() {
