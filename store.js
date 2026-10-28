@@ -65,7 +65,7 @@ const DEFAULT_SETTINGS = {
   adminEmail: 'selimbozkurt111@gmail.com', // Ana yöneticinin doğrulama maili alacağı adres
   adminPassword: '123', // Ana Kurum Yöneticisi özel giriş şifresi (Personelden bağımsız)
   academicYear: '2026-2027',
-  firebaseUrl: 'https://oay-takip-default-rtdb.firebaseio.com', // Canlı Bulut Veritabanı URL
+  firebaseUrl: firebaseUrl: 'https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app', // Canlı Bulut Veritabanı URL
   yatakReminderEnabled: true, // Otomatik yatak kontrolü hatırlatıcısı
   yatakReminderStartTime: '08:30', // Başlangıç saati (sabah 08:30)
   yatakReminderIntervalMins: 30, // Kontrol edilmedikçe her 30 dakikada bir tekrar
@@ -746,7 +746,7 @@ class DataStore {
       }
 
       if (!settings.firebaseUrl || !settings.firebaseUrl.trim()) {
-        settings.firebaseUrl = 'https://oay-takip-default-rtdb.firebaseio.com';
+        settings.firebaseUrl = settings.firebaseUrl = 'https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app';
       }
 
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
