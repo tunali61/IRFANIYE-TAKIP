@@ -486,7 +486,7 @@
           window.Store._backupEventSource = null;
         }
       } catch(e) {}
-      window.Store.initRealtimeListener = function() { return; };
+      //window.Store.initRealtimeListener = function() { return; };
       window.Store.autoSyncStaffAndClassTeachers = function() { return; };
       window.Store.autoMigrateStudentClasses = function() { return; };
       window.Store.autoSyncDahiliHocalarAndQuran = function() { return; };
@@ -946,12 +946,6 @@
 
       window.Store.pullStaffAuthFromCloud = async function() {
         return true;
-      };
-
-      window.Store.syncFromCloud = async function() {
-        this.purgeOldInstitutionStudentsNow();
-        this.refreshActiveViewsAfterStudentSync();
-        return { success: true, message: 'Güncel veriler senkronize edildi.' };
       };
 
       window.Store.getStaff = function() {
