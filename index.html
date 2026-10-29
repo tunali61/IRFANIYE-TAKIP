@@ -2227,8 +2227,8 @@
     firebase.initializeApp(firebaseConfig);
   }
 
-  window.firebaseAuth = firebase.auth();
-  <script>
+    window.firebaseAuth = firebase.auth();
+
   window.signInFirebaseForSync = async function(email, password) {
     if (!window.firebaseAuth) {
       throw new Error('Firebase Authentication hazır değil.');
@@ -2237,8 +2237,6 @@
     const result = await window.firebaseAuth.signInWithEmailAndPassword(email, password);
     return result.user;
   };
-</script>  
 </script>
-  </script>
 </body>
 </html>
