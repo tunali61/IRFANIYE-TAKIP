@@ -755,6 +755,20 @@ class DataStore {
   async syncToCloud(endpoint, data) {
     const baseUrl = this.getFirebaseUrl();
     const backupUrl = this.getBackupFirebaseUrl();
+        let authToken = '';
+
+    try {
+      if (window.firebaseAuth && window.firebaseAuth.currentUser) {
+        authToken = await window.firebaseAuth.currentUser.getIdToken();
+      }
+    } catch (err) {
+      console.warn('[CloudSync] Firebase oturum anahtarı alınamadı:', err);
+    }
+
+    if (!authToken) {
+      console.warn('[CloudSync] Firebase oturumu yok. Buluta veri gönderilmedi.');
+      return false;
+    }
     if (!baseUrl && !backupUrl) return false;
 
     const cleanEndpoint = (endpoint || '').replace(/^\/+/, '').replace(/^kurs_data\//, 'irfaniye_data/');
@@ -763,7 +777,7 @@ class DataStore {
 
     if (baseUrl) {
       try {
-        const res = await fetch(`${baseUrl}/${cleanEndpoint}.json`, {
+        const res = await fetch(`${baseUrl}/${cleanEndpoint}.json?auth=${encodeURIComponent(authToken)}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: bodyStr
@@ -776,7 +790,7 @@ class DataStore {
 
     if (backupUrl && backupUrl !== baseUrl) {
       try {
-        const resBackup = await fetch(`${backupUrl}/${cleanEndpoint}.json`, {
+        const resBackup = await fetch(`${backupUrl}/${cleanEndpoint}.json?auth=${encodeURIComponent(authToken)}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: bodyStr
@@ -879,6 +893,19 @@ class DataStore {
   async syncFromCloud() {
     const baseUrl = this.getFirebaseUrl();
     const backupUrl = this.getBackupFirebaseUrl();
+        let authToken = '';
+
+    try {
+      if (window.firebaseAuth && window.firebaseAuth.currentUser) {
+        authToken = await window.firebaseAuth.currentUser.getIdToken();
+      }
+    } catch (err) {
+      console.warn('[CloudSync] Firebase oturum anahtarı alınamadı:', err);
+    }
+
+    if (!authToken) {
+      return { success: false, message: 'Firebase oturumu bulunamadı.' };
+    }
     if (!baseUrl && !backupUrl) return { success: false, message: 'Bulut bağlantısı tanımlı değil.' };
 
     let primaryData = null;
@@ -886,7 +913,7 @@ class DataStore {
 
     if (baseUrl) {
       try {
-        const res = await fetch(`${baseUrl}/irfaniye_data.json`, {
+        const res = await fetch(`${baseUrl}/irfaniye_data.json?auth=${encodeURIComponent(authToken)}`, {
           headers: { 'Accept': 'application/json' },
           cache: 'no-store'
         });
@@ -898,7 +925,7 @@ class DataStore {
 
     if (backupUrl && backupUrl !== baseUrl) {
       try {
-        const resB = await fetch(`${backupUrl}/irfaniye_data.json`, {
+        const resB = await fetch(`${backupUrl}/irfaniye_data.json?auth=${encodeURIComponent(authToken)}`, {
           headers: { 'Accept': 'application/json' },
           cache: 'no-store'
         });
