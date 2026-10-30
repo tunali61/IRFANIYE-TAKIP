@@ -447,10 +447,10 @@ window.App = {
   ).then(() => {
     console.log('[Firebase] Yönetici Firebase oturumu açıldı.');
     this.firebasePasswordDraft = '';
-  }).catch((err) => 
-    console.error('[Firebase] Oturum açılamadı:', err.code || err.message);
-    this.firebasePasswordDraft = '';
-  });
+  }).catch((err) => {
+  console.error('[Firebase] Oturum açılamadı:', err.code || err.message);
+  this.firebasePasswordDraft = '';
+});
 }
     sessionStorage.setItem('yoklama_active_session', JSON.stringify(res.session));
     localStorage.setItem('yoklama_active_session', JSON.stringify(res.session));
