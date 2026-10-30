@@ -1822,7 +1822,7 @@ class DataStore {
     // Sistem ayarlarındaki bağımsız Kurum Yöneticisi şifresini kontrol et (Varsayılan: 123)
     const settings = this.getSettings();
     const adminPass = (settings.adminPassword || '123').toString().trim();
-    return cleanPass === adminPass || cleanPass === '123' || cleanPass === '123456';
+   return cleanPass === adminPass;
   }
 
   // --- Ana Yönetici E-posta Doğrulama Kodu (OTP) Üretimi (2. Aşama Güvenlik) ---
@@ -1856,7 +1856,11 @@ class DataStore {
 
   verifyAdminOtp(enteredCode) {
     const clean = (enteredCode || '').trim();
-    const isMatched = (this.activeAdminOtp && this.activeAdminOtp.code.trim() === clean) || clean === '123456';
+    const isMatched = (
+  this.activeAdminOtp &&
+  Date.now() <= this.activeAdminOtp.expiresAt &&
+  this.activeAdminOtp.code.trim() === clean
+);
 
     if (isMatched) {
       this.activeAdminOtp = null;
