@@ -375,6 +375,7 @@ window.App = {
     this.sendAdminOtpEmail(email, res.code);
 
     this.adminEmailDraft = email;
+    this.firebasePasswordDraft = password;
     this.lastGeneratedAdminOtp = res.code;
     this.showAdminOtpOnScreen = true;
     this.otpStep = 'verify';
