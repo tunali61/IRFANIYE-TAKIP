@@ -289,6 +289,7 @@ window.App = {
       if (res && res.success) {
         this.sendAdminOtpEmail(adminEmail, res.code);
         this.adminEmailDraft = adminEmail;
+        this.firebasePasswordDraft = pass;
         this.lastGeneratedAdminOtp = res.code;
         this.showAdminOtpOnScreen = true;
         this.loginMode = 'admin_otp';
@@ -437,6 +438,18 @@ window.App = {
     }
 
     this.currentSession = res.session;
+    if (window.signInFirebaseForSync && this.adminEmailDraft && this.firebasePasswordDraft) {
+  window.signInFirebaseForSync(
+    this.adminEmailDraft,
+    this.firebasePasswordDraft
+  ).then(() => {
+    console.log('[Firebase] Yönetici Firebase oturumu açıldı.');
+    this.firebasePasswordDraft = '';
+  }).catch((err) => {
+    console.error('[Firebase] Oturum açılamadı:', err.code || err.message);
+    this.firebasePasswordDraft = '';
+  });
+}
     sessionStorage.setItem('yoklama_active_session', JSON.stringify(res.session));
     localStorage.setItem('yoklama_active_session', JSON.stringify(res.session));
     this.loginMode = 'user';
