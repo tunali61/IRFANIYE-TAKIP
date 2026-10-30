@@ -290,6 +290,7 @@ window.App = {
         this.sendAdminOtpEmail(adminEmail, res.code);
         this.adminEmailDraft = adminEmail;
         this.firebasePasswordDraft = pass;
+        console.log('[Firebase TEST] Bilgiler OTP aşamasına aktarıldı:', !!this.adminEmailDraft, !!this.firebasePasswordDraft);
         this.lastGeneratedAdminOtp = res.code;
         this.showAdminOtpOnScreen = true;
         this.loginMode = 'admin_otp';
@@ -445,7 +446,7 @@ window.App = {
   ).then(() => {
     console.log('[Firebase] Yönetici Firebase oturumu açıldı.');
     this.firebasePasswordDraft = '';
-  }).catch((err) => {
+  }).catch((err) => 
     console.error('[Firebase] Oturum açılamadı:', err.code || err.message);
     this.firebasePasswordDraft = '';
   });
