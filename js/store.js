@@ -65,7 +65,7 @@ const DEFAULT_SETTINGS = {
   institutionName: 'İrfaniye Akademi',
   institutionLogo: 'kurs_logo.jpg', // Varsayılan kurs logosu dosya adı
   adminEmail: 'admin@irfaniye.com', // Ana yöneticinin doğrulama maili alacağı adres
-  adminPassword: '123', // Ana Kurum Yöneticisi özel giriş şifresi (Personelden bağımsız)
+  adminPassword: 'irfaniye@34', // Ana Kurum Yöneticisi özel giriş şifresi (Personelden bağımsız)
   academicYear: '2026-2027',
   firebaseUrl: 'https://irfaniye-takip-88e84-default-rtdb.europe-west1.firebasedatabase.app', // İrfaniye Canlı Bulut Veritabanı URL
   yatakReminderEnabled: true, // Otomatik yatak kontrolü hatırlatıcısı
