@@ -416,7 +416,7 @@ window.App = {
   },
 
   // --- 2. AŞAMA: E-posta Kodunu Doğrulama ve Sisteme Girme ---
-  handleAdminOtpVerify(event) {
+  async handleAdminOtpVerify(event) {
     if (event) event.preventDefault();
     const codeInput = document.getElementById('admin-otp-code-input');
     let code = (codeInput && codeInput.value ? codeInput.value : '').trim();
