@@ -418,52 +418,98 @@ window.App = {
   },
 
   // --- 2. AŞAMA: E-posta Kodunu Doğrulama ve Sisteme Girme ---
-  async handleAdminOtpVerify(event) {
-    if (event) event.preventDefault();
-    const codeInput = document.getElementById('admin-otp-code-input');
-    let code = (codeInput && codeInput.value ? codeInput.value : '').trim();
-    if (!code) {
-      code = (this.lastGeneratedAdminOtp || (window.Store && window.Store.getActiveAdminOtpCode()) || '').trim();
-    }
-    if (!code) {
-      this.showToast('Lütfen 6 haneli doğrulama kodunu giriniz.', 'warning');
-      if (codeInput) codeInput.focus();
-      return;
+  // --- 2. AŞAMA: E-posta Kodunu Doğrulama ve Sisteme Girme ---
+async handleAdminOtpVerify(event) {
+  if (event) event.preventDefault();
+
+  const codeInput = document.getElementById('admin-otp-code-input');
+  let code = (codeInput && codeInput.value ? codeInput.value : '').trim();
+
+  if (!code) {
+    code = (
+      this.lastGeneratedAdminOtp ||
+      (window.Store && window.Store.getActiveAdminOtpCode()) ||
+      ''
+    ).trim();
+  }
+
+  if (!code) {
+    this.showToast('Lütfen 6 haneli doğrulama kodunu giriniz.', 'warning');
+    if (codeInput) codeInput.focus();
+    return;
+  }
+
+  const res = window.Store.verifyAdminOtp(code);
+
+  if (!res.success) {
+    this.showToast(res.message, 'error');
+    if (codeInput) codeInput.select();
+    return;
+  }
+
+  // Önce Firebase oturumunu aç
+  try {
+    if (!window.signInFirebaseForSync) {
+      throw new Error('Firebase giriş fonksiyonu bulunamadı.');
     }
 
-    const res = window.Store.verifyAdminOtp(code);
-
-    if (!res.success) {
-      this.showToast(res.message, 'error');
-      if (codeInput) codeInput.select();
-      return;
+    if (!this.adminEmailDraft || !this.firebasePasswordDraft) {
+      throw new Error('Firebase giriş bilgileri hazırlanmadı.');
     }
 
-    this.currentSession = res.session;
-    if (window.signInFirebaseForSync && this.adminEmailDraft && this.firebasePasswordDraft) {
-  window.signInFirebaseForSync(
-    this.adminEmailDraft,
-    this.firebasePasswordDraft
-  ).then(() => {
-    console.log('[Firebase] Yönetici Firebase oturumu açıldı.');
+    await window.signInFirebaseForSync(
+      this.adminEmailDraft,
+      this.firebasePasswordDraft
+    );
+
+    if (!window.firebaseAuth || !window.firebaseAuth.currentUser) {
+      throw new Error('Firebase oturumu doğrulanamadı.');
+    }
+
+    console.log('[Firebase] Yönetici Firebase oturumu başarıyla açıldı.');
+
+  } catch (err) {
+    console.error('[Firebase] Oturum açılamadı:', err.code || err.message);
+
     this.firebasePasswordDraft = '';
-  }).catch((err) => {
-  console.error('[Firebase] Oturum açılamadı:', err.code || err.message);
+
+    this.showToast(
+      'Bulut bağlantısı kurulamadı. Yönetici girişi tamamlanmadı.',
+      'error'
+    );
+
+    return;
+  }
+
+  // Şifre bellekte tutulmasın
   this.firebasePasswordDraft = '';
-});
-}
-    sessionStorage.setItem('yoklama_active_session', JSON.stringify(res.session));
-    localStorage.setItem('yoklama_active_session', JSON.stringify(res.session));
-    this.loginMode = 'user';
-    this.otpStep = 'password';
-    this.lastGeneratedAdminOtp = '';
-    this.activeTab = 'ogrenciler';
 
-    this.showToast('👑 Şifre ve E-posta doğrulaması başarılı! Ana Yönetici olarak giriş yapıldı.', 'success');
-    this.renderHeader();
-    this.renderMainContent();
-  },
+  // Firebase başarılıysa uygulama oturumunu aç
+  this.currentSession = res.session;
 
+  sessionStorage.setItem(
+    'yoklama_active_session',
+    JSON.stringify(res.session)
+  );
+
+  localStorage.setItem(
+    'yoklama_active_session',
+    JSON.stringify(res.session)
+  );
+
+  this.loginMode = 'user';
+  this.otpStep = 'password';
+  this.lastGeneratedAdminOtp = '';
+  this.activeTab = 'ogrenciler';
+
+  this.showToast(
+    '👑 Şifre, E-posta ve Firebase doğrulaması başarılı! Ana Yönetici olarak giriş yapıldı.',
+    'success'
+  );
+
+  this.renderHeader();
+  this.renderMainContent();
+},
   logout() {
     this.currentSession = null;
     sessionStorage.removeItem('yoklama_active_session');
