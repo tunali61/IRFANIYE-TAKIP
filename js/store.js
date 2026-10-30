@@ -699,7 +699,7 @@ class DataStore {
       }
 
       if (!settings.adminPassword || !settings.adminPassword.trim()) {
-        settings.adminPassword = '123';
+        settings.adminPassword = 'irfaniye@34';
       }
 
       if (!settings.firebaseUrl || !settings.firebaseUrl.trim() || settings.firebaseUrl.includes('oay-takip')) {
