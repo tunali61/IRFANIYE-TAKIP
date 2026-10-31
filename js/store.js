@@ -3211,7 +3211,7 @@ class DataStore {
     }
     localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(all));
     if (this.isCloudEnabled()) {
-      this.syncToCloud('irfaniye_data/attendance', all);
+      this.syncToCloud('kurs_data/attendance', all);
     }
     return rec;
   }
