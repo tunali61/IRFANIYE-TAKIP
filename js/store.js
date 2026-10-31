@@ -913,7 +913,7 @@ class DataStore {
 
     if (baseUrl) {
       try {
-        `${baseUrl}/kurs_data.json?auth=${encodeURIComponent(authToken)}`
+        const res = await fetch(`${baseUrl}/kurs_data.json?auth=${encodeURIComponent(authToken)}`, {
           headers: { 'Accept': 'application/json' },
           cache: 'no-store'
         });
@@ -925,7 +925,7 @@ class DataStore {
 
     if (backupUrl && backupUrl !== baseUrl) {
       try {
-        const resB = await fetch(`${backupUrl}/irfaniye_data.json?auth=${encodeURIComponent(authToken)}`, {
+        const resB = await fetch(`${backupUrl}/kurs_data.json?auth=${encodeURIComponent(authToken)}`, {
           headers: { 'Accept': 'application/json' },
           cache: 'no-store'
         });
