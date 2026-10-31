@@ -771,7 +771,7 @@ class DataStore {
     }
     if (!baseUrl && !backupUrl) return false;
 
-    const cleanEndpoint = (endpoint || '').replace(/^\/+/, '').replace(/^kurs_data\//, 'irfaniye_data/');
+    const cleanEndpoint = (endpoint || '').replace(/^\/+/, '');
     const bodyStr = JSON.stringify(data);
     let anyOk = false;
 
