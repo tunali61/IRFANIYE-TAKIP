@@ -913,7 +913,7 @@ class DataStore {
 
     if (baseUrl) {
       try {
-        const res = await fetch(`${baseUrl}/irfaniye_data.json?auth=${encodeURIComponent(authToken)}`, {
+        `${baseUrl}/kurs_data.json?auth=${encodeURIComponent(authToken)}`
           headers: { 'Accept': 'application/json' },
           cache: 'no-store'
         });
