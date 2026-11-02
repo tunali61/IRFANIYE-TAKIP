@@ -485,8 +485,6 @@ async handleAdminOtpVerify(event) {
       'Bulut bağlantısı kurulamadı. Yönetici girişi tamamlanmadı.',
       'error'
     );
-
-    return;
   }
 
   // Şifre bellekte tutulmasın
