@@ -792,20 +792,50 @@ class DataStore {
 
   // Buluta Asenkron Arka Plan Gönderimi
   async syncToCloud(endpoint, data) {
-    const baseUrl = this.getFirebaseUrl();
-    if (!baseUrl) return false;
-    try {
-      const res = await fetch(`${baseUrl}/${endpoint}.json`, {
+  const baseUrl = this.getFirebaseUrl();
+  if (!baseUrl) return false;
+
+  let authToken = '';
+
+  try {
+    if (window.firebaseAuth && window.firebaseAuth.currentUser) {
+      authToken = await window.firebaseAuth.currentUser.getIdToken();
+    }
+  } catch (err) {
+    console.warn('[CloudSync] Firebase oturum anahtarı alınamadı:', err);
+  }
+
+  if (!authToken) {
+    console.warn('[CloudSync] Firebase oturumu yok. Buluta veri gönderilmedi.');
+    return false;
+  }
+
+  try {
+    const cleanEndpoint = (endpoint || '').replace(/^\/+/, '');
+
+    const res = await fetch(
+      `${baseUrl}/${cleanEndpoint}.json?auth=${encodeURIComponent(authToken)}`,
+      {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      });
-      return res.ok;
-    } catch (err) {
-      console.warn(`[CloudSync] ${endpoint} gönderilemedi (çevrimdışı):`, err);
-      return false;
+      }
+    );
+
+    if (!res.ok) {
+      console.warn(
+        `[CloudSync] ${cleanEndpoint} Firebase kayıt hatası:`,
+        res.status,
+        await res.text()
+      );
     }
+
+    return res.ok;
+  } catch (err) {
+    console.warn(`[CloudSync] ${endpoint} gönderilemedi:`, err);
+    return false;
   }
+}
 
   // Tüm Veritabanını Tek Tıkla Buluta İlk Yükleme
   async pushAllToCloud() {
